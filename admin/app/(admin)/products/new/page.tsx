@@ -1,0 +1,34 @@
+export default function NewProductPage() {
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight">Dodaj produkt</h1>
+        <p className="text-muted-foreground">Uzupełnij podstawowe informacje o produkcie.</p>
+      </div>
+
+      <form className="grid gap-4 rounded-lg border p-4 sm:grid-cols-2">
+        <div className="grid gap-2 sm:col-span-2">
+          <label className="text-sm font-medium">Nazwa</label>
+          <input className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring" placeholder="Np. Szampon wygładzający" />
+        </div>
+        <div className="grid gap-2">
+          <label className="text-sm font-medium">Cena (PLN)</label>
+          <input type="number" className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring" placeholder="0.00" />
+        </div>
+        <div className="grid gap-2">
+          <label className="text-sm font-medium">Stan magazynowy</label>
+          <input type="number" className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring" placeholder="0" />
+        </div>
+        <div className="grid gap-2 sm:col-span-2">
+          <label className="text-sm font-medium">Opis</label>
+          <textarea rows={4} className="w-full resize-y rounded-md border bg-background px-3 py-2 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring" placeholder="Krótki opis produktu" />
+        </div>
+        <div className="sm:col-span-2">
+          <button type="submit" className="inline-flex items-center rounded-md border px-4 py-2 text-sm font-medium transition-colors hover:bg-accent">Zapisz produkt</button>
+        </div>
+      </form>
+    </div>
+  )
+}
+
+
