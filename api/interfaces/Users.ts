@@ -1,3 +1,5 @@
+import { Carts } from "./Carts";
+
 export interface Users {
     id: number;
     imie: string;
@@ -13,6 +15,10 @@ export interface Users {
     nip: string | null;
     faktura: boolean;
     osoba_prywatna: boolean;
+}
+
+export interface User_With_Cart extends Users {
+    cart?: Carts;
 }
 
 export class User implements Users {
@@ -45,5 +51,13 @@ export class User implements Users {
         this.nip = conf.nip;
         this.faktura = conf.faktura;
         this.osoba_prywatna = conf.faktura;
+    }
+}
+
+export class User_Cart extends User implements User_With_Cart  {
+    cart?: Carts | undefined;
+    constructor(conf: User_With_Cart) {
+        super(conf);
+        this.cart = conf.cart;
     }
 }
