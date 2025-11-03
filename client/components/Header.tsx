@@ -47,6 +47,7 @@ export default function Header() {
         </div>
 
         <nav className="header-nav">
+        <a href="/" className="nav-link">Strona główna</a>
           <div className="nav-dropdown">
             <button onClick={() => setShowDropdown(!showDropdown)} className="nav-link-button">
               <span>Sklep</span>
@@ -56,7 +57,16 @@ export default function Header() {
             </button>
             {showDropdown && (
               <div className="dropdown-menu">
-                <a href="#" className="dropdown-item">Kategorie</a>
+                <a 
+                  href="#product-categories-section" 
+                  className="dropdown-item"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    smoothScrollTo('product-categories-section');
+                  }}
+                >
+                  Kategorie
+                </a>
                 <a href="#" className="dropdown-item">Promocje</a>
                 <a 
                   href="#new-arrivals-section" 
