@@ -1,20 +1,20 @@
 import type { Metadata } from "next";
-import { Montserrat, Playfair_Display } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import CartRoot from "../components/CartRoot";
 
-const montserrat = Montserrat({
-  variable: "--font-sans",
+const geistSans = Geist({
+  variable: "--font-geist-sans",
   subsets: ["latin"],
 });
-const playfair = Playfair_Display({
-  variable: "--font-serif",
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "Coiffeur — Premium Salon",
-  description: "Stylish hair care and cosmetic products.",
+  title: "Fryzjerpremium.pl",
+  description: "Fryzjerpremium.pl - Sklep fryzjerski",
 };
 
 export default function RootLayout({
@@ -23,9 +23,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pl">
-      <body className={`${montserrat.variable} ${playfair.variable} antialiased bg-white text-black`}>
-        <CartRoot>{children}</CartRoot>
+    <html lang="en">
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
+        {children}
       </body>
     </html>
   );

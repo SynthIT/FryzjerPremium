@@ -1,16 +1,16 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #0f172a; /* slate-900 */
-  --muted: #f4f4f5; /* surface for muted blocks */
-  --muted-foreground: #6b7280; /* gray-500 */
-  --border: #e5e7eb; /* gray-200 */
-  --accent: #f4f4f5; /* zinc-100 */
-  --accent-foreground: #0f172a;
-  --popover: #ffffff;
-  --popover-foreground: #0f172a;
-  --ring: #8b5cf6; /* violet-500 */
+  --background: #fafaf9;
+  --foreground: #18181b;
+  --muted: #f3f3f6;
+  --muted-foreground: #767676;
+  --border: #e5e7eb;
+  --accent: #f5f5f7;
+  --accent-foreground: #18181b;
+  --popover: #fff;
+  --popover-foreground: #18181b;
+  --ring: #18181b;
 }
 
 @theme inline {
@@ -28,19 +28,17 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0b1020; /* deep navy */
-    --foreground: #e5e7eb;
-    --muted: #0f172a;
-    --muted-foreground: #9ca3af;
-    --border: #1f2937;
-    --accent: #0f172a;
-    --accent-foreground: #e5e7eb;
-    --popover: #0b1020;
-    --popover-foreground: #e5e7eb;
-    --ring: #a78bfa; /* violet-400 */
-  }
+.dark {
+  --background: #18181b;
+  --foreground: #fafaf9;
+  --muted: #232326;
+  --muted-foreground: #a3a3a3;
+  --border: #262626;
+  --accent: #232326;
+  --accent-foreground: #fafaf9;
+  --popover: #18181b;
+  --popover-foreground: #fafaf9;
+  --ring: #fafaf9;
 }
 
 body {

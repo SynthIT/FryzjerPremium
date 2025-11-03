@@ -21,7 +21,11 @@ export default function NewProductPage() {
         </div>
         <div className="grid gap-2 sm:col-span-2">
           <label className="text-sm font-medium">Opis</label>
-          <textarea rows={4} className="w-full resize-y rounded-md border bg-background px-3 py-2 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring" placeholder="Krótki opis produktu" />
+          <textarea rows={4} className="w-full resize-none rounded-md border bg-background px-3 py-2 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring" placeholder="Krótki opis produktu" />
+        </div>
+        <div className="grid gap-2 sm:col-span-2">
+          <label className="text-sm font-medium">Zdjęcie produktu</label>
+          <input type="file" accept="image/*" className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring" />
         </div>
         <div className="sm:col-span-2">
           <button type="submit" className="inline-flex items-center rounded-md border px-4 py-2 text-sm font-medium transition-colors hover:bg-accent">Zapisz produkt</button>

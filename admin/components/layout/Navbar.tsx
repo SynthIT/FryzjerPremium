@@ -2,27 +2,26 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { Bell, Settings, User2, LogOut, User } from "lucide-react"
+import { Bell, Settings, User2, LogOut, User, Sun, Moon } from "lucide-react"
 import { useTheme } from "next-themes"
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu"
 
 export function Navbar() {
   const { theme, setTheme } = useTheme()
+  const [mounted, setMounted] = React.useState(false)
+  React.useEffect(() => { setMounted(true) }, [])
   const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark")
 
   return (
     <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur supports-backdrop-filter:bg-background/60">
       <div className="mx-auto flex h-14 max-w-screen-2xl items-center justify-between px-4">
         <Link href="/admin" className="inline-flex items-center gap-2">
-          <span className="h-6 w-6 rounded bg-linear-to-br from-purple-500 to-pink-500 shadow-sm" />
+          <span className="h-6 w-6 rounded bg-linear-to-br from-zinc-900 to-zinc-500 shadow-sm" />
           <span className="font-semibold tracking-tight">Panel Administracyjny</span>
         </Link>
         <div className="flex items-center gap-1">
           <button aria-label="Przełącz motyw" onClick={toggleTheme} className="rounded p-2 transition-colors hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring active:scale-95">
-            <span className="i" />
-            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
+            {mounted && theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </button>
           <Link href="#" aria-label="Powiadomienia" className="rounded p-2 transition-colors hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring">
             <Bell className="h-5 w-5" />
