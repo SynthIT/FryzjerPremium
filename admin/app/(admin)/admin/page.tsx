@@ -16,7 +16,7 @@ export default function AdminPage() {
             <h2 className="text-base font-medium">Przychód w czasie</h2>
             <button className="text-sm text-muted-foreground transition-colors hover:text-foreground">Miesięcznie</button>
           </div>
-          <div className="h-64 w-full rounded-md bg-linear-to-br from-purple-500/10 to-pink-500/10" />
+          <div className="h-64 w-full rounded-md bg-linear-to-br from-zinc-900/5 to-zinc-500/5" />
         </div>
         <div className="rounded-lg border p-4">
           <h2 className="mb-2 text-base font-medium">Najlepsze produkty</h2>
@@ -64,12 +64,12 @@ export default function AdminPage() {
 
 function KpiCard({ title, value, delta, icon }: { title: string; value: string; delta: string; icon: React.ReactNode }) {
   return (
-    <div className="rounded-lg border p-4 transition-colors">
+        <div className="rounded-lg border p-4 transition-colors">
       <div className="flex items-center justify-between">
-        <div className="rounded-md bg-linear-to-br from-purple-500/15 to-pink-500/15 p-2 text-purple-600 shadow-sm dark:text-purple-300">
+        <div className="rounded-md bg-linear-to-br from-zinc-900/10 to-zinc-500/10 p-2 text-foreground shadow-sm">
           {icon}
         </div>
-        <span className="text-xs text-emerald-600 dark:text-emerald-400">+{delta}</span>
+        <span className="text-xs text-muted-foreground">+{delta}</span>
       </div>
       <div className="mt-4 text-2xl font-semibold">{value}</div>
       <div className="text-sm text-muted-foreground">{title}</div>

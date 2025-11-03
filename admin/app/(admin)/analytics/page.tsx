@@ -12,7 +12,7 @@ export default function AnalyticsPage() {
             <h2 className="text-base font-medium">Przychód (30 dni)</h2>
             <button className="text-sm text-muted-foreground transition-colors hover:text-foreground">Eksportuj</button>
           </div>
-          <div className="h-64 w-full rounded-md bg-linear-to-br from-purple-500/10 to-pink-500/10" />
+          <div className="h-64 w-full rounded-md bg-linear-to-br from-zinc-900/5 to-zinc-500/5" />
         </div>
         <div className="rounded-lg border p-4">
           <h2 className="mb-2 text-base font-medium">Konwersja</h2>
