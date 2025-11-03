@@ -4,6 +4,7 @@ import Brands from "@/components/Brands";
 import NewArrivals from "@/components/NewArrivals";
 import Bestsellers from "@/components/Bestsellers";
 import ProductCategories from "@/components/ProductCategories";
+import Footer from "@/components/Footer";
 
 export default function Home() {
   return (
@@ -14,6 +15,7 @@ export default function Home() {
       <NewArrivals />
       <Bestsellers />
       <ProductCategories />
+      <Footer />
     </>
   );
 }
