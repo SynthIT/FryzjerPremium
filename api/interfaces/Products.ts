@@ -1,23 +1,19 @@
-interface Products {
+export interface Products {
     id: number;
     nazwa: string;
     kategoria: string;
     cena: number;
     dostepnosc: string;
+    promocja?: Promos;
 }
 
-export type Full_Products = [Products, Product_Card, Product_Page];
-
-export interface Products_Page extends Products {
+export interface Products_With_Details extends Products {
     opis: string;
     ilosc: number;
     producent: string;
     czas_wysylki: number;
     kod_produkcyjny: string;
-}
-
-export interface Products_Card extends Products {
-    media: Product_Media;
+    kod_ean?: string;
 }
 
 export interface Promos {
@@ -43,7 +39,7 @@ export class Product_Media implements Product_Medias {
     }
 }
 
-export class Product_Page implements Products_Page {
+export class Products_Detail implements Products_With_Details {
     id: number;
     nazwa: string;
     opis: string;
@@ -54,8 +50,9 @@ export class Product_Page implements Products_Page {
     czas_wysylki: number;
     kod_produkcyjny: string;
     dostepnosc: string;
-    media: Product_Media[];
-    constructor(conf: Products_Page) {
+    promocja?: Promos | undefined;
+    kod_ean?: string | undefined;
+    constructor(conf: Products_With_Details) {
         this.id = conf.id;
         this.nazwa = conf.nazwa;
         this.opis = conf.opis;
@@ -66,23 +63,24 @@ export class Product_Page implements Products_Page {
         this.czas_wysylki = conf.czas_wysylki;
         this.kod_produkcyjny = conf.kod_produkcyjny;
         this.dostepnosc = conf.dostepnosc;
-        this.media = conf.media;
+        this.promocja = conf.promocja;
+        this.kod_ean = conf.kod_ean;
     }
 }
 
-export class Product_Card implements Products_Card {
-    media: Product_Media;
+export class Product_Card implements Products {
     id: number;
     nazwa: string;
     kategoria: string;
     cena: number;
     dostepnosc: string;
-    constructor(conf: Product_Card) {
+    promocja?: Promos | undefined;
+    constructor(conf: Products) {
         this.id = conf.id;
         this.nazwa = conf.nazwa;
         this.kategoria = conf.kategoria;
         this.cena = conf.cena;
         this.dostepnosc = conf.dostepnosc;
-        this.media = conf.media;
+        this.promocja = conf.promocja;
     }
 }
