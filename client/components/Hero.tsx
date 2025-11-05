@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import "@/app/globals.css";
 
 export default function Hero() {
@@ -17,9 +18,9 @@ export default function Hero() {
             Przeglądaj naszą różnorodną ofertę kosmetyków, sprzętu oraz szkoleń aby indywidualnie dopasować się do swoich potrzeb.
           </p>
           
-          <button className="hero-button">
+          <Link href="/products" className="hero-button">
             Kup teraz
-          </button>
+          </Link> 
           
           <div className="hero-stats">
             <div className="stat-item">

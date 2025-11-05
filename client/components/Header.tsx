@@ -1,32 +1,78 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import Image from 'next/image';
+import Link from 'next/link';
 import "@/app/globals.css";
+import { useCart } from '@/contexts/CartContext';
+import { parsePrice } from '@/lib/utils';
 
 export default function Header() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showCartDropdown, setShowCartDropdown] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [loginForm, setLoginForm] = useState({
+    email: '',
+    password: '',
+  });
+  const [mounted, setMounted] = useState(false);
+  const cartDropdownRef = useRef<HTMLDivElement>(null);
+  const { getTotalItems, lastAddedItem, clearLastAddedItem } = useCart();
+  const cartItemsCount = getTotalItems();
 
-  const handleSearch = (e: React.FormEvent) => {
+  // Upewnij się, że komponent jest zamontowany (dla Portal)
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Pokazuj okienko po dodaniu produktu
+  useEffect(() => {
+    if (lastAddedItem) {
+      setShowCartDropdown(true);
+      // Ukryj okienko po 5 sekundach
+      const timer = setTimeout(() => {
+        setShowCartDropdown(false);
+        clearLastAddedItem();
+      }, 5000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [lastAddedItem, clearLastAddedItem]);
+
+  // Zamknij okienko po kliknięciu poza nim
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (cartDropdownRef.current && !cartDropdownRef.current.contains(event.target as Node)) {
+        setShowCartDropdown(false);
+        clearLastAddedItem();
+      }
+    };
+
+    if (showCartDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showCartDropdown, clearLastAddedItem]);
+
+  const handleSearch = useCallback((e: React.FormEvent) => {
     e.preventDefault();
     console.log('Szukaj:', searchQuery);
-  };
+  }, [searchQuery]);
 
-  const smoothScrollTo = (elementId: string) => {
+  const smoothScrollTo = useCallback((elementId: string) => {
     const element = document.getElementById(elementId);
     if (element) {
       const headerHeight = 100; // Wysokość sticky header z paddingiem
       const elementPosition = element.getBoundingClientRect().top;
       const offsetPosition = elementPosition + window.pageYOffset - headerHeight;
 
-      // Dodaj płynną animację z easing
       window.scrollTo({
         top: offsetPosition,
         behavior: 'smooth'
       });
 
-      // Dodaj efekt wizualny - podświetlenie sekcji po przewinięciu
       setTimeout(() => {
         element.style.transition = 'box-shadow 0.3s ease';
         const originalBoxShadow = element.style.boxShadow;
@@ -36,8 +82,12 @@ export default function Header() {
         }, 1000);
       }, 500);
     }
-    setShowDropdown(false); // Zamknij dropdown po kliknięciu
-  };
+    setShowDropdown(false);
+  }, []);
+
+  const toggleDropdown = useCallback(() => {
+    setShowDropdown(prev => !prev);
+  }, []);
 
   return (
     <header>
@@ -49,7 +99,7 @@ export default function Header() {
         <nav className="header-nav">
         <a href="/" className="nav-link">Strona główna</a>
           <div className="nav-dropdown">
-            <button onClick={() => setShowDropdown(!showDropdown)} className="nav-link-button">
+            <button onClick={toggleDropdown} className="nav-link-button">
               <span>Sklep</span>
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="dropdown-arrow">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -57,6 +107,12 @@ export default function Header() {
             </button>
             {showDropdown && (
               <div className="dropdown-menu">
+                  <a 
+                  href="/products" 
+                  className="dropdown-item"
+                >
+                  Kup Teraz
+                </a>
                 <a 
                   href="#product-categories-section" 
                   className="dropdown-item"
@@ -114,18 +170,206 @@ export default function Header() {
         </div>
 
         <div className="basket-actions">
-          <button className="login-button">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="basket-icon">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-            </svg>
-          </button>
-          <button className="login-button">
+          <div className="cart-button-wrapper" ref={cartDropdownRef}>
+            <Link href="/cart" className="login-button cart-button">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="basket-icon">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+              {cartItemsCount > 0 && (
+                <span className="cart-badge">{cartItemsCount}</span>
+              )}
+            </Link>
+
+            {showCartDropdown && lastAddedItem && (
+              <div className="cart-dropdown">
+                <div className="cart-dropdown-header">
+                  <div className="cart-dropdown-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <span className="cart-dropdown-title">Produkt dodany do koszyka</span>
+                </div>
+                
+                <div className="cart-dropdown-item">
+                  <div className="cart-dropdown-item-image">
+                    {lastAddedItem.product.image ? (
+                      <Image
+                        src={lastAddedItem.product.image}
+                        alt={lastAddedItem.product.name}
+                        width={60}
+                        height={60}
+                        className="cart-dropdown-img"
+                      />
+                    ) : lastAddedItem.product.images && lastAddedItem.product.images[0] ? (
+                      <Image
+                        src={lastAddedItem.product.images[0]}
+                        alt={lastAddedItem.product.name}
+                        width={60}
+                        height={60}
+                        className="cart-dropdown-img"
+                      />
+                    ) : null}
+                  </div>
+                  <div className="cart-dropdown-item-details">
+                    <div className="cart-dropdown-item-name">{lastAddedItem.product.name}</div>
+                    <div className="cart-dropdown-item-info">
+                      {(lastAddedItem.selectedSize || lastAddedItem.selectedColor) && (
+                        <span className="cart-dropdown-item-options">
+                          {lastAddedItem.selectedSize && `Rozmiar: ${lastAddedItem.selectedSize}`}
+                          {lastAddedItem.selectedSize && lastAddedItem.selectedColor && ' • '}
+                          {lastAddedItem.selectedColor && `Kolor: ${lastAddedItem.product.colors?.find(c => c.value === lastAddedItem.selectedColor)?.name || lastAddedItem.selectedColor}`}
+                        </span>
+                      )}
+                      <span className="cart-dropdown-item-quantity">Ilość: {lastAddedItem.quantity}</span>
+                    </div>
+                    <div className="cart-dropdown-item-price">
+                      {(parsePrice(lastAddedItem.product.price) * lastAddedItem.quantity).toFixed(2).replace('.', ',')} zł
+                    </div>
+                  </div>
+                </div>
+
+                <div className="cart-dropdown-buttons">
+                  <Link 
+                    href="/cart" 
+                    className="cart-dropdown-button cart-dropdown-button-secondary"
+                    onClick={() => {
+                      setShowCartDropdown(false);
+                      clearLastAddedItem();
+                    }}
+                  >
+                    Pokaż koszyk
+                  </Link>
+                  <Link 
+                    href="/cart" 
+                    className="cart-dropdown-button cart-dropdown-button-primary"
+                    onClick={() => {
+                      setShowCartDropdown(false);
+                      clearLastAddedItem();
+                    }}
+                  >
+                    Przejdź do kasy
+                  </Link>
+                </div>
+              </div>
+            )}
+          </div>
+          <button 
+            className="login-button"
+            onClick={() => setShowLoginModal(true)}
+            aria-label="Zaloguj się"
+          >
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="basket-icon">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
           </button>
         </div>
       </div>
+
+      {/* Login Modal - rendered via Portal */}
+      {mounted && showLoginModal && createPortal(
+        <div className="login-modal-overlay" onClick={() => setShowLoginModal(false)}>
+          <div className="login-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="login-modal-header">
+              <h2 className="login-modal-title">Zaloguj się</h2>
+              <button 
+                className="login-modal-close"
+                onClick={() => setShowLoginModal(false)}
+                aria-label="Zamknij"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <form 
+              className="login-modal-form"
+              onSubmit={(e) => {
+                e.preventDefault();
+                // Tutaj można dodać logikę logowania
+                console.log('Login submitted:', loginForm);
+                setShowLoginModal(false);
+                setLoginForm({ email: '', password: '' });
+              }}
+            >
+              <div className="login-modal-field">
+                <label htmlFor="login-email" className="login-modal-label">Adres e-mail *</label>
+                <input
+                  id="login-email"
+                  type="email"
+                  className="login-modal-input"
+                  value={loginForm.email}
+                  onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
+                  placeholder="twoj@email.pl"
+                  required
+                />
+              </div>
+
+              <div className="login-modal-field">
+                <label htmlFor="login-password" className="login-modal-label">Hasło *</label>
+                <input
+                  id="login-password"
+                  type="password"
+                  className="login-modal-input"
+                  value={loginForm.password}
+                  onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
+                  placeholder="Wpisz hasło"
+                  required
+                />
+              </div>
+
+              <div className="login-modal-options">
+                <label className="login-modal-checkbox">
+                  <input type="checkbox" />
+                  <span>Zapamiętaj mnie</span>
+                </label>
+                <a href="#" className="login-modal-forgot" onClick={(e) => e.preventDefault()}>
+                  Zapomniałeś hasła?
+                </a>
+              </div>
+
+              <div className="login-modal-actions">
+                <button
+                  type="submit"
+                  className="login-modal-button login-modal-button-submit"
+                  disabled={!loginForm.email || !loginForm.password}
+                >
+                  Zaloguj się
+                </button>
+                <button
+                  type="button"
+                  className="login-modal-button login-modal-button-cancel"
+                  onClick={() => {
+                    setShowLoginModal(false);
+                    setLoginForm({ email: '', password: '' });
+                  }}
+                >
+                  Anuluj
+                </button>
+              </div>
+
+              <div className="login-modal-divider">
+                <span>lub</span>
+              </div>
+
+              <div className="login-modal-register">
+                <p className="login-modal-register-text">
+                  Nie masz konta?{' '}
+                  <a href="#" className="login-modal-register-link" onClick={(e) => {
+                    e.preventDefault();
+                    // Tutaj można dodać przekierowanie do rejestracji
+                    console.log('Redirect to register');
+                  }}>
+                    Zarejestruj się
+                  </a>
+                </p>
+              </div>
+            </form>
+          </div>
+        </div>,
+        document.body
+      )}
     </header>
   );
 }
