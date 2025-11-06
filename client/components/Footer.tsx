@@ -129,32 +129,6 @@ export default function Footer() {
               </ul>
             </div>
           </div>
-
-          {/* Payment Methods */}
-          <div className="footer-payments">
-            <div className="footer-payment-logos">
-              {/* Visa */}
-              <div className="footer-payment-logo">
-
-              </div>
-              {/* Mastercard */}
-              <div className="footer-payment-logo">
-
-              </div>
-              {/* PayPal */}
-              <div className="footer-payment-logo">
-
-              </div>
-              {/* Apple Pay */}
-              <div className="footer-payment-logo">
-
-              </div>
-              {/* Google Pay */}
-              <div className="footer-payment-logo">
-
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </footer>
