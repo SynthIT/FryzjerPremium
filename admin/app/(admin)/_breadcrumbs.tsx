@@ -19,7 +19,7 @@ export function Breadcrumbs() {
   if (acc.length <= 1) return null
 
   return (
-    <nav aria-label="Okruszki nawigacyjne" className="mb-4 text-sm text-muted-foreground">
+    <nav aria-label="Okruszki nawigacyjne" className="mb-3 text-xs text-muted-foreground sm:mb-4 sm:text-sm">
       <ol className="flex flex-wrap items-center gap-1">
         <li>
           <Link href="/admin" className="hover:text-foreground">Panel</Link>
