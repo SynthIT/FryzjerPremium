@@ -13,12 +13,16 @@ export default function Header() {
   const [showDropdown, setShowDropdown] = useState(false);
   const [showCartDropdown, setShowCartDropdown] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [loginForm, setLoginForm] = useState({
     email: '',
     password: '',
   });
   const [mounted, setMounted] = useState(false);
   const cartDropdownRef = useRef<HTMLDivElement>(null);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const { getTotalItems, lastAddedItem, clearLastAddedItem } = useCart();
   const cartItemsCount = getTotalItems();
 
@@ -61,6 +65,76 @@ export default function Header() {
     console.log('Szukaj:', searchQuery);
   }, [searchQuery]);
 
+  const closeMobileMenu = useCallback(() => {
+    setIsMobileMenuOpen(false);
+    setShowDropdown(false);
+    setIsMobileSearchOpen(false);
+  }, []);
+
+  const toggleMobileMenu = useCallback(() => {
+    setIsMobileSearchOpen(false);
+    setIsMobileMenuOpen(prev => !prev);
+  }, []);
+
+  const handleSearchToggle = useCallback(() => {
+    if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+      if (!isMobileSearchOpen) {
+        setIsMobileMenuOpen(false);
+        setShowDropdown(false);
+      }
+      setIsMobileSearchOpen(prev => !prev);
+    } else {
+      searchInputRef.current?.focus();
+    }
+  }, [isMobileSearchOpen]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 1024) {
+        setIsMobileMenuOpen(false);
+      }
+      if (window.innerWidth > 768) {
+        setIsMobileSearchOpen(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    if (isMobileSearchOpen) {
+      searchInputRef.current?.focus();
+    }
+  }, [isMobileSearchOpen]);
+
+  useEffect(() => {
+    if (!isMobileSearchOpen) {
+      return;
+    }
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
+        setIsMobileSearchOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isMobileSearchOpen]);
+
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isMobileMenuOpen]);
+
   const smoothScrollTo = useCallback((elementId: string) => {
     const element = document.getElementById(elementId);
     if (element) {
@@ -82,8 +156,8 @@ export default function Header() {
         }, 1000);
       }, 500);
     }
-    setShowDropdown(false);
-  }, []);
+    closeMobileMenu();
+  }, [closeMobileMenu]);
 
   const toggleDropdown = useCallback(() => {
     setShowDropdown(prev => !prev);
@@ -96,10 +170,14 @@ export default function Header() {
           <Image src="/logo.png" alt="Logo" width={100} height={100} className="Mainlogo" />
         </div>
 
-        <nav className="header-nav">
-        <a href="/" className="nav-link">Strona główna</a>
+        <nav className={`header-nav ${isMobileMenuOpen ? 'is-open' : ''}`}>
+        <Link href="/" className="nav-link" onClick={closeMobileMenu}>Strona główna</Link>
           <div className="nav-dropdown">
-            <button onClick={toggleDropdown} className="nav-link-button">
+            <button 
+              onClick={toggleDropdown} 
+              className={`nav-link-button ${showDropdown ? 'is-open' : ''}`}
+              aria-expanded={showDropdown}
+            >
               <span>Sklep</span>
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="dropdown-arrow">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -107,12 +185,13 @@ export default function Header() {
             </button>
             {showDropdown && (
               <div className="dropdown-menu">
-                  <a 
+                <Link 
                   href="/products" 
                   className="dropdown-item"
+                  onClick={closeMobileMenu}
                 >
                   Kup Teraz
-                </a>
+                </Link>
                 <a 
                   href="#product-categories-section" 
                   className="dropdown-item"
@@ -123,7 +202,16 @@ export default function Header() {
                 >
                   Kategorie
                 </a>
-                <a href="#" className="dropdown-item">Promocje</a>
+                <a 
+                  href="#" 
+                  className="dropdown-item"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    closeMobileMenu();
+                  }}
+                >
+                  Promocje
+                </a>
                 <a 
                   href="#new-arrivals-section" 
                   className="dropdown-item"
@@ -147,19 +235,35 @@ export default function Header() {
               </div>
             )}
           </div>
-          <a href="#" className="nav-link">Blog</a>
-          <a href="#" className="nav-link">O nas</a>
-          <a href="#" className="nav-link">Kontakt</a>
+          <Link href="/blog" className="nav-link" onClick={closeMobileMenu}>Blog</Link>
+          <Link href="/o-nas" className="nav-link" onClick={closeMobileMenu}>O nas</Link>
+          <a 
+            href="#"
+            className="nav-link"
+            onClick={(e) => {
+              e.preventDefault();
+              closeMobileMenu();
+            }}
+          >
+            Kontakt
+          </a>
         </nav>
 
-        <div className="header-search">
+        <div className={`header-search ${isMobileSearchOpen ? 'is-open' : ''}`} ref={searchContainerRef}>
+          <button
+            type="button"
+            className="search-toggle-button"
+            onClick={handleSearchToggle}
+            aria-label={isMobileSearchOpen ? 'Zamknij wyszukiwarkę' : 'Otwórz wyszukiwarkę'}
+            aria-expanded={isMobileSearchOpen}
+          >
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="search-icon">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </button>
           <form onSubmit={handleSearch} className="search-form">
-            <div className="search-icon-wrapper">
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="search-icon">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </div>
             <input
+              ref={searchInputRef}
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -170,6 +274,17 @@ export default function Header() {
         </div>
 
         <div className="basket-actions">
+          <button
+            className={`mobile-menu-toggle ${isMobileMenuOpen ? 'is-active' : ''}`}
+            onClick={toggleMobileMenu}
+            aria-label={isMobileMenuOpen ? 'Zamknij menu' : 'Otwórz menu'}
+            aria-expanded={isMobileMenuOpen}
+            type="button"
+          >
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
           <div className="cart-button-wrapper" ref={cartDropdownRef}>
             <Link href="/cart" className="login-button cart-button">
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="basket-icon">
@@ -256,7 +371,10 @@ export default function Header() {
           </div>
           <button 
             className="login-button"
-            onClick={() => setShowLoginModal(true)}
+            onClick={() => {
+              setShowLoginModal(true);
+              closeMobileMenu();
+            }}
             aria-label="Zaloguj się"
           >
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="basket-icon">
@@ -265,6 +383,10 @@ export default function Header() {
           </button>
         </div>
       </div>
+
+      {isMobileMenuOpen && (
+        <div className="mobile-menu-overlay" onClick={closeMobileMenu} aria-hidden="true" />
+      )}
 
       {/* Login Modal - rendered via Portal */}
       {mounted && showLoginModal && createPortal(
