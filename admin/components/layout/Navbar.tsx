@@ -2,11 +2,11 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { Bell, Settings, User2, LogOut, User, Sun, Moon } from "lucide-react"
+import { Bell, Settings, User2, LogOut, User, Sun, Moon, Menu } from "lucide-react"
 import { useTheme } from "next-themes"
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu"
 
-export function Navbar() {
+export function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = React.useState(false)
   React.useEffect(() => { setMounted(true) }, [])
@@ -14,11 +14,20 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur supports-backdrop-filter:bg-background/60">
-      <div className="mx-auto flex h-14 max-w-screen-2xl items-center justify-between px-4">
-        <Link href="/admin" className="inline-flex items-center gap-2">
-          <span className="h-6 w-6 rounded bg-linear-to-br from-zinc-900 to-zinc-500 shadow-sm" />
-          <span className="font-semibold tracking-tight">Panel Administracyjny</span>
-        </Link>
+      <div className="flex h-14 items-center justify-between px-3 sm:px-4 md:px-6">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onMenuClick}
+            aria-label="Otwórz menu"
+            className="rounded p-2 transition-colors hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring active:scale-95 md:hidden"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+          <Link href="/admin" className="inline-flex items-center gap-2">
+            <span className="h-6 w-6 rounded bg-linear-to-br from-zinc-900 to-zinc-500 shadow-sm" />
+            <span className="font-semibold tracking-tight text-sm sm:text-base">Panel Administracyjny</span>
+          </Link>
+        </div>
         <div className="flex items-center gap-1">
           <button aria-label="Przełącz motyw" onClick={toggleTheme} className="rounded p-2 transition-colors hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring active:scale-95">
             {mounted && theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}

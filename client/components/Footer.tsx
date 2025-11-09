@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import "@/app/globals.css";
 
 export default function Footer() {
@@ -99,10 +100,10 @@ export default function Footer() {
             <div className="footer-column">
               <h3 className="footer-column-title">SKLEP</h3>
               <ul className="footer-links">
-                <li><a href="#">O nas</a></li>
-                <li><a href="#">Kosmetyki</a></li>
-                <li><a href="#">Sprzęt</a></li>
-                <li><a href="#">Szkolenia</a></li>
+                <li><Link href="/o-nas">O nas</Link></li>
+                <li><Link href="/products/kosmetyki">Kosmetyki</Link></li>
+                <li><Link href="/products/sprzet">Sprzęt</Link></li>
+                <li><Link href="/products/szkolenia">Szkolenia</Link></li>
               </ul>
             </div>
 
@@ -110,10 +111,10 @@ export default function Footer() {
             <div className="footer-column">
               <h3 className="footer-column-title">POMOC</h3>
               <ul className="footer-links">
-                <li><a href="#">Pomoc Techniczna</a></li>
-                <li><a href="#">Wysyłka i dostawa</a></li>
-                <li><a href="#">Regulamin</a></li>
-                <li><a href="#">Polityka prywatności</a></li>
+                <li><Link href="/pomoc-techniczna">Pomoc Techniczna</Link></li>
+                <li><Link href="/wysylka-i-dostawa">Wysyłka i dostawa</Link></li>
+                <li><Link href="/regulamin">Regulamin</Link></li>
+                <li><Link href="/polityka-prywatnosci">Polityka prywatności</Link></li>
               </ul>
             </div>
 
@@ -121,37 +122,11 @@ export default function Footer() {
             <div className="footer-column">
               <h3 className="footer-column-title">F A Q</h3>
               <ul className="footer-links">
-                <li><a href="#">Konto</a></li>
-                <li><a href="#">Zamówienia</a></li>
-                <li><a href="#">Płatności</a></li>
-                <li><a href="#">Blog</a></li>
+                <li><Link href="/konto">Konto</Link></li>
+                <li><Link href="/zamowienia">Zamówienia</Link></li>
+                <li><Link href="/platnosci">Płatności</Link></li>
+                <li><Link href="/blog">Blog</Link></li>
               </ul>
-            </div>
-          </div>
-
-          {/* Payment Methods */}
-          <div className="footer-payments">
-            <div className="footer-payment-logos">
-              {/* Visa */}
-              <div className="footer-payment-logo">
-
-              </div>
-              {/* Mastercard */}
-              <div className="footer-payment-logo">
-
-              </div>
-              {/* PayPal */}
-              <div className="footer-payment-logo">
-
-              </div>
-              {/* Apple Pay */}
-              <div className="footer-payment-logo">
-
-              </div>
-              {/* Google Pay */}
-              <div className="footer-payment-logo">
-
-              </div>
             </div>
           </div>
         </div>

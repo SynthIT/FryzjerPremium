@@ -1,12 +1,12 @@
 export default function ProductsPage() {
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Produkty</h1>
-          <p className="text-muted-foreground">Dodawaj, edytuj i organizuj produkty.</p>
+          <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">Produkty</h1>
+          <p className="text-sm text-muted-foreground sm:text-base">Dodawaj, edytuj i organizuj produkty.</p>
         </div>
-        <a href="/products/new" className="rounded-md border px-3 py-2 text-sm transition-colors hover:bg-accent">Dodaj produkt</a>
+        <a href="/products/new" className="w-full rounded-md border px-3 py-2 text-sm transition-colors hover:bg-accent sm:w-auto">Dodaj produkt</a>
       </div>
 
       <div className="rounded-lg border">
