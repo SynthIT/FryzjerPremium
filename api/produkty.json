@@ -1,0 +1,49 @@
+[
+    {
+        "_id": "6911083c2bbde022388cd355",
+        "nazwa": "Bialy ladny tshirt",
+        "cena": 149.99,
+        "dostepnosc": "duza",
+        "kategoria": [
+            {
+                "_id": "6911082b8d93967ad77c2e7c",
+                "nazwa": "Biale",
+                "slug": "bbb",
+                "__v": 0
+            }
+        ],
+        "producent": {
+            "_id": "6911082b8d93967ad77c2e80",
+            "nazwa": "Wielkie biale kutasy INC",
+            "slug": "WbcINC",
+            "__v": 0
+        },
+        "media": [
+            {
+                "nazwa": "obb",
+                "slug": "aa",
+                "typ": "image",
+                "alt": "bvas",
+                "path": "//path/to/photo.jpg",
+                "_id": "6911083c2bbde022388cd356",
+                "createdAt": "2025-11-09T21:31:40.520Z",
+                "updatedAt": "2025-11-09T21:31:40.520Z"
+            }
+        ],
+        "promocje": {
+            "_id": "6911082b8d93967ad77c2e77",
+            "nazwa": "B",
+            "procent": 10,
+            "rozpoczecie": "2025-11-09T21:31:23.624Z",
+            "wygasa": "2025-11-12T21:31:23.624Z",
+            "__v": 0
+        },
+        "opis": "Wielki czarny kutas",
+        "ilosc": 10,
+        "czas_wysylki": 5,
+        "kod_produkcyjny": "abcdd",
+        "createdAt": "2025-11-09T21:31:40.520Z",
+        "updatedAt": "2025-11-09T21:31:40.520Z",
+        "__v": 0
+    }
+]
