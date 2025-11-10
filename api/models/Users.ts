@@ -1,6 +1,12 @@
 import { model, Schema } from "mongoose";
 import { cartItemSchema, CartsItem } from "./Carts";
 
+import db from "../db";
+
+async () => {
+    await db();
+};
+
 export const PermissionTable = {
     "admin:products": 1 << 0,
     "admin:categories": 1 << 1,

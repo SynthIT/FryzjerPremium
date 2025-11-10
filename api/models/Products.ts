@@ -1,4 +1,9 @@
-import { HydratedDocument, model, Schema, Types } from "mongoose";
+import { HydratedDocument, model, Schema, Types, models } from "mongoose";
+import db from "../db";
+
+async () => {
+    await db();
+};
 
 export interface Products {
     nazwa: string;

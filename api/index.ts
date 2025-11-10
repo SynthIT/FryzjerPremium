@@ -13,6 +13,9 @@ import {
 import { sys } from "typescript";
 import * as fs from "fs";
 import path = require("path");
+import database from "./db";
+
+
 
 (async () => {
     mongoose.connect("mongodb://localhost:27017/fryzjerpremium");
