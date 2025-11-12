@@ -60,7 +60,7 @@ export default function Footer() {
                   width={200} 
                   height={60}
                   className="footer-logo-image"
-                  priority
+                  loading="lazy"
                 />
               </div>
               <p className="footer-tagline">SZKOLENIA & WSPARCIE BIZNESOWE DLA FRYZJERÓW</p>

@@ -120,11 +120,13 @@ export default function Header() {
     };
 
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, [isMobileSearchOpen]);
 
   useEffect(() => {
-    if (isMobileMenuOpen) {
+    if (isMobileMenuOpen || isMobileSearchOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
@@ -133,7 +135,7 @@ export default function Header() {
     return () => {
       document.body.style.overflow = '';
     };
-  }, [isMobileMenuOpen]);
+  }, [isMobileMenuOpen, isMobileSearchOpen]);
 
   const smoothScrollTo = useCallback((elementId: string) => {
     const element = document.getElementById(elementId);
@@ -250,18 +252,7 @@ export default function Header() {
         </nav>
 
         <div className={`header-search ${isMobileSearchOpen ? 'is-open' : ''}`} ref={searchContainerRef}>
-          <button
-            type="button"
-            className="search-toggle-button"
-            onClick={handleSearchToggle}
-            aria-label={isMobileSearchOpen ? 'Zamknij wyszukiwarkę' : 'Otwórz wyszukiwarkę'}
-            aria-expanded={isMobileSearchOpen}
-          >
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="search-icon">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </button>
-          <form onSubmit={handleSearch} className="search-form">
+          <form onSubmit={handleSearch} className="search-form" onClick={(e) => e.stopPropagation()}>
             <input
               ref={searchInputRef}
               type="text"
@@ -275,23 +266,27 @@ export default function Header() {
 
         <div className="basket-actions">
           <button
-            className={`mobile-menu-toggle ${isMobileMenuOpen ? 'is-active' : ''}`}
-            onClick={toggleMobileMenu}
-            aria-label={isMobileMenuOpen ? 'Zamknij menu' : 'Otwórz menu'}
-            aria-expanded={isMobileMenuOpen}
             type="button"
+            className={`search-toggle-button ${isMobileSearchOpen ? 'is-active' : ''}`}
+            onClick={handleSearchToggle}
+            aria-label={isMobileSearchOpen ? 'Zamknij wyszukiwarkę' : 'Otwórz wyszukiwarkę'}
+            aria-expanded={isMobileSearchOpen}
           >
-            <span></span>
-            <span></span>
-            <span></span>
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="search-icon">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
           </button>
           <div className="cart-button-wrapper" ref={cartDropdownRef}>
-            <Link href="/cart" className="login-button cart-button">
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="basket-icon">
+            <Link 
+              href="/cart" 
+              className="login-button cart-button"
+              aria-label={`Koszyk${cartItemsCount > 0 ? ` (${cartItemsCount} ${cartItemsCount === 1 ? 'produkt' : 'produktów'})` : ''}`}
+            >
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="basket-icon" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
               {cartItemsCount > 0 && (
-                <span className="cart-badge">{cartItemsCount}</span>
+                <span className="cart-badge" aria-hidden="true">{cartItemsCount}</span>
               )}
             </Link>
 
@@ -381,11 +376,30 @@ export default function Header() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
           </button>
+          <button
+            className={`mobile-menu-toggle ${isMobileMenuOpen ? 'is-active' : ''}`}
+            onClick={toggleMobileMenu}
+            aria-label={isMobileMenuOpen ? 'Zamknij menu' : 'Otwórz menu'}
+            aria-expanded={isMobileMenuOpen}
+            type="button"
+          >
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
         </div>
       </div>
 
       {isMobileMenuOpen && (
         <div className="mobile-menu-overlay" onClick={closeMobileMenu} aria-hidden="true" />
+      )}
+
+      {isMobileSearchOpen && (
+        <div 
+          className="mobile-search-overlay" 
+          onClick={() => setIsMobileSearchOpen(false)} 
+          aria-hidden="true" 
+        />
       )}
 
       {/* Login Modal - rendered via Portal */}
