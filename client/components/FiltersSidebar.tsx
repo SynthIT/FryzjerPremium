@@ -97,9 +97,9 @@ export default function FiltersSidebar({ category, filters, onFiltersChange }: F
   }, [category]);
 
   const [expandedSections, setExpandedSections] = useState<{ [key: string]: boolean }>({
-    subcategory: true,
-    price: true,
-    brand: true,
+    subcategory: false,
+    price: false,
+    brand: false,
     size: false,
     type: false,
   });
