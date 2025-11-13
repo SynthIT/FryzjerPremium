@@ -239,16 +239,7 @@ export default function Header() {
           </div>
           <Link href="/blog" className="nav-link" onClick={closeMobileMenu}>Blog</Link>
           <Link href="/o-nas" className="nav-link" onClick={closeMobileMenu}>O nas</Link>
-          <a 
-            href="#"
-            className="nav-link"
-            onClick={(e) => {
-              e.preventDefault();
-              closeMobileMenu();
-            }}
-          >
-            Kontakt
-          </a>
+          <Link href="/kontakt" className="nav-link" onClick={closeMobileMenu}>Kontakt</Link>
         </nav>
 
         <div className={`header-search ${isMobileSearchOpen ? 'is-open' : ''}`} ref={searchContainerRef}>
@@ -457,7 +448,7 @@ export default function Header() {
 
               <div className="login-modal-options">
                 <label className="login-modal-checkbox">
-                  <input type="checkbox" />
+                  <input type="checkbox" aria-label="Zapamiętaj mnie" />
                   <span>Zapamiętaj mnie</span>
                 </label>
                 <a href="#" className="login-modal-forgot" onClick={(e) => e.preventDefault()}>

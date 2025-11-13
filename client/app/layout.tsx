@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { DM_Sans } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/contexts/CartContext";
+import CookieBanner from "@/components/CookieBanner";
 
 const dmSans = DM_Sans({
   weight: ["400", "500", "600", "700"],
@@ -27,6 +28,7 @@ export default function RootLayout({
       >
         <CartProvider>
           {children}
+          <CookieBanner />
         </CartProvider>
       </body>
     </html>

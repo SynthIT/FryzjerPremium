@@ -101,7 +101,7 @@ export default function ProductPage({ productId }: ProductPageProps) {
   }, [product, quantity, selectedColor, selectedSize, addToCart]);
 
   return (
-    <div className="product-page">
+    <main className="product-page">
       <div className="product-page-container">
         {/* Breadcrumbs */}
         <div className="product-breadcrumbs">
@@ -130,6 +130,16 @@ export default function ProductPage({ productId }: ProductPageProps) {
                     key={index}
                     className={`product-thumbnail ${selectedImage === index ? 'active' : ''}`}
                     onClick={() => handleImageSelect(index)}
+                    aria-label={`Pokaż zdjęcie ${index + 1} produktu ${product.name}`}
+                    aria-pressed={selectedImage === index}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleImageSelect(index);
+                      }
+                    }}
                   >
                     {image ? (
                       <Image
@@ -198,7 +208,8 @@ export default function ProductPage({ productId }: ProductPageProps) {
                       style={{ backgroundColor: color.hex }}
                       onClick={() => handleColorSelect(color.value)}
                       title={color.name}
-                      aria-label={color.name}
+                      aria-label={`Wybierz kolor ${color.name}`}
+                      aria-pressed={selectedColor === color.value}
                     >
                       {selectedColor === color.value && (
                         <svg className="color-checkmark" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -221,6 +232,8 @@ export default function ProductPage({ productId }: ProductPageProps) {
                       key={index}
                       className={`size-option ${selectedSize === size ? 'selected' : ''}`}
                       onClick={() => handleSizeSelect(size)}
+                      aria-label={`Wybierz rozmiar ${size}`}
+                      aria-pressed={selectedSize === size}
                     >
                       {size}
                     </button>
@@ -260,6 +273,7 @@ export default function ProductPage({ productId }: ProductPageProps) {
               className="add-to-cart-button"
               disabled={!product.inStock}
               onClick={handleAddToCart}
+              aria-label={product.inStock ? `Dodaj ${product.name} do koszyka` : 'Produkt niedostępny'}
             >
               {product.inStock ? 'Dodaj do koszyka' : 'Produkt niedostępny'}
             </button>
@@ -283,18 +297,24 @@ export default function ProductPage({ productId }: ProductPageProps) {
             <button 
               className={`product-tab ${activeTab === 'details' ? 'active' : ''}`}
               onClick={() => setActiveTab('details')}
+              aria-label="Pokaż szczegóły produktu"
+              aria-pressed={activeTab === 'details'}
             >
               Szczegóły produktu
             </button>
             <button 
               className={`product-tab ${activeTab === 'reviews' ? 'active' : ''}`}
               onClick={() => setActiveTab('reviews')}
+              aria-label="Pokaż oceny i opinie"
+              aria-pressed={activeTab === 'reviews'}
             >
               Oceny i opinie
             </button>
             <button 
               className={`product-tab ${activeTab === 'faqs' ? 'active' : ''}`}
               onClick={() => setActiveTab('faqs')}
+              aria-label="Pokaż często zadawane pytania"
+              aria-pressed={activeTab === 'faqs'}
             >
               FAQ
             </button>
@@ -316,10 +336,13 @@ export default function ProductPage({ productId }: ProductPageProps) {
                     </svg>
                   </button>
                   <div className="reviews-sort-dropdown">
+                    <label htmlFor="reviews-sort" className="sr-only">Sortuj recenzje</label>
                     <select 
+                      id="reviews-sort"
                       value={sortOrder} 
                       onChange={(e) => setSortOrder(e.target.value as typeof sortOrder)}
                       className="sort-select"
+                      aria-label="Sortuj recenzje"
                     >
                       <option value="latest">Najnowsze</option>
                       <option value="oldest">Najstarsze</option>
@@ -330,6 +353,7 @@ export default function ProductPage({ productId }: ProductPageProps) {
                   <button 
                     className="write-review-button"
                     onClick={() => setShowReviewModal(true)}
+                    aria-label="Napisz opinię o produkcie"
                   >
                     Napisz opinię
                   </button>
@@ -378,6 +402,7 @@ export default function ProductPage({ productId }: ProductPageProps) {
                   <button 
                     className="load-more-reviews-button"
                     onClick={() => setVisibleReviews(prev => prev + 4)}
+                    aria-label="Wczytaj więcej opinii"
                   >
                     Wczytaj więcej opinii
                   </button>
@@ -564,7 +589,7 @@ export default function ProductPage({ productId }: ProductPageProps) {
           </div>
         </div>
       )}
-    </div>
+    </main>
   );
 }
 

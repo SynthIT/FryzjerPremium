@@ -149,7 +149,7 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
   }, [totalPages]);
 
   return (
-    <div className="products-listing-page">
+    <main className="products-listing-page">
       <div className="products-listing-container">
         {/* Breadcrumbs */}
         <div className="breadcrumbs">
@@ -272,7 +272,7 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }
 

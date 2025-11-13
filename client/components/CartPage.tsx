@@ -47,7 +47,7 @@ export default function CartPage() {
 
   if (cartItems.length === 0) {
     return (
-      <div className="cart-page">
+      <main className="cart-page">
         <div className="cart-page-container">
           <div className="breadcrumbs">
             <Link href="/" className="breadcrumb-link">Strona główna</Link>
@@ -70,12 +70,12 @@ export default function CartPage() {
             </Link>
           </div>
         </div>
-      </div>
+      </main>
     );
   }
 
   return (
-    <div className="cart-page">
+    <main className="cart-page">
       <div className="cart-page-container">
         <div className="breadcrumbs">
           <Link href="/" className="breadcrumb-link">Strona główna</Link>
@@ -87,13 +87,13 @@ export default function CartPage() {
           <div className="cart-items-section">
             <h1 className="cart-title">Twój koszyk</h1>
 
-            <div className="cart-items-list">
+            <div className="cart-items-list" role="list" aria-label="Produkty w koszyku">
               {cartItems.map((item) => {
                 const productPrice = parsePrice(item.product.price);
                 const itemTotal = (productPrice * item.quantity).toFixed(2).replace('.', ',');
 
                 return (
-                  <div key={item.id} className="cart-item">
+                  <div key={item.id} className="cart-item" role="listitem">
                     <div className="cart-item-image">
                       <Link href={`/product/${item.product.id}`}>
                         {item.product.image ? (
@@ -139,14 +139,19 @@ export default function CartPage() {
                       )}
 
                       <div className="cart-item-price">
-                        <span className="cart-item-current-price">{item.product.price} zł</span>
+                        <span className="cart-item-current-price" aria-label={`Cena za sztukę: ${item.product.price} zł`}>
+                          {item.product.price} zł
+                        </span>
+                        <span className="sr-only">
+                          Całkowita cena: {itemTotal} zł ({item.quantity} × {item.product.price} zł)
+                        </span>
                       </div>
                     </div>
 
                     <button
                       className="cart-item-remove"
                       onClick={() => handleRemove(item.id)}
-                      aria-label="Usuń produkt"
+                      aria-label={`Usuń ${item.product.name} z koszyka`}
                     >
                       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -158,15 +163,17 @@ export default function CartPage() {
                         <button
                           className="quantity-button-cart"
                           onClick={() => handleQuantityChange(item.id, -1)}
-                          aria-label="Zmniejsz ilość"
+                          aria-label={`Zmniejsz ilość ${item.product.name}`}
                         >
                           −
                         </button>
-                        <span className="quantity-value-cart">{item.quantity}</span>
+                        <span className="quantity-value-cart" aria-live="polite" aria-atomic="true">
+                          {item.quantity}
+                        </span>
                         <button
                           className="quantity-button-cart"
                           onClick={() => handleQuantityChange(item.id, 1)}
-                          aria-label="Zwiększ ilość"
+                          aria-label={`Zwiększ ilość ${item.product.name}`}
                         >
                           +
                         </button>
@@ -207,14 +214,17 @@ export default function CartPage() {
               </div>
 
               <form onSubmit={handleApplyPromo} className="cart-promo-form">
+                <label htmlFor="promo-code" className="sr-only">Kod promocyjny</label>
                 <input
+                  id="promo-code"
                   type="text"
                   value={promoCode}
                   onChange={(e) => setPromoCode(e.target.value)}
                   placeholder="Kod promocyjny"
                   className="cart-promo-input"
+                  aria-label="Kod promocyjny"
                 />
-                <button type="submit" className="cart-promo-button">
+                <button type="submit" className="cart-promo-button" aria-label="Zastosuj kod promocyjny">
                   Zastosuj
                 </button>
               </form>
@@ -230,7 +240,7 @@ export default function CartPage() {
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }
 
