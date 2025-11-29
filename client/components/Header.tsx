@@ -169,7 +169,9 @@ export default function Header() {
     <header>
       <div className="header-container">
         <div className="header-logo">
-          <Image src="/logo.png" alt="Logo" width={100} height={100} className="Mainlogo" />
+          <Link href="/" aria-label="Strona główna">
+            <Image src="/logo.png" alt="Logo" width={100} height={100} className="Mainlogo" />
+          </Link>
         </div>
 
         <nav className={`header-nav ${isMobileMenuOpen ? 'is-open' : ''}`}>
@@ -451,9 +453,19 @@ export default function Header() {
                   <input type="checkbox" aria-label="Zapamiętaj mnie" />
                   <span>Zapamiętaj mnie</span>
                 </label>
-                <a href="#" className="login-modal-forgot" onClick={(e) => e.preventDefault()}>
-                  Zapomniałeś hasła?
-                </a>
+                <div className="login-modal-links">
+                  <a href="#" className="login-modal-forgot" onClick={(e) => e.preventDefault()}>
+                    Zapomniałeś hasła?
+                  </a>
+                  <span className="login-modal-separator">|</span>
+                  <Link 
+                    href="/rejestracja" 
+                    className="login-modal-register-inline"
+                    onClick={() => setShowLoginModal(false)}
+                  >
+                    Zarejestruj się
+                  </Link>
+                </div>
               </div>
 
               <div className="login-modal-actions">
@@ -476,22 +488,6 @@ export default function Header() {
                 </button>
               </div>
 
-              <div className="login-modal-divider">
-                <span>lub</span>
-              </div>
-
-              <div className="login-modal-register">
-                <p className="login-modal-register-text">
-                  Nie masz konta?{' '}
-                  <a href="#" className="login-modal-register-link" onClick={(e) => {
-                    e.preventDefault();
-                    // Tutaj można dodać przekierowanie do rejestracji
-                    console.log('Redirect to register');
-                  }}>
-                    Zarejestruj się
-                  </a>
-                </p>
-              </div>
             </form>
           </div>
         </div>,

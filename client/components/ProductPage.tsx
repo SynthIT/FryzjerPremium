@@ -32,8 +32,6 @@ export default function ProductPage({ productId }: ProductPageProps) {
   }
   
   const [selectedImage, setSelectedImage] = useState(0);
-  const [selectedColor, setSelectedColor] = useState(product.colors?.[0]?.value || null);
-  const [selectedSize, setSelectedSize] = useState(product.sizes?.[0] || null);
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState<'details' | 'reviews' | 'faqs'>('reviews');
   const [sortOrder, setSortOrder] = useState<'latest' | 'oldest' | 'highest' | 'lowest'>('latest');
@@ -83,22 +81,14 @@ export default function ProductPage({ productId }: ProductPageProps) {
     setSelectedImage(index);
   }, []);
 
-  const handleColorSelect = useCallback((colorValue: string) => {
-    setSelectedColor(colorValue);
-  }, []);
-
-  const handleSizeSelect = useCallback((size: string) => {
-    setSelectedSize(size);
-  }, []);
-
   const { addToCart } = useCart();
 
   const handleAddToCart = useCallback(() => {
     if (product.inStock) {
-      addToCart(product, quantity, selectedColor || undefined, selectedSize || undefined);
+      addToCart(product, quantity);
       // Można dodać powiadomienie o dodaniu do koszyka
     }
-  }, [product, quantity, selectedColor, selectedSize, addToCart]);
+  }, [product, quantity, addToCart]);
 
   return (
     <main className="product-page">
@@ -195,52 +185,6 @@ export default function ProductPage({ productId }: ProductPageProps) {
               )}
               <span className="product-current-price">{product.price} zł</span>
             </div>
-
-            {/* Color Selection */}
-            {product.colors && product.colors.length > 0 && (
-              <div className="product-option-section">
-                <label className="product-option-label">Wybierz kolor</label>
-                <div className="product-colors">
-                  {product.colors.map((color, index) => (
-                    <button
-                      key={index}
-                      className={`color-swatch ${selectedColor === color.value ? 'selected' : ''}`}
-                      style={{ backgroundColor: color.hex }}
-                      onClick={() => handleColorSelect(color.value)}
-                      title={color.name}
-                      aria-label={`Wybierz kolor ${color.name}`}
-                      aria-pressed={selectedColor === color.value}
-                    >
-                      {selectedColor === color.value && (
-                        <svg className="color-checkmark" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Size Selection */}
-            {product.sizes && product.sizes.length > 0 && (
-              <div className="product-option-section">
-                <label className="product-option-label">Wybierz rozmiar</label>
-                <div className="product-sizes">
-                  {product.sizes.map((size, index) => (
-                    <button
-                      key={index}
-                      className={`size-option ${selectedSize === size ? 'selected' : ''}`}
-                      onClick={() => handleSizeSelect(size)}
-                      aria-label={`Wybierz rozmiar ${size}`}
-                      aria-pressed={selectedSize === size}
-                    >
-                      {size}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
 
             {/* Quantity Selector */}
             <div className="product-option-section">

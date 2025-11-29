@@ -208,33 +208,84 @@ export default function FiltersSidebar({ category, filters, onFiltersChange }: F
         {expandedSections.price && categoryFilters.priceRange && (
           <div className="filter-section-content">
             <div className="price-range-slider">
-              <div className="price-range-values">
-                <span>{filters.priceRange.min} zł</span>
-                <span>{filters.priceRange.max} zł</span>
+              <div className="price-input-fields">
+                <div className="price-input-group">
+                  <label htmlFor="price-min">Od</label>
+                  <div className="price-input-wrapper">
+                    <input
+                      id="price-min"
+                      type="number"
+                      min={categoryFilters.priceRange.min}
+                      max={filters.priceRange.max}
+                      value={filters.priceRange.min}
+                      onChange={(e) => {
+                        const value = Math.min(parseInt(e.target.value) || 0, filters.priceRange.max);
+                        onFiltersChange({
+                          ...filters,
+                          priceRange: { ...filters.priceRange, min: Math.max(categoryFilters.priceRange.min, value) }
+                        });
+                      }}
+                      className="price-input"
+                      placeholder="0"
+                    />
+                    <span className="price-input-currency">zł</span>
+                  </div>
+                </div>
+                <span className="price-input-separator">—</span>
+                <div className="price-input-group">
+                  <label htmlFor="price-max">Do</label>
+                  <div className="price-input-wrapper">
+                    <input
+                      id="price-max"
+                      type="number"
+                      min={filters.priceRange.min}
+                      max={categoryFilters.priceRange.max}
+                      value={filters.priceRange.max}
+                      onChange={(e) => {
+                        const value = Math.max(parseInt(e.target.value) || 0, filters.priceRange.min);
+                        onFiltersChange({
+                          ...filters,
+                          priceRange: { ...filters.priceRange, max: Math.min(categoryFilters.priceRange.max, value) }
+                        });
+                      }}
+                      className="price-input"
+                      placeholder="15000"
+                    />
+                    <span className="price-input-currency">zł</span>
+                  </div>
+                </div>
               </div>
               <div className="price-range-inputs">
-                <input
-                  type="range"
-                  min={categoryFilters.priceRange.min}
-                  max={categoryFilters.priceRange.max}
-                  value={filters.priceRange.min}
-                  onChange={(e) => onFiltersChange({
-                    ...filters,
-                    priceRange: { ...filters.priceRange, min: parseInt(e.target.value) }
-                  })}
-                  className="price-slider"
-                />
-                <input
-                  type="range"
-                  min={categoryFilters.priceRange.min}
-                  max={categoryFilters.priceRange.max}
-                  value={filters.priceRange.max}
-                  onChange={(e) => onFiltersChange({
-                    ...filters,
-                    priceRange: { ...filters.priceRange, max: parseInt(e.target.value) }
-                  })}
-                  className="price-slider"
-                />
+                <div className="price-slider-group">
+                  <label className="price-slider-label">Cena minimalna</label>
+                  <input
+                    type="range"
+                    min={categoryFilters.priceRange.min}
+                    max={categoryFilters.priceRange.max}
+                    value={filters.priceRange.min}
+                    onChange={(e) => onFiltersChange({
+                      ...filters,
+                      priceRange: { ...filters.priceRange, min: parseInt(e.target.value) }
+                    })}
+                    className="price-slider"
+                    aria-label="Cena minimalna"
+                  />
+                </div>
+                <div className="price-slider-group">
+                  <label className="price-slider-label">Cena maksymalna</label>
+                  <input
+                    type="range"
+                    min={categoryFilters.priceRange.min}
+                    max={categoryFilters.priceRange.max}
+                    value={filters.priceRange.max}
+                    onChange={(e) => onFiltersChange({
+                      ...filters,
+                      priceRange: { ...filters.priceRange, max: parseInt(e.target.value) }
+                    })}
+                    className="price-slider"
+                    aria-label="Cena maksymalna"
+                  />
+                </div>
               </div>
             </div>
           </div>
