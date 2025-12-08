@@ -1,9 +1,16 @@
 import { model, Schema, Types } from "mongoose";
 
+export interface miniProducts {
+    slug: string;
+    nazwa: string;
+    cena: number;
+    producent: Producents | Types.ObjectId | string;
+    media: Media[];
+}
+
 export interface Products {
-    slug: string; // "cwel-na-kulki" "cwel%20na%20kulki"
-    // /products/cwel-na-kulki?wariant=200ml
-    nazwa: string; // "cwel na kulki"
+    slug: string;
+    nazwa: string;
     cena: number;
     dostepnosc: string;
     kategoria: (Categories | Types.ObjectId | string)[];
@@ -15,10 +22,19 @@ export interface Products {
     czas_wysylki: number;
     kod_produkcyjny: string;
     ocena: number;
+    opinie: Opinie[] | null;
     wariant?: Warianty[];
     kod_ean?: string | null;
     sku?: string | null;
     aktywne?: boolean | null;
+}
+
+export interface Opinie {
+    uzytkownik: string;
+    tresc: string;
+    utworzenie: Date;
+    ocena: number;
+    zweryfikowane: boolean;
 }
 
 export interface Warianty {
@@ -67,6 +83,19 @@ export interface props {
     hex?: string;
 }
 
+const miniProductsSchema = new Schema<miniProducts>({
+    nazwa: {type: String, required: true},
+    slug: {type: String, required: true}
+})
+
+const reviewProductSchema = new Schema<Opinie>({
+    uzytkownik: { type: String, required: true },
+    tresc: { type: String },
+    utworzenie: { type: Date, default: new Date() },
+    ocena: { type: Number, default: 0 },
+    zweryfikowane: { type: Boolean },
+});
+
 const mediaProductSchema = new Schema(
     {
         nazwa: { type: String, required: true, min: 3, max: 25 },
@@ -103,6 +132,7 @@ const categoriesSchema = new Schema<Categories>({
         unique: true,
     },
     slug: { type: String, required: true },
+    image: { type: String, required: true },
 });
 
 const wariantPropsSchema = new Schema(
@@ -125,7 +155,7 @@ const wariantySchema = new Schema({
     nowa_cena: Number,
 });
 
-const productSchema = new Schema<Products>(
+export const productSchema = new Schema<Products>(
     {
         slug: { type: String, required: true, unique: true },
         nazwa: { type: String, required: true, unique: true },
@@ -144,6 +174,7 @@ const productSchema = new Schema<Products>(
         czas_wysylki: { type: Number, required: true, min: 1 },
         kod_produkcyjny: { type: String, required: true },
         ocena: { type: Number, required: true, default: 0 },
+        opinie: { type: [reviewProductSchema], default: [] },
         wariant: { type: [wariantySchema] },
         kod_ean: String,
         sku: String,

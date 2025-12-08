@@ -4,18 +4,18 @@ import { useState, useCallback, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import "@/app/globals.css";
-import { getProductById, allProducts } from '@/app/data/products';
+import { getProductBySlug, allProducts } from '@/app/data/products';
 import { renderStars } from '@/lib/utils';
 import { getReviewsByProductId } from '@/app/data/reviews';
 import { useCart } from '@/contexts/CartContext';
 
 
 interface ProductPageProps {
-  productId: string;
+  productSlug: string;
 }
 
-export default function ProductPage({ productId }: ProductPageProps) {
-  const product = getProductById(productId);
+export default function ProductPage({ productSlug }: ProductPageProps) {
+  const product = getProductBySlug(productSlug);
   
   // Jeśli produkt nie został znaleziony, pokaż komunikat
   if (!product || product.id !== parseInt(productId)) {

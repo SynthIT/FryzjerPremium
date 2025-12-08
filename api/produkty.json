@@ -1,49 +1,213 @@
 [
     {
-        "_id": "6911083c2bbde022388cd355",
-        "nazwa": "Bialy ladny tshirt",
-        "cena": 149.99,
-        "dostepnosc": "duza",
+        "_id": "692f5b66f22300985b5e3699",
+        "slug": "fotel-męski-do-strzyżenia",
+        "nazwa": "Fotel męski do strzyżenia",
+        "cena": 1499.99,
+        "dostepnosc": "Ograniczona",
         "kategoria": [
             {
-                "_id": "6911082b8d93967ad77c2e7c",
-                "nazwa": "Biale",
-                "slug": "bbb",
+                "_id": "692f5b66f22300985b5e3681",
+                "nazwa": "Fotel",
+                "slug": "sprzet",
                 "__v": 0
             }
         ],
         "producent": {
-            "_id": "6911082b8d93967ad77c2e80",
-            "nazwa": "Wielkie biale kutasy INC",
-            "slug": "WbcINC",
+            "_id": "692f5b66f22300985b5e3690",
+            "nazwa": "Marka wlasna",
+            "slug": "wlasna",
             "__v": 0
         },
         "media": [
             {
-                "nazwa": "obb",
-                "slug": "aa",
+                "nazwa": "Baner",
+                "slug": "baner",
                 "typ": "image",
-                "alt": "bvas",
-                "path": "//path/to/photo.jpg",
-                "_id": "6911083c2bbde022388cd356",
-                "createdAt": "2025-11-09T21:31:40.520Z",
-                "updatedAt": "2025-11-09T21:31:40.520Z"
+                "alt": "baner",
+                "path": "//path/to/baner.jpg",
+                "_id": "692f5b66f22300985b5e369a",
+                "createdAt": "2025-12-02T21:34:30.219Z",
+                "updatedAt": "2025-12-02T21:34:30.219Z"
+            },
+            {
+                "nazwa": "fotel_jakistam",
+                "slug": "fotel_1",
+                "typ": "image",
+                "alt": "fotel",
+                "path": "//path/to/fotel.jpg",
+                "_id": "692f5b66f22300985b5e369b",
+                "createdAt": "2025-12-02T21:34:30.219Z",
+                "updatedAt": "2025-12-02T21:34:30.219Z"
             }
         ],
         "promocje": {
-            "_id": "6911082b8d93967ad77c2e77",
-            "nazwa": "B",
+            "_id": "692f5b66f22300985b5e3678",
+            "nazwa": "lll",
             "procent": 10,
-            "rozpoczecie": "2025-11-09T21:31:23.624Z",
-            "wygasa": "2025-11-12T21:31:23.624Z",
+            "rozpoczecie": "2025-12-02T21:34:30.110Z",
+            "wygasa": "2025-12-05T21:34:30.110Z",
             "__v": 0
         },
-        "opis": "Wielki czarny kutas",
+        "opis": "Fotel męski, idealnie wyprofilowany pod każdego mężczyne",
         "ilosc": 10,
-        "czas_wysylki": 5,
-        "kod_produkcyjny": "abcdd",
-        "createdAt": "2025-11-09T21:31:40.520Z",
-        "updatedAt": "2025-11-09T21:31:40.520Z",
+        "czas_wysylki": 15,
+        "kod_produkcyjny": "ABC-123",
+        "ocena": 4.5,
+        "wariant": [
+            {
+                "nazwa": "Czarny",
+                "slug": "czarny",
+                "typ": "kolor",
+                "_id": "692f5b66f22300985b5e369c"
+            },
+            {
+                "nazwa": "Niebieski",
+                "slug": "niebieski",
+                "typ": "kolor",
+                "nadpisuje_cene": true,
+                "nowa_cena": 1699,
+                "_id": "692f5b66f22300985b5e369d"
+            }
+        ],
+        "createdAt": "2025-12-02T21:34:30.219Z",
+        "updatedAt": "2025-12-02T21:34:30.219Z",
+        "__v": 0
+    },
+    {
+        "_id": "692f5b66f22300985b5e36a3",
+        "slug": "piórnik-dla-narzędzi-techniki-rzemieślniczej",
+        "nazwa": "Piórnik dla narzędzi techniki rzemieślniczej",
+        "cena": 49.99,
+        "dostepnosc": "Duża",
+        "kategoria": [
+            {
+                "_id": "692f5b66f22300985b5e368d",
+                "nazwa": "Nożyczki",
+                "slug": "sprzet",
+                "__v": 0
+            }
+        ],
+        "producent": {
+            "_id": "692f5b66f22300985b5e3690",
+            "nazwa": "Marka wlasna",
+            "slug": "wlasna",
+            "__v": 0
+        },
+        "media": [
+            {
+                "nazwa": "fotel_jakistam",
+                "slug": "fotel_1",
+                "typ": "image",
+                "alt": "fotel",
+                "path": "//path/to/fotel.jpg",
+                "_id": "692f5b66f22300985b5e36a4",
+                "createdAt": "2025-12-02T21:34:30.228Z",
+                "updatedAt": "2025-12-02T21:34:30.228Z"
+            },
+            {
+                "nazwa": "jakiswykresczycos",
+                "slug": "wykres",
+                "typ": "other",
+                "alt": "wykres",
+                "path": "//path/to/photo.xxx",
+                "_id": "692f5b66f22300985b5e36a5",
+                "createdAt": "2025-12-02T21:34:30.229Z",
+                "updatedAt": "2025-12-02T21:34:30.229Z"
+            }
+        ],
+        "promocje": {
+            "_id": "692f5b66f22300985b5e3678",
+            "nazwa": "lll",
+            "procent": 10,
+            "rozpoczecie": "2025-12-02T21:34:30.110Z",
+            "wygasa": "2025-12-05T21:34:30.110Z",
+            "__v": 0
+        },
+        "opis": "Piórnik idealny do przechowywania swoich narzędzi",
+        "ilosc": 100,
+        "czas_wysylki": 2,
+        "kod_produkcyjny": "ABC-1234",
+        "ocena": 4.9,
+        "wariant": [],
+        "createdAt": "2025-12-02T21:34:30.229Z",
+        "updatedAt": "2025-12-02T21:34:30.229Z",
+        "__v": 0
+    },
+    {
+        "_id": "692f5b66f22300985b5e36ab",
+        "slug": "szampon-pielęgnujący",
+        "nazwa": "Szampon pielęgnujący",
+        "cena": 40,
+        "dostepnosc": "Duza",
+        "kategoria": [
+            {
+                "_id": "692f5b66f22300985b5e3684",
+                "nazwa": "Szampon",
+                "slug": "kosmetyk",
+                "__v": 0
+            }
+        ],
+        "producent": {
+            "_id": "692f5b66f22300985b5e3693",
+            "nazwa": "Bielenda",
+            "slug": "bielenda",
+            "strona_internetowa": "https://okok.pl",
+            "__v": 0
+        },
+        "media": [
+            {
+                "nazwa": "jakiswykresczycos",
+                "slug": "wykres",
+                "typ": "other",
+                "alt": "wykres",
+                "path": "//path/to/photo.xxx",
+                "_id": "692f5b66f22300985b5e36ac",
+                "createdAt": "2025-12-02T21:34:30.239Z",
+                "updatedAt": "2025-12-02T21:34:30.239Z"
+            }
+        ],
+        "promocje": {
+            "_id": "692f5b66f22300985b5e367e",
+            "nazwa": "black friday",
+            "procent": 20,
+            "rozpoczecie": "2025-12-02T21:34:30.110Z",
+            "wygasa": "2025-12-04T21:34:30.110Z",
+            "__v": 0
+        },
+        "opis": "Szampon pielęgnujący i dodający objętości włosom",
+        "ilosc": 200,
+        "czas_wysylki": 1,
+        "kod_produkcyjny": "BCD-123",
+        "ocena": 5,
+        "wariant": [
+            {
+                "nazwa": "Czerwony",
+                "slug": "czerwony",
+                "typ": "kolor",
+                "nadpisuje_cene": true,
+                "nowa_cena": 1799,
+                "_id": "692f5b66f22300985b5e36ad"
+            },
+            {
+                "nazwa": "120ml",
+                "slug": "120ml",
+                "typ": "objetosc",
+                "objetosc": 120,
+                "_id": "692f5b66f22300985b5e36ae"
+            },
+            {
+                "nazwa": "250ml",
+                "slug": "250ml",
+                "typ": "objetosc",
+                "objetosc": 250,
+                "nadpisuje_cene": true,
+                "nowa_cena": 50,
+                "_id": "692f5b66f22300985b5e36af"
+            }
+        ],
+        "createdAt": "2025-12-02T21:34:30.239Z",
+        "updatedAt": "2025-12-02T21:34:30.239Z",
         "__v": 0
     }
 ]

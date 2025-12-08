@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 import {
     Categories,
     Category,
@@ -9,105 +9,337 @@ import {
     Products,
     Promo,
     Promos,
+    Warianty,
 } from "./models/Products";
 import { sys } from "typescript";
 import * as fs from "fs";
 import path = require("path");
-import database from "./db";
 
+async function createProduct(val: Products) {
+    const kategorie = await Promise.all(
+        val.kategoria.map(async (val) => {
+            console.log(val);
+            if (typeof val === "string") {
+                const existing = await Category.find().where({
+                    nazwa: val.toString(),
+                });
+                if (existing.length > 0) {
+                    return existing[0]._id;
+                } else {
+                    const obj: Categories = {
+                        nazwa: val.toString(),
+                        slug: "",
+                    };
+                    const cat = await Category.create(obj);
+                    return cat._id;
+                }
+            } else if (val instanceof Types.ObjectId) {
+                const existing = await Category.find().where({ _id: val });
+                if (existing.length > 0) {
+                    return existing[0]._id;
+                }
+            } else {
+                const existing = await Category.find().where({
+                    nazwa: val.nazwa,
+                });
+                if (existing.length > 0) {
+                    return existing[0]._id;
+                } else {
+                    const cat = await Category.create(val);
+                    return cat._id;
+                }
+            }
+            return val._id;
+        })
+    );
+    val.kategoria = kategorie;
+    const producent = await Producent.findOne().where({ nazwa: val.producent });
+    if (producent) {
+        val.producent = producent._id;
+    }
+    const promocje = await Promo.findOne().where({ nazwa: val.promocje });
+    if (promocje) {
+        val.promocje = promocje._id;
+    }
+    const object = Product.create(val);
+    console.log(object);
+}
+async function find() {
+    await Product.find()
+        .populate("kategoria")
+        .populate("promocje")
+        .populate("producent")
+        .orFail()
+        .then((prod) => {
+            fs.writeFileSync(
+                path.join(__dirname + "\\produkty.json"),
+                JSON.stringify(prod)
+            );
+        });
+}
 
-
+export async function saveCategoryFile() {
+    const r: Record<string, string[]> = {};
+    const file = path.join(process.cwd(), "kategorie.json");
+    const kategorie = await Category.find();
+    kategorie.forEach((val) => {
+        (r[val.slug] ??= []).push(val.nazwa);
+    });
+    fs.writeFileSync(file, JSON.stringify(r));
+    sys.exit();
+    return 0;
+}
 (async () => {
-    mongoose.connect("mongodb://localhost:27017/fryzjerpremium");
     try {
-        const data = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
-        const promocja: Promos = {
-            nazwa: "B",
-            procent: 10,
-            rozpoczecie: new Date(),
-            wygasa: data,
-        };
-        (await Promo.where({ nazwa: promocja.nazwa })).length >= 1
-            ? null
-            : Promo.create(promocja)
-                  .then((response) => {
-                      console.log(response);
-                  })
-                  .catch((err) => {
-                      console.error(err);
-                  });
-        const media: Media = {
-            nazwa: "obb",
-            slug: "aa",
-            typ: "image",
-            alt: "bvas",
-            path: "//path/to/photo.jpg",
-        };
-        const kategoria: Categories = {
-            nazwa: "Biale",
-            slug: "bbb",
-        };
-        (await Category.where({ nazwa: kategoria.nazwa })).length >= 1
-            ? null
-            : Category.create(kategoria)
-                  .then((response) => {
-                      console.log(response);
-                  })
-                  .catch((err) => {
-                      console.error(err);
-                  });
-        const producent: Producents = {
-            nazwa: "Wielkie biale kutasy INC",
-            slug: "WbcINC",
-        };
-        (await Producent.where({ nazwa: producent.nazwa })).length >= 1
-            ? null
-            : Producent.create(producent)
-                  .then((response) => {
-                      console.log(response);
-                  })
-                  .catch((err) => {
-                      console.error(err);
-                  });
-        const produkt: Products = {
-            nazwa: "Bialy ladny tshirt",
-            cena: 149.99,
-            dostepnosc: "duza",
-            kategoria: await Category.find({ nazwa: "Biale" }).then(
-                ([val]) => val._id
-            ),
-            producent: await Producent.find({ slug: "WbcINC" }).then(
-                ([val]) => val._id
-            ),
-            media: [media],
-            promocje: await Promo.find({ nazwa: "B" }).then(([val]) => val._id),
-            opis: "Wielki czarny kutas",
-            ilosc: 10,
-            czas_wysylki: 5,
-            kod_produkcyjny: "abcdd",
-        };
-        (await Product.where({ nazwa: produkt.nazwa })).length >= 1
-            ? null
-            : Product.create(produkt)
-                  .then((response) => {
-                      console.log(response);
-                  })
-                  .catch((err) => {
-                      console.error(err);
-                  });
-        await Product.find()
-            .populate("kategoria")
-            .populate("promocje")
-            .populate("producent")
-            .orFail()
-            .then((prod) => {
-                console.log(prod);
-                fs.writeFileSync(
-                    path.join(__dirname + "\\produkty.json"),
-                    JSON.stringify(prod)
-                );
-            });
+        mongoose.connection.on("connected", () =>
+            console.log("MongoDB connected")
+        );
+        mongoose.connection.on("error", (err) =>
+            console.log("Mongo error:", err)
+        );
+        await mongoose.connect("mongodb://127.0.0.1:27017/fryzjerpremium");
 
+        const promos: Promos[] = [
+            {
+                nazwa: "lll",
+                procent: 10,
+                rozpoczecie: new Date(),
+                wygasa: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+            },
+            {
+                nazwa: "black friday",
+                procent: 20,
+                rozpoczecie: new Date(),
+                wygasa: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
+            },
+        ];
+
+        const media: Media[] = [
+            {
+                nazwa: "Baner",
+                slug: "baner",
+                typ: "image",
+                alt: "baner",
+                path: "//path/to/baner.jpg",
+            },
+            {
+                nazwa: "fotel_jakistam",
+                slug: "fotel_1",
+                typ: "image",
+                alt: "fotel",
+                path: "//path/to/fotel.jpg",
+            },
+            {
+                nazwa: "jakiswykresczycos",
+                slug: "wykres",
+                typ: "other",
+                alt: "wykres",
+                path: "//path/to/photo.xxx",
+            },
+        ];
+
+        const categories: Categories[] = [
+            {
+                nazwa: "Fotel",
+                slug: "sprzet",
+            },
+            {
+                nazwa: "Szampon",
+                slug: "kosmetyk",
+            },
+            {
+                nazwa: "Odżywka",
+                slug: "kosmetyk",
+            },
+            {
+                nazwa: "Spray",
+                slug: "kosmetyk",
+            },
+            {
+                nazwa: "Nożyczki",
+                slug: "sprzet",
+            },
+        ];
+
+        const producents: Producents[] = [
+            {
+                nazwa: "Marka wlasna",
+                slug: "wlasna",
+            },
+            {
+                nazwa: "Bielenda",
+                slug: "bielenda",
+                strona_internetowa: "https://okok.pl",
+            },
+        ];
+
+        const wariant: Warianty[] = [
+            {
+                nazwa: "Czarny",
+                slug: "czarny",
+                typ: "kolor",
+                kolory: { name: "czarny", val: "black" },
+            },
+            {
+                nazwa: "Niebieski",
+                slug: "niebieski",
+                typ: "kolor",
+                kolory: { name: "niebieski", val: "blue" },
+                nadpisuje_cene: true,
+                nowa_cena: 1699.0,
+            },
+            {
+                nazwa: "Czerwony",
+                slug: "czerwony",
+                typ: "kolor",
+                kolory: { name: "czerwony", val: "red" },
+
+                nadpisuje_cene: true,
+                nowa_cena: 1799.0,
+            },
+            {
+                nazwa: "120ml",
+                slug: "120ml",
+                typ: "objetosc",
+                objetosc: 120,
+            },
+            {
+                nazwa: "250ml",
+                slug: "250ml",
+                typ: "objetosc",
+                objetosc: 250,
+                nadpisuje_cene: true,
+                nowa_cena: 50.0,
+            },
+            {
+                nazwa: "480ml",
+                slug: "480ml",
+                typ: "objetosc",
+                objetosc: 480,
+                nadpisuje_cene: true,
+                nowa_cena: 75.0,
+            },
+            {
+                nazwa: "L",
+                slug: "long",
+                typ: "rozmiar",
+                rozmiary: { name: "L", val: "L" },
+            },
+            {
+                nazwa: "XL",
+                slug: "extralong",
+                typ: "rozmiar",
+                nadpisuje_cene: true,
+                nowa_cena: 149.0,
+                rozmiary: { name: "XL", val: "XL" },
+            },
+        ];
+
+        const product: Products[] = [
+            {
+                slug: "",
+                nazwa: "Fotel męski do strzyżenia",
+                cena: 1499.99,
+                dostepnosc: "Ograniczona",
+                kategoria: [categories[0]],
+                producent: "Marka wlasna",
+                media: [media[0], media[1]],
+                promocje: "lll",
+                opis: "Fotel męski, idealnie wyprofilowany pod każdego mężczyne",
+                ilosc: 10,
+                czas_wysylki: 15,
+                kod_produkcyjny: "ABC-123",
+                ocena: 4.5,
+                wariant: [wariant[0], wariant[1]],
+            },
+            {
+                slug: "",
+                nazwa: "Piórnik dla narzędzi techniki rzemieślniczej",
+                cena: 49.99,
+                dostepnosc: "Duża",
+                kategoria: [categories[4]],
+                producent: "Marka wlasna",
+                media: [media[1], media[2]],
+                promocje: "lll",
+                opis: "Piórnik idealny do przechowywania swoich narzędzi",
+                ilosc: 100,
+                czas_wysylki: 2,
+                kod_produkcyjny: "ABC-1234",
+                ocena: 4.9,
+            },
+            {
+                slug: "",
+                nazwa: "Szampon pielęgnujący",
+                cena: 40,
+                dostepnosc: "Duza",
+                kategoria: [categories[1]],
+                producent: "Bielenda",
+                media: [media[2]],
+                promocje: "black friday",
+                opis: "Szampon pielęgnujący i dodający objętości włosom",
+                ilosc: 200,
+                czas_wysylki: 1,
+                kod_produkcyjny: "BCD-123",
+                ocena: 5,
+                wariant: [wariant[2], wariant[3], wariant[4]],
+            },
+            {
+                slug: "",
+                nazwa: "Szampon pielęgnujący",
+                cena: 40,
+                dostepnosc: "Duza",
+                kategoria: [
+                    categories[1],
+                    {
+                        nazwa: "Szampon do włosów",
+                        slug: "kosmetyk",
+                    } as Categories,
+                ],
+                producent: "Bielenda",
+                media: [media[2]],
+                promocje: "black friday",
+                opis: "Szampon pielęgnujący i dodający objętości włosom",
+                ilosc: 200,
+                czas_wysylki: 1,
+                kod_produkcyjny: "BCD-123",
+                ocena: 5,
+                wariant: [wariant[2], wariant[3], wariant[4]],
+            },
+        ];
+
+        for (const val of promos) {
+            const exists = await Promo.findOne({ nazwa: val.nazwa });
+            if (exists === null) {
+                const p = await Promo.create(val);
+            }
+        }
+        for (const val of categories) {
+            const exists = await Category.findOne({ nazwa: val.nazwa });
+            if (exists === null) {
+                const p = await Category.create(val);
+            }
+        }
+
+        for (const val of producents) {
+            const exists = await Producent.findOne({ nazwa: val.nazwa });
+            if (exists === null) {
+                const p = await Producent.create(val);
+            }
+        }
+        for (const val of product) {
+            console.log(val);
+            const slug =
+                val.slug === ""
+                    ? val.nazwa.toLowerCase().split(" ").join("-")
+                    : val.slug;
+            val.slug = slug;
+            const exists = await Product.findOne({ nazwa: val.nazwa });
+            if (exists === null) {
+                const p = await createProduct(val);
+            }
+        }
+        await find();
+        await saveCategoryFile();
         sys.exit();
         return 0;
     } catch (err) {
