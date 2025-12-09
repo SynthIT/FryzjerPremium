@@ -94,8 +94,11 @@ export async function createEntry(val: Products): Promise<ResponseType> {
 }
 
 export function readFromfile(): Array<Products> {
-    const dane = fs
-        .readFileSync(path.join(process.cwd(), "data", "produkty.json"))
-        .toString();
+    const dane = fs.readFileSync(path.join(process.cwd(), "data", "produkty.json")).toString();
     return JSON.parse(dane);
+}
+
+export function getProductBySlug(slug: string): Products | null {
+    const allProducts = readFromfile();
+    return allProducts.find((p) => p.slug === slug) || null;
 }

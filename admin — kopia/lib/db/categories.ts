@@ -13,6 +13,21 @@ export async function saveCategoryFile() {
 }
 
 export function readFromfile(): Record<string, string[]> {
-    const dane = fs.readFileSync(path.join(process.cwd(), "data", "kategorie.json")).toString();
+    const dane = fs
+        .readFileSync(path.join(process.cwd(), "data", "kategorie.json"))
+        .toString();
     return JSON.parse(dane);
+}
+
+export function getCategories(slug: string): string[];
+export function getCategories(slug: string, val: string): string | null;
+export function getCategories(
+    slug: string,
+    val?: string
+): string[] | string | null {
+    const allCategories = readFromfile();
+    if (val === undefined) {
+        return allCategories[slug] ?? [];
+    }
+    return allCategories[slug]?.find((p) => p === val) ?? null;
 }
