@@ -35,7 +35,7 @@ export function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
           <Link href="#" aria-label="Powiadomienia" className="rounded p-2 transition-colors hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring">
             <Bell className="h-5 w-5" />
           </Link>
-          <Link href="/settings" aria-label="Ustawienia" className="rounded p-2 transition-colors hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring">
+          <Link href="/admin/settings" aria-label="Ustawienia" className="rounded p-2 transition-colors hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring">
             <Settings className="h-5 w-5" />
           </Link>
           <DropdownMenu.Root>

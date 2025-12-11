@@ -1,19 +1,14 @@
-import { model, Schema, Types } from "mongoose";
+import { Document, model, Schema, Types } from "mongoose";
 
-export interface miniProducts {
-    slug: string;
-    nazwa: string;
-    cena: number;
-    producent: Producents | Types.ObjectId | string;
-    media: Media[];
-}
+export type WariantyTyp = "kolor" | "rozmiar" | "objetosc";
+export type MediaTyp = "video" | "image" | "pdf" | "other";
 
 export interface Products {
     slug: string;
     nazwa: string;
     cena: number;
     dostepnosc: string;
-    kategoria: (Categories | Types.ObjectId | string)[];
+    kategoria: Categories[] | Types.ObjectId[] | string[];
     producent: Producents | Types.ObjectId | string;
     media: Media[];
     promocje: Promos | Types.ObjectId | string | null;
@@ -32,15 +27,16 @@ export interface Products {
 export interface Opinie {
     uzytkownik: string;
     tresc: string;
-    utworzenie: Date;
     ocena: number;
-    zweryfikowane: boolean;
+    zweryfikowane?: boolean;
+    createdAt?: Date;
+    editedAt?: Date;
 }
 
 export interface Warianty {
     nazwa: string;
     slug: string;
-    typ: "kolor" | "rozmiar" | "objetosc";
+    typ: WariantyTyp;
     kolory?: props;
     rozmiary?: props;
     objetosc?: number;
@@ -72,7 +68,7 @@ export interface Producents {
 export interface Media {
     nazwa: string;
     slug: string;
-    typ: "video" | "image" | "pdf" | "other";
+    typ: MediaTyp;
     alt: string;
     path: string;
 }
@@ -83,18 +79,16 @@ export interface props {
     hex?: string;
 }
 
-const miniProductsSchema = new Schema<miniProducts>({
-    nazwa: {type: String, required: true},
-    slug: {type: String, required: true}
-})
-
-const reviewProductSchema = new Schema<Opinie>({
-    uzytkownik: { type: String, required: true },
-    tresc: { type: String },
-    utworzenie: { type: Date, default: new Date() },
-    ocena: { type: Number, default: 0 },
-    zweryfikowane: { type: Boolean },
-});
+const reviewProductSchema = new Schema<Opinie>(
+    {
+        uzytkownik: { type: String, required: true },
+        tresc: { type: String },
+        utworzenie: { type: Date, default: new Date() },
+        ocena: { type: Number, default: 0 },
+        zweryfikowane: { type: Boolean },
+    },
+    { timestamps: true }
+);
 
 const mediaProductSchema = new Schema(
     {

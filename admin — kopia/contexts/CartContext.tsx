@@ -1,162 +1,180 @@
-'use client';
+"use client";
 
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import { Product } from '@/app/data/products';
+import React, {
+    createContext,
+    useContext,
+    useState,
+    useCallback,
+    useEffect,
+} from "react";
+import { Products, Warianty } from "@/lib/models/Products";
 
 export interface CartItem {
-  id: string; // Unikalny identyfikator pozycji (productId-color-size)
-  product: Product;
-  quantity: number;
-  selectedColor?: string;
-  selectedSize?: string;
+    id: string;
+    product: Products;
+    quantity: number;
+    price: number;
+    wariant?: Warianty;
 }
 
 interface CartContextType {
-  cartItems: CartItem[];
-  lastAddedItem: CartItem | null;
-  addToCart: (product: Product, quantity: number, selectedColor?: string, selectedSize?: string) => void;
-  removeFromCart: (itemId: string) => void;
-  updateQuantity: (itemId: string, quantity: number) => void;
-  clearCart: () => void;
-  getTotalPrice: () => number;
-  getTotalItems: () => number;
-  clearLastAddedItem: () => void;
+    cartItems: CartItem[];
+    lastAddedItem: CartItem | null;
+    addToCart: (
+        product: Products,
+        quantity: number,
+        price: number,
+        wariant?: Warianty
+    ) => void;
+    removeFromCart: (itemId: string) => void;
+    updateQuantity: (itemId: string, quantity: number) => void;
+    clearCart: () => void;
+    getTotalPrice: () => number;
+    getTotalItems: () => number;
+    clearLastAddedItem: () => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 // Funkcja pomocnicza do generowania ID (poza komponentem, aby była dostępna wszędzie)
-const getItemId = (product: Product, selectedColor?: string, selectedSize?: string): string => {
-  return `${product.id}-${selectedColor || 'no-color'}-${selectedSize || 'no-size'}`;
+const getItemId = (product: string, wariant?: Warianty): string => {
+    return `${product}_${wariant ? wariant.nazwa : "0"}`;
 };
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [lastAddedItem, setLastAddedItem] = useState<CartItem | null>(null);
+    const [cartItems, setCartItems] = useState<CartItem[]>([]);
+    const [lastAddedItem, setLastAddedItem] = useState<CartItem | null>(null);
 
-  // Ładuj koszyk z localStorage przy inicjalizacji
-  useEffect(() => {
-    const savedCart = localStorage.getItem('cart');
-    if (savedCart) {
-      try {
-        const parsedCart: CartItem[] = JSON.parse(savedCart);
-        // Upewnij się, że wszystkie elementy mają ID
-        const cartWithIds = parsedCart.map(item => {
-          if (!item.id) {
-            return {
-              ...item,
-              id: getItemId(item.product, item.selectedColor, item.selectedSize)
-            };
-          }
-          return item;
-        });
-        setCartItems(cartWithIds);
-      } catch (error) {
-        console.error('Błąd podczas ładowania koszyka:', error);
-      }
-    }
-  }, []);
+    // Ładuj koszyk z localStorage przy inicjalizacji
+    useEffect(() => {
+        const savedCart = localStorage.getItem("cart");
+        if (savedCart) {
+            try {
+                function p(c: CartItem[]) {
+                    setCartItems(c);
+                }
+                const parsedCart: CartItem[] = JSON.parse(savedCart);
+                // Upewnij się, że wszystkie elementy mają ID
+                const ci = parsedCart.map((item) => {
+                    if (item.id) return item;
+                    item.id = getItemId(item.product.slug, item.wariant);
+                    return item;
+                });
+                p(ci);
+            } catch (error) {
+                console.error("Błąd podczas ładowania koszyka:", error);
+            }
+        }
+    }, []);
 
-  // Zapisz koszyk do localStorage przy każdej zmianie
-  useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(cartItems));
-  }, [cartItems]);
+    // Zapisz koszyk do localStorage przy każdej zmianie
+    useEffect(() => {
+        localStorage.setItem("cart", JSON.stringify(cartItems));
+    }, [cartItems]);
 
-  const addToCart = useCallback((product: Product, quantity: number, selectedColor?: string, selectedSize?: string) => {
-    setCartItems(prev => {
-      const itemId = getItemId(product, selectedColor, selectedSize);
-      const existingItemIndex = prev.findIndex(item => item.id === itemId);
+    const addToCart = useCallback(
+        (
+            product: Products,
+            quantity: number,
+            price: number,
+            wariant?: Warianty
+        ) => {
+            const itemId = getItemId(product.slug, wariant);
+            setCartItems((prev) => {
+                const existingItemIndex = prev.findIndex(
+                    (item) => item.id === itemId
+                );
 
-      let newItem: CartItem;
-      if (existingItemIndex >= 0) {
-        // Zwiększ ilość istniejącego produktu
-        const updated = [...prev];
-        updated[existingItemIndex].quantity += quantity;
-        newItem = updated[existingItemIndex];
-        return updated;
-      } else {
-        // Dodaj nowy produkt
-        newItem = { 
-          id: itemId,
-          product, 
-          quantity, 
-          selectedColor, 
-          selectedSize 
-        };
-        return [...prev, newItem];
-      }
-    });
-    
-    // Ustaw ostatnio dodany produkt (dla powiadomienia)
-    const itemId = getItemId(product, selectedColor, selectedSize);
-    setLastAddedItem({
-      id: itemId,
-      product,
-      quantity,
-      selectedColor,
-      selectedSize
-    });
-  }, []);
-
-  const removeFromCart = useCallback((itemId: string) => {
-    setCartItems(prev => prev.filter(item => item.id !== itemId));
-  }, []);
-
-  const updateQuantity = useCallback((itemId: string, quantity: number) => {
-    if (quantity <= 0) {
-      removeFromCart(itemId);
-      return;
-    }
-    setCartItems(prev =>
-      prev.map(item =>
-        item.id === itemId ? { ...item, quantity } : item
-      )
+                let newItem: CartItem;
+                if (existingItemIndex >= 0) {
+                    // Zwiększ ilość istniejącego produktu
+                    const updated = [...prev];
+                    updated[existingItemIndex].quantity += quantity;
+                    updated[existingItemIndex].price += price;
+                    newItem = updated[existingItemIndex];
+                    return updated;
+                } else {
+                    // Dodaj nowy produkt
+                    newItem = {
+                        id: itemId,
+                        product: product,
+                        quantity,
+                        price,
+                        wariant,
+                    };
+                    return [...prev, newItem];
+                }
+            });
+            setLastAddedItem({
+                id: itemId,
+                product: product,
+                quantity,
+                price,
+                wariant,
+            });
+        },
+        []
     );
-  }, [removeFromCart]);
 
-  const clearCart = useCallback(() => {
-    setCartItems([]);
-  }, []);
+    const removeFromCart = useCallback((itemId: string) => {
+        setCartItems((prev) => prev.filter((item) => item.id !== itemId));
+    }, []);
 
-  const getTotalPrice = useCallback(() => {
-    return cartItems.reduce((total, item) => {
-      const price = parseFloat(item.product.price.replace(',', '.').replace(/\s/g, ''));
-      return total + price * item.quantity;
-    }, 0);
-  }, [cartItems]);
+    const updateQuantity = useCallback(
+        (itemId: string, quantity: number) => {
+            if (quantity <= 0) {
+                removeFromCart(itemId);
+                return;
+            }
+            setCartItems((prev) =>
+                prev.map((item) =>
+                    item.id === itemId ? { ...item, quantity } : item
+                )
+            );
+        },
+        [removeFromCart]
+    );
 
-  const getTotalItems = useCallback(() => {
-    return cartItems.reduce((total, item) => total + item.quantity, 0);
-  }, [cartItems]);
+    const clearCart = useCallback(() => {
+        setCartItems([]);
+    }, []);
 
-  const clearLastAddedItem = useCallback(() => {
-    setLastAddedItem(null);
-  }, []);
+    const getTotalPrice = useCallback(() => {
+        return cartItems.reduce((total, item) => {
+            return total + item.price * item.quantity;
+        }, 0);
+    }, [cartItems]);
 
-  return (
-    <CartContext.Provider
-      value={{
-        cartItems,
-        lastAddedItem,
-        addToCart,
-        removeFromCart,
-        updateQuantity,
-        clearCart,
-        getTotalPrice,
-        getTotalItems,
-        clearLastAddedItem,
-      }}
-    >
-      {children}
-    </CartContext.Provider>
-  );
+    const getTotalItems = useCallback(() => {
+        return cartItems.reduce((total, item) => total + item.quantity, 0);
+    }, [cartItems]);
+
+    const clearLastAddedItem = useCallback(() => {
+        setLastAddedItem(null);
+    }, []);
+
+    return (
+        <CartContext.Provider
+            value={{
+                cartItems,
+                lastAddedItem,
+                addToCart,
+                removeFromCart,
+                updateQuantity,
+                clearCart,
+                getTotalPrice,
+                getTotalItems,
+                clearLastAddedItem,
+            }}>
+            {children}
+        </CartContext.Provider>
+    );
 }
 
 export function useCart() {
-  const context = useContext(CartContext);
-  if (context === undefined) {
-    throw new Error('useCart must be used within a CartProvider');
-  }
-  return context;
+    const context = useContext(CartContext);
+    if (context === undefined) {
+        throw new Error("useCart must be used within a CartProvider");
+    }
+    return context;
 }
-

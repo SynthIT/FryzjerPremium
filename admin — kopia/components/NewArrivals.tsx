@@ -4,7 +4,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import "@/app/globals.css";
 import { renderStars } from '@/lib/utils';
-import { allProducts } from '@/app/data/products';
 
 export default function NewArrivals() {
   // Sortuj produkty według ID (najnowsze na górze) i weź 4 najnowsze

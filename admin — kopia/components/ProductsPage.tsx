@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import "@/app/globals.css";
 import FiltersSidebar from '@/components/FiltersSidebar';
-import { allProducts } from '@/app/data/products';
 import { parsePrice, renderStars, getCategoryDisplayName, decodeCategory, getSubcategoryKeywords } from '@/lib/utils';
 
 interface ProductsPageProps {

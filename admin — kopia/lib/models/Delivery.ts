@@ -32,4 +32,4 @@ export const schemaDelivery = new Schema<DeliveryMethods>(
     { autoIndex: false }
 );
 
-export const Delivery = model("Delivery", schemaDelivery);
+export const Delivery = model("delivery", schemaDelivery);

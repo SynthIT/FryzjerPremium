@@ -1,6 +1,6 @@
-import { Schema } from "mongoose";
-import { Products, productSchema } from "./Products";
-import { DeliveryMethods, schemaDelivery } from "./Delivery";
+import { Schema, Types } from "mongoose";
+import { Products } from "./Products";
+import { DeliveryMethods } from "./Delivery";
 import { randomBytes } from "crypto";
 
 function createOrderNumber() {
@@ -28,8 +28,8 @@ export const schemaOrderList = new Schema<OrderList>(
             default: createOrderNumber(),
             unique: true,
         },
-        sposob_dostawy: { type: schemaDelivery },
-        produkty: { type: [productSchema], default: [] },
+        sposob_dostawy: { type: Types.ObjectId, ref: "delivery" },
+        produkty: { type: [Types.ObjectId], ref: "products", default: [] },
         suma: { type: Number },
         data_wykonania: { type: Date, default: new Date() },
     },

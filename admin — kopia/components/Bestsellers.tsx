@@ -1,74 +1,123 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
-import Link from 'next/link';
+import Image from "next/image";
+import Link from "next/link";
 import "@/app/globals.css";
-import { renderStars } from '@/lib/utils';
-import { allProducts } from '@/app/data/products';
+import { renderStars } from "@/lib/utils";
+import { useEffect, useState } from "react";
+import { ProductsResponse } from "@/lib/interfaces/ax";
+import { Products, Promos } from "@/lib/models/Products";
 
 export default function Bestsellers() {
-  // Sortuj produkty według oceny (najwyższe na górze) i weź 4 najlepsze
-  const products = [...allProducts]
-    .sort((a, b) => b.rating - a.rating)
-    .slice(0, 4);
+    // Sortuj produkty według oceny (najwyższe na górze) i weź 4 najlepsze
+    const [products, setProducts] = useState<Products[] | null>(null);
+    useEffect(() => {
+        async function getProductsBest() {
+            const { data } = await axios.get<ProductsResponse>(
+                "/api/v1/products/get"
+            );
+            if (data.status === 200) {
+                setProducts(
+                    [...data.products]
+                        .sort((a, b) => b.ocena - a.ocena)
+                        .slice(0, 4)
+                );
+            } else {
+                return [];
+            }
+        }
+        getProductsBest();
+    }, []);
 
+    // const products = [...allProducts]
+    //     .sort((a, b) => b.rating - a.rating)
+    //     .slice(0, 4);
 
-  return (
-    <section className="new-arrivals-section bestsellers-section" id='bestsellers-section'>
-      <div className="new-arrivals-container">
-        <h2 className="section-title">Bestsellery</h2>
-        
-        <div className="products-section-wrapper">
-          <div className="products-section-wrapper-inner">
-            <div className="products-grid">
-              {products.map((product) => (
-                <Link key={product.id} href={`/product/${product.id}`} className="product-card-link">
-                  <div className="product-card">
-                    <div className="product-image-wrapper">
-                      {product.image ? (
-                        <Image
-                          src={product.image}
-                          alt={product.name}
-                          width={300}
-                          height={300}
-                          className="product-image"
-                        />
-                      ) : product.images && product.images[0] ? (
-                        <Image
-                          src={product.images[0]}
-                          alt={product.name}
-                          width={300}
-                          height={300}
-                          className="product-image"
-                        />
-                      ) : (
-                        <div className="product-placeholder">
-                          <span>{product.name}</span>
+    return (
+        <section
+            className="new-arrivals-section bestsellers-section"
+            id="bestsellers-section">
+            <div className="new-arrivals-container">
+                <h2 className="section-title">Bestsellery</h2>
+
+                <div className="products-section-wrapper">
+                    <div className="products-section-wrapper-inner">
+                        <div className="products-grid">
+                            {typeof products != null ? (
+                                products!.map((product, index) => (
+                                    <Link
+                                        key={index}
+                                        href={`/product/${product.slug}`}
+                                        className="product-card-link">
+                                        <div className="product-card">
+                                            <div className="product-image-wrapper">
+                                                {product.media ? (
+                                                    <Image
+                                                        src={
+                                                            product.media[0]
+                                                                .path
+                                                        }
+                                                        alt={
+                                                            product.media[0].alt
+                                                        }
+                                                        width={300}
+                                                        height={300}
+                                                        className="product-image"
+                                                    />
+                                                ) : (
+                                                    <div className="product-placeholder">
+                                                        <span>
+                                                            {product.nazwa}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <div className="product-info">
+                                                <h3 className="product-name">
+                                                    {product.nazwa}
+                                                </h3>
+                                                <div className="product-rating">
+                                                    {renderStars(
+                                                        product.ocena,
+                                                        18
+                                                    )}
+                                                </div>
+                                                <div className="product-price">
+                                                    {product.promocje ? (
+                                                        <span
+                                                            className="product-original-price-home"
+                                                            style={{
+                                                                color: "red",
+                                                            }}>
+                                                            {product.cena *
+                                                                (100 -
+                                                                    (
+                                                                        product.promocje as Promos
+                                                                    ).procent)}
+                                                        </span>
+                                                    ) : (
+                                                        <span className="product-original-price-home">
+                                                            {product.cena} zł
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </Link>
+                                ))
+                            ) : (
+                                <div>
+                                    <h1>Brak elementow do wyswietlenia</h1>
+                                </div>
+                            )}
                         </div>
-                      )}
+                        <button className="show-more-button">
+                            Pokaż więcej
+                        </button>
                     </div>
-                    
-                    <div className="product-info">
-                      <h3 className="product-name">{product.name}</h3>
-                      <div className="product-rating">
-                        {renderStars(product.rating, 18)}
-                      </div>
-                      <div className="product-price">
-                        {product.originalPrice && (
-                          <span className="product-original-price-home">{product.originalPrice} zł</span>
-                        )}
-                        <span>{product.price} zł</span>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              ))}
+                </div>
             </div>
-            <button className="show-more-button">Pokaż więcej</button>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
+        </section>
+    );
 }
-
