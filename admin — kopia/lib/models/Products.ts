@@ -22,6 +22,8 @@ export interface Products {
     ocena: number;
     opinie: Opinie[] | null;
     createdAt: Date;
+/* [0] bazowy wyglad produktu - wymagany, niech automatycznie sie pojawia okno z kontruktorem na to
+musze naprawic przez to cala logike w froncie, ale bedo jaja*/
     wariant?: Warianty[];
     kod_ean?: string | null;
     sku?: string | null;
