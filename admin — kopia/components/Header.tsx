@@ -6,7 +6,6 @@ import Image from "next/image";
 import Link from "next/link";
 import "@/app/globals.css";
 import { useCart } from "@/contexts/CartContext";
-import { parsePrice } from "@/lib/utils";
 
 export default function Header() {
     const [searchQuery, setSearchQuery] = useState("");

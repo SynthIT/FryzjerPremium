@@ -23,7 +23,7 @@ export default function Footer() {
             <h2 className="footer-newsletter-title">
               <span>BĄDŹ Z NAMI NA BIEŻĄCO</span>
               <span>I ZAPISZ SIE DO NASZEGO</span>
-              <span>NEWSLETTER'A</span>
+              <span>NEWSLETTER%aposA</span>
             </h2>
             <form className="footer-newsletter-form" onSubmit={handleNewsletterSubmit}>
               <div className="footer-newsletter-input-wrapper">

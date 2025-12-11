@@ -6,7 +6,7 @@ export default function ProductsPage() {
           <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">Produkty</h1>
           <p className="text-sm text-muted-foreground sm:text-base">Dodawaj, edytuj i organizuj produkty.</p>
         </div>
-        <a href="/products/new" className="w-full rounded-md border px-3 py-2 text-sm transition-colors hover:bg-accent sm:w-auto">Dodaj produkt</a>
+        <a href="/admin/products/new" className="w-full rounded-md border px-3 py-2 text-sm transition-colors hover:bg-accent sm:w-auto">Dodaj produkt</a>
       </div>
 
       <div className="rounded-lg border">

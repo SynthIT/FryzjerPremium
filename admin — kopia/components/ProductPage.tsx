@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import "@/app/globals.css";
-import { renderStars } from "@/lib/utils";
+import { getProducts, renderStars } from "@/lib/utils";
 import { useCart } from "@/contexts/CartContext";
-import { ProductsResponse } from "@/lib/interfaces/ax";
 import {
     Categories,
     Opinie,
@@ -24,36 +23,38 @@ interface ProductPageProps {
 export default function ProductPage({ productSlug }: ProductPageProps) {
     const [product, setProduct] = useState<Products | null>(null);
     const [allProducts, setAllProduct] = useState<Products[]>([]);
+    const [newPrice, setNewPrice] = useState(0);
+
     useEffect(() => {
-        async function getProduct() {
-            const { data } = await axios.get<ProductsResponse>(
-                "/api/v1/products/get",
-                { params: { slug: productSlug } }
-            );
+        async function getProduct(p: string) {
+            const data = await getProducts(p);
             setProduct(data.product!);
+            // Oblicz nową cenę, jeśli produkt ma promocję
+            if (data.product!.promocje) {
+                const promo = data.product!.promocje as Promos;
+                const discountedPrice =
+                    data.product!.cena * (1 - promo.procent / 100);
+                setNewPrice(parseFloat(discountedPrice.toFixed(2)));
+            }
         }
         if (productSlug) {
-            getProduct();
+            getProduct(productSlug);
         }
     }, [productSlug]);
     useEffect(() => {
-        async function getProducts() {
-            const { data } = await axios.get<ProductsResponse>(
-                "/api/v1/products/get"
-            );
+        async function getAllProducts() {
+            const data = await getProducts();
             setAllProduct(data.products!);
         }
-        if (productSlug) {
-            getProducts();
-        }
-    });
+        getAllProducts();
+    }, []);
 
     // Jeśli produkt nie został znaleziony, pokaż komunikat
 
     const [selectedImage, setSelectedImage] = useState(0);
     const [selectedWariant, setSelectedWariant] = useState<
         Warianty | undefined
-    >();
+    >(product?.wariant ? product.wariant[0] : undefined);
     const [quantity, setQuantity] = useState(1);
     const [activeTab, setActiveTab] = useState<"details" | "reviews" | "faqs">(
         "reviews"
@@ -65,16 +66,14 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
         tresc: "",
     });
 
-    const [newPrice, setNewPrice] = useState(0);
-
     // Pobierz produkty z tej samej kategorii (wykluczając aktualny produkt)
     const relatedProducts = allProducts
         .filter((p) => {
-            return (
-                (p.kategoria as Categories[])[0].nazwa ==
-                    (product!.kategoria as Categories[])[0].nazwa &&
-                p.slug != product!.slug
-            );
+            return product
+                ? (p.kategoria as Categories[])[0].nazwa ==
+                      (product.kategoria as Categories[])[0].nazwa &&
+                      p.slug != product!.slug
+                : false;
         })
         .slice(0, 4);
 
@@ -104,6 +103,17 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
             // Można dodać powiadomienie o dodaniu do koszyka
         }
     }, [product, quantity, newPrice, selectedWariant, addToCart]);
+
+    const applyDiscount = (wariant: Warianty) => {
+        if (product && product.promocje) {
+            const promo = product.promocje as Promos;
+            const discountedPrice = product.cena * (1 - promo.procent / 100);
+            setNewPrice(parseFloat(discountedPrice.toFixed(2)));
+            return wariant.nadpisuje_cene
+                ? wariant.nowa_cena!.toString().replace(".", ",")
+                : discountedPrice.toString().replace(".", ",");
+        }
+    };
 
     if (!product) {
         return (
@@ -219,10 +229,11 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                     {/* Right Column - Product Details */}
                     <div className="product-details-section">
                         <h1 className="product-title">{product.nazwa}</h1>
+                        <p>Kod produkcyjny: {product.kod_produkcyjny}</p>
                         {product.kod_ean ? (
-                            <p>Kod EAN: ${product.kod_ean}</p>
+                            <p>Kod EAN: {product.kod_ean}</p>
                         ) : product.sku ? (
-                            <p>Kod SKU: ${product.sku}</p>
+                            <p>Kod SKU: {product.sku}</p>
                         ) : (
                             <></>
                         )}
@@ -230,26 +241,26 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                         {renderStars(product.ocena, 20)}
 
                         <div className="product-price-section">
-                            {newPrice != 0 ? (
+                            {selectedWariant?.nadpisuje_cene &&
+                            newPrice != 0 ? (
                                 <>
                                     <span className="product-original-price">
-                                        {product.cena
-                                            .toString()
+                                        {selectedWariant
+                                            .nowa_cena!.toString()
                                             .replace(".", ",")}{" "}
                                         zł
                                     </span>
+                                    <span className="product-current-price">
+                                        {applyDiscount(selectedWariant)} zł
+                                    </span>
+                                </>
+                            ) : newPrice != 0 ? (
+                                <>
                                     <span className="product-current-price">
                                         {newPrice.toString().replace(".", ",")}{" "}
                                         zł
                                     </span>
                                 </>
-                            ) : selectedWariant?.nadpisuje_cene ? (
-                                <span className="product-current-price">
-                                    {selectedWariant
-                                        .nowa_cena!.toString()
-                                        .replace(".", ",")}{" "}
-                                    zł
-                                </span>
                             ) : (
                                 <span className="product-current-price">
                                     {product.cena.toString().replace(".", ",")}{" "}
@@ -338,10 +349,12 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                         {/* Add to Cart Button */}
                         <button
                             className="add-to-cart-button"
-                            disabled={!product.aktywne || product.ilosc == 0}
+                            disabled={product.ilosc == 0}
                             onClick={handleAddToCart}>
-                            {product.aktywne || product.ilosc == 0
+                            {product.ilosc != 0
                                 ? "Dodaj do koszyka"
+                                : product.aktywne
+                                ? "Produkt niedostępny"
                                 : "Produkt niedostępny"}
                         </button>
                     </div>
@@ -502,7 +515,11 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                                     id="reviewer-name"
                                     type="text"
                                     className="review-modal-input"
-                                    value={reviewForm.uzytkownik != "" ? reviewForm.uzytkownik : ""}
+                                    value={
+                                        reviewForm.uzytkownik != ""
+                                            ? reviewForm.uzytkownik
+                                            : ""
+                                    }
                                     onChange={(e) =>
                                         setReviewForm({
                                             ...reviewForm,

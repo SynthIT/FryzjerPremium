@@ -29,6 +29,7 @@ async function createProduct(val: Products) {
                     const obj: Categories = {
                         nazwa: val.toString(),
                         slug: "",
+                        image: "",
                     };
                     const cat = await Category.create(obj);
                     return cat._id;
@@ -120,21 +121,21 @@ export async function saveCategoryFile() {
                 slug: "baner",
                 typ: "image",
                 alt: "baner",
-                path: "//path/to/baner.jpg",
+                path: "/path/to/baner.jpg",
             },
             {
                 nazwa: "fotel_jakistam",
                 slug: "fotel_1",
                 typ: "image",
                 alt: "fotel",
-                path: "//path/to/fotel.jpg",
+                path: "/path/to/fotel.jpg",
             },
             {
                 nazwa: "jakiswykresczycos",
                 slug: "wykres",
                 typ: "other",
                 alt: "wykres",
-                path: "//path/to/photo.xxx",
+                path: "/path/to/photo.xxx",
             },
         ];
 
@@ -142,22 +143,27 @@ export async function saveCategoryFile() {
             {
                 nazwa: "Fotel",
                 slug: "sprzet",
+                image: "/path/to/baner.jpg",
             },
             {
                 nazwa: "Szampon",
                 slug: "kosmetyk",
+                image: "/path/to/baner.jpg",
             },
             {
                 nazwa: "Odżywka",
                 slug: "kosmetyk",
+                image: "/path/to/baner.jpg",
             },
             {
                 nazwa: "Spray",
                 slug: "kosmetyk",
+                image: "/path/to/baner.jpg",
             },
             {
                 nazwa: "Nożyczki",
                 slug: "sprzet",
+                image: "/path/to/baner.jpg",
             },
         ];
 
@@ -251,6 +257,19 @@ export async function saveCategoryFile() {
                 kod_produkcyjny: "ABC-123",
                 ocena: 4.5,
                 wariant: [wariant[0], wariant[1]],
+                opinie: [
+                    {
+                        uzytkownik: "Andrzej K.",
+                        tresc: "Idealnie wykończony. Każdy klient jest zadowolony z usługi, międzyinnymi przez ten wygodny fotel",
+                        ocena: 5,
+                    },
+                    {
+                        uzytkownik: "Kapral Kaszmirov",
+                        tresc: "Na zdjęciach wygląda lepiej niż jak w rzeczywistości",
+                        ocena: 3,
+                    },
+                ],
+                createdAt: new Date(),
             },
             {
                 slug: "",
@@ -266,10 +285,23 @@ export async function saveCategoryFile() {
                 czas_wysylki: 2,
                 kod_produkcyjny: "ABC-1234",
                 ocena: 4.9,
+                opinie: [
+                    {
+                        uzytkownik: "Adrianna L.",
+                        tresc: "Idealnie dopasowany pod każdy możliwy typ narzędzia. Polecam!!",
+                        ocena: 5,
+                    },
+                    {
+                        uzytkownik: "Mariusz D.",
+                        tresc: "Gówno!!",
+                        ocena: 1,
+                    },
+                ],
+                createdAt: new Date(),
             },
             {
                 slug: "",
-                nazwa: "Szampon pielęgnujący",
+                nazwa: "Szampon pielęgnujący do brody",
                 cena: 40,
                 dostepnosc: "Duza",
                 kategoria: [categories[1]],
@@ -282,10 +314,18 @@ export async function saveCategoryFile() {
                 kod_produkcyjny: "BCD-123",
                 ocena: 5,
                 wariant: [wariant[2], wariant[3], wariant[4]],
+                opinie: [
+                    {
+                        uzytkownik: "Admirov Kaszmir",
+                        tresc: "No cieżko żeby to było średnie...",
+                        ocena: 5,
+                    },
+                ],
+                createdAt: new Date(),
             },
             {
                 slug: "",
-                nazwa: "Szampon pielęgnujący",
+                nazwa: "Szampon pielęgnujący do włosów",
                 cena: 40,
                 dostepnosc: "Duza",
                 kategoria: [
@@ -293,6 +333,7 @@ export async function saveCategoryFile() {
                     {
                         nazwa: "Szampon do włosów",
                         slug: "kosmetyk",
+                        image: "/path/to/baner.jpg"
                     } as Categories,
                 ],
                 producent: "Bielenda",
@@ -304,6 +345,8 @@ export async function saveCategoryFile() {
                 kod_produkcyjny: "BCD-123",
                 ocena: 5,
                 wariant: [wariant[2], wariant[3], wariant[4]],
+                opinie: null,
+                createdAt: new Date(),
             },
         ];
 

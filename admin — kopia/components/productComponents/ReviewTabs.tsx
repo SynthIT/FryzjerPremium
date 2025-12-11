@@ -157,7 +157,7 @@ export default function ReviewTabs({
                                     </p>
                                     <div className="review-date">
                                         Opublikowano{" "}
-                                        {review.createdAt!.toDateString()}
+                                        {/* {review.createdAt!.toDateString()} */}
                                     </div>
                                 </div>
                             ))}

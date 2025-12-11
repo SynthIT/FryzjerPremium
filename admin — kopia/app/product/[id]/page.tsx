@@ -7,7 +7,7 @@ export default async function Product({ params }: { params: Promise<{ id: string
   return (
     <>
       <Header />
-      <ProductPage productId={id} />
+      <ProductPage productSlug={id} />
       <Footer />
     </>
   );

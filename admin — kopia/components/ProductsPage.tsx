@@ -1,277 +1,361 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useState, useEffect, useMemo, useCallback } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { useParams } from "next/navigation";
 import "@/app/globals.css";
-import FiltersSidebar from '@/components/FiltersSidebar';
-import { parsePrice, renderStars, getCategoryDisplayName, decodeCategory, getSubcategoryKeywords } from '@/lib/utils';
+import FiltersSidebar from "@/components/FiltersSidebar";
+import {
+    renderStars,
+    getCategoryDisplayName,
+    decodeCategory,
+    getSubcategoryKeywords,
+    getProducts,
+} from "@/lib/utils";
+import { Categories, Products, Promos } from "@/lib/models/Products";
 
 interface ProductsPageProps {
-  categoryName?: string;
+    categoryName?: string;
 }
 
 export default function ProductsPage({ categoryName }: ProductsPageProps) {
-  const params = useParams();
-  const urlCategoryParam = categoryName || (params?.category as string) || '';
-  
-  const urlCategory = useMemo(() => decodeCategory(urlCategoryParam), [urlCategoryParam]);
-  const [selectedCategory, setSelectedCategory] = useState(() => getCategoryDisplayName(urlCategory));
-  const [sortBy, setSortBy] = useState('Najpopularniejsze');
-  const [currentPage, setCurrentPage] = useState(1);
-  const productsPerPage = 9;
+    const [allProducts, setAllProduct] = useState<Products[]>([]);
 
-  // Stan filtrów - początkowy zakres dla "wszystkie produkty"
-  // Teraz używamy tablic dla wielokrotnego wyboru
-  const [filters, setFilters] = useState({
-    priceRange: { min: 0, max: 15000 },
-    selectedSubcategories: [] as string[],
-    selectedBrands: [] as string[],
-    selectedSizes: [] as string[],
-    selectedTypes: [] as string[],
-  });
+    useEffect(() => {
+        async function getProduct() {
+            const data = await getProducts();
+            setAllProduct(data.products!);
+        }
+        getProduct();
+    }, []);
 
-  useEffect(() => {
-    if (urlCategory) {
-      setSelectedCategory(getCategoryDisplayName(urlCategory));
-      setFilters({
+    const params = useParams();
+    const urlCategoryParam = categoryName || (params?.category as string) || "";
+
+    const urlCategory = useMemo(
+        () => decodeCategory(urlCategoryParam),
+        [urlCategoryParam]
+    );
+    const [selectedCategory, setSelectedCategory] = useState(() =>
+        getCategoryDisplayName(urlCategory)
+    );
+    const [sortBy, setSortBy] = useState("Najpopularniejsze");
+    const [currentPage, setCurrentPage] = useState(1);
+    const productsPerPage = 9;
+
+    // Stan filtrów - początkowy zakres dla "wszystkie produkty"
+    // Teraz używamy tablic dla wielokrotnego wyboru
+    const [filters, setFilters] = useState({
         priceRange: { min: 0, max: 15000 },
-        selectedSubcategories: [],
-        selectedBrands: [],
-        selectedSizes: [],
-        selectedTypes: [],
-      });
-      setCurrentPage(1);
-    }
-  }, [urlCategory]);
+        selectedSubcategories: [] as string[],
+        selectedBrands: [] as string[],
+        selectedSizes: [] as string[],
+        selectedTypes: [] as string[],
+    });
 
-  // Sortowanie produktów - memoized
-  const sortedProducts = useMemo(() => {
-    return [...allProducts].sort((a, b) => {
-    switch (sortBy) {
-      case 'Cena: od najniższej':
-        return parsePrice(a.price) - parsePrice(b.price);
-      case 'Cena: od najwyższej':
-        return parsePrice(b.price) - parsePrice(a.price);
-      case 'Ocena':
-        return b.rating - a.rating;
-      case 'Najnowsze':
-        return b.id - a.id; // Zakładając, że wyższy ID = nowszy
-      default: // 'Najpopularniejsze'
-        return b.rating - a.rating;
-    }
-  });
-  }, [sortBy]);
+    useEffect(() => {
+        if (urlCategory) {
+            setSelectedCategory(getCategoryDisplayName(urlCategory));
+            setFilters({
+                priceRange: { min: 0, max: 15000 },
+                selectedSubcategories: [],
+                selectedBrands: [],
+                selectedSizes: [],
+                selectedTypes: [],
+            });
+            setCurrentPage(1);
+        }
+    }, [urlCategory]);
 
-  // Mapowanie subkategorii - memoized
-  const subcategoryMap = useMemo(() => getSubcategoryKeywords(), []);
+    // Sortowanie produktów - memoized
+    const sortedProducts = useMemo(() => {
+        return [...allProducts].sort((a, b) => {
+            switch (sortBy) {
+                case "Cena: od najniższej":
+                    return a.cena - b.cena;
+                case "Cena: od najwyższej":
+                    return b.cena - a.cena;
+                case "Ocena":
+                    return b.ocena - a.ocena;
+                case "Najnowsze":
+                    return b.createdAt.getTime() - a.createdAt.getTime(); // Zakładając, że wyższy ID = nowszy
+                default: // 'Najpopularniejsze'
+                    return b.ocena - a.ocena;
+            }
+        });
+    }, [allProducts, sortBy]);
 
-  // Filtruj produkty według kategorii i wszystkich filtrów - memoized
-  const filteredProducts = useMemo(() => {
-    return sortedProducts.filter(product => {
-    // Filtrowanie według kategorii
-    if (urlCategory && product.category.toLowerCase() !== urlCategory.toLowerCase()) {
-      return false;
-    }
+    // Mapowanie subkategorii - memoized
+    const subcategoryMap = useMemo(() => getSubcategoryKeywords(), []);
 
-    // Filtrowanie według ceny
-    const productPrice = parsePrice(product.price);
-    if (productPrice < filters.priceRange.min || productPrice > filters.priceRange.max) {
-      return false;
-    }
+    // Filtruj produkty według kategorii i wszystkich filtrów - memoized
+    const filteredProducts = useMemo(() => {
+        return sortedProducts.filter((product) => {
+            // Filtrowanie według kategorii
+            if (
+                urlCategory &&
+                (product.kategoria as Categories[])[0].slug.toLowerCase() !==
+                    urlCategory.toLowerCase()
+            ) {
+                return false;
+            }
 
-    // Filtrowanie według podkategorii
-    if (filters.selectedSubcategories.length > 0) {
-      const productNameLower = product.name.toLowerCase();
-      const matchesAnySubcategory = filters.selectedSubcategories.some(subcategory => {
-        const keywords = subcategoryMap[subcategory] || [];
-        return keywords.some(keyword => productNameLower.includes(keyword));
-      });
-      
-      if (!matchesAnySubcategory) {
-        return false;
-      }
-    }
+            // Filtrowanie według ceny
+            const productPrice = product.cena;
+            if (
+                productPrice < filters.priceRange.min ||
+                productPrice > filters.priceRange.max
+            ) {
+                return false;
+            }
 
-    // Filtrowanie według marki (na razie pomijamy, bo produkty nie mają marki w danych)
-    // Jeśli wybrano jakieś marki, produkt musi pasować do przynajmniej jednej
-    if (filters.selectedBrands.length > 0) {
-      // Na razie pomijamy, bo produkty nie mają marki w danych
-      // Można dodać później gdy będą marki w danych produktów
-    }
+            // Filtrowanie według podkategorii
+            if (filters.selectedSubcategories.length > 0) {
+                const productNameLower = product.nazwa.toLowerCase();
+                const matchesAnySubcategory =
+                    filters.selectedSubcategories.some((subcategory) => {
+                        const keywords = subcategoryMap[subcategory] || [];
+                        return keywords.some((keyword) =>
+                            productNameLower.includes(keyword)
+                        );
+                    });
 
-    // Filtrowanie według typu (na razie pomijamy, podobnie jak marka)
-    if (filters.selectedTypes.length > 0) {
-      // Na razie pomijamy, bo produkty nie mają typu w danych
-    }
+                if (!matchesAnySubcategory) {
+                    return false;
+                }
+            }
 
-    // Filtrowanie według rozmiaru (tylko dla mebli, na razie pomijamy)
-    if (filters.selectedSizes.length > 0) {
-      // Na razie pomijamy, bo produkty nie mają rozmiaru w danych
-    }
+            // Filtrowanie według marki (na razie pomijamy, bo produkty nie mają marki w danych)
+            // Jeśli wybrano jakieś marki, produkt musi pasować do przynajmniej jednej
+            if (filters.selectedBrands.length > 0) {
+                // Na razie pomijamy, bo produkty nie mają marki w danych
+                // Można dodać później gdy będą marki w danych produktów
+            }
 
-    return true;
-  });
-  }, [sortedProducts, urlCategory, filters, subcategoryMap]);
+            // Filtrowanie według typu (na razie pomijamy, podobnie jak marka)
+            if (filters.selectedTypes.length > 0) {
+                // Na razie pomijamy, bo produkty nie mają typu w danych
+            }
 
-  // Resetuj stronę gdy zmienią się filtry
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [filters]);
+            // Filtrowanie według rozmiaru (tylko dla mebli, na razie pomijamy)
+            if (filters.selectedSizes.length > 0) {
+                // Na razie pomijamy, bo produkty nie mają rozmiaru w danych
+            }
 
-  // Paginacja - memoized
-  const totalProducts = filteredProducts.length;
-  const startIndex = (currentPage - 1) * productsPerPage;
-  const endIndex = startIndex + productsPerPage;
-  const displayedProducts = useMemo(() => 
-    filteredProducts.slice(startIndex, endIndex),
-    [filteredProducts, startIndex, endIndex]
-  );
-  const totalPages = Math.ceil(totalProducts / productsPerPage);
+            return true;
+        });
+    }, [sortedProducts, urlCategory, filters, subcategoryMap]);
 
-  // Handlery - memoized
-  const handleSortChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSortBy(e.target.value);
-  }, []);
+    // Resetuj stronę gdy zmienią się filtry
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [filters]);
 
-  const handlePageChange = useCallback((page: number) => {
-    setCurrentPage(page);
-  }, []);
+    // Paginacja - memoized
+    const totalProducts = filteredProducts.length;
+    const startIndex = (currentPage - 1) * productsPerPage;
+    const endIndex = startIndex + productsPerPage;
+    const displayedProducts = useMemo(
+        () => filteredProducts.slice(startIndex, endIndex),
+        [filteredProducts, startIndex, endIndex]
+    );
+    const totalPages = Math.ceil(totalProducts / productsPerPage);
 
-  const handlePrevPage = useCallback(() => {
-    setCurrentPage(prev => Math.max(1, prev - 1));
-  }, []);
+    // Handlery - memoized
+    const handleSortChange = useCallback(
+        (e: React.ChangeEvent<HTMLSelectElement>) => {
+            setSortBy(e.target.value);
+        },
+        []
+    );
 
-  const handleNextPage = useCallback(() => {
-    setCurrentPage(prev => Math.min(totalPages, prev + 1));
-  }, [totalPages]);
+    const handlePageChange = useCallback((page: number) => {
+        setCurrentPage(page);
+    }, []);
 
-  return (
-    <div className="products-listing-page">
-      <div className="products-listing-container">
-        {/* Breadcrumbs */}
-        <div className="breadcrumbs">
-          <Link href="/" className="breadcrumb-link">Strona główna</Link>
-          <span className="breadcrumb-separator">&gt;</span>
-          <span className="breadcrumb-current">{selectedCategory}</span>
-        </div>
+    const handlePrevPage = useCallback(() => {
+        setCurrentPage((prev) => Math.max(1, prev - 1));
+    }, []);
 
-        {/* Page Header */}
-        <div className="products-page-header">
-          <h1 className="products-page-title">{selectedCategory}</h1>
-          <div className="products-page-info">
-            <span className="products-count">Wyświetlanie {startIndex + 1}-{Math.min(endIndex, totalProducts)} z {totalProducts} produktów</span>
-            <div className="sort-dropdown-wrapper">
-              <label className="sort-label">Sortuj według:</label>
-              <select 
-                value={sortBy} 
-                onChange={handleSortChange}
-                className="sort-dropdown"
-              >
-                <option>Najpopularniejsze</option>
-                <option>Cena: od najniższej</option>
-                <option>Cena: od najwyższej</option>
-                <option>Najnowsze</option>
-                <option>Ocena</option>
-              </select>
-            </div>
-          </div>
-        </div>
+    const handleNextPage = useCallback(() => {
+        setCurrentPage((prev) => Math.min(totalPages, prev + 1));
+    }, [totalPages]);
 
-        {/* Main Content */}
-        <div className="products-listing-content">
-          {/* Sidebar with Filters */}
-          <FiltersSidebar 
-            category={urlCategory}
-            filters={filters}
-            onFiltersChange={setFilters}
-          />
-
-          {/* Products Grid */}
-          <div className="products-main-content">
-            <div className="products-grid-listing">
-              {displayedProducts.map((product) => (
-                <Link key={product.id} href={`/product/${product.id}`} className="product-card-listing">
-                  <div className="product-image-wrapper-listing">
-                    {product.discount && (
-                      <div className="product-discount-badge">-{product.discount}%</div>
-                    )}
-                    {product.image ? (
-                      <Image
-                        src={product.image}
-                        alt={product.name}
-                        width={300}
-                        height={300}
-                        className="product-image-listing"
-                      />
-                    ) : (
-                      <div className="product-placeholder-listing">
-                        <span>{product.name}</span>
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="product-info-listing">
-                    <h3 className="product-name-listing">{product.name}</h3>
-                    {renderStars(product.rating)}
-                    <div className="product-price-listing">
-                      {product.originalPrice && (
-                        <span className="product-original-price">{product.originalPrice} zł</span>
-                      )}
-                      <span className="product-current-price">{product.price} zł</span>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="pagination">
-                <button 
-                  className="pagination-button"
-                  disabled={currentPage === 1}
-                  onClick={handlePrevPage}
-                >
-                  ← Poprzednia
-                </button>
-                <div className="pagination-numbers">
-                  {Array.from({ length: totalPages }, (_, i) => {
-                    const pageNum = i + 1;
-                    if (
-                      pageNum === 1 ||
-                      pageNum === totalPages ||
-                      (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
-                    ) {
-                      return (
-                        <button
-                          key={pageNum}
-                          className={`pagination-number ${currentPage === pageNum ? 'active' : ''}`}
-                          onClick={() => handlePageChange(pageNum)}
-                        >
-                          {pageNum}
-                        </button>
-                      );
-                    } else if (pageNum === currentPage - 2 || pageNum === currentPage + 2) {
-                      return <span key={pageNum} className="pagination-ellipsis">...</span>;
-                    }
-                    return null;
-                  })}
+    return (
+        <div className="products-listing-page">
+            <div className="products-listing-container">
+                {/* Breadcrumbs */}
+                <div className="breadcrumbs">
+                    <Link href="/" className="breadcrumb-link">
+                        Strona główna
+                    </Link>
+                    <span className="breadcrumb-separator">&gt;</span>
+                    <span className="breadcrumb-current">
+                        {selectedCategory}
+                    </span>
                 </div>
-                <button 
-                  className="pagination-button"
-                  disabled={currentPage === totalPages}
-                  onClick={handleNextPage}
-                >
-                  Następna →
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
 
+                {/* Page Header */}
+                <div className="products-page-header">
+                    <h1 className="products-page-title">{selectedCategory}</h1>
+                    <div className="products-page-info">
+                        <span className="products-count">
+                            Wyświetlanie {startIndex + 1}-
+                            {Math.min(endIndex, totalProducts)} z{" "}
+                            {totalProducts} produktów
+                        </span>
+                        <div className="sort-dropdown-wrapper">
+                            <label className="sort-label">Sortuj według:</label>
+                            <select
+                                value={sortBy}
+                                onChange={handleSortChange}
+                                className="sort-dropdown">
+                                <option>Najpopularniejsze</option>
+                                <option>Cena: od najniższej</option>
+                                <option>Cena: od najwyższej</option>
+                                <option>Najnowsze</option>
+                                <option>Ocena</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Main Content */}
+                <div className="products-listing-content">
+                    {/* Sidebar with Filters */}
+                    <FiltersSidebar
+                        category={urlCategory}
+                        filters={filters}
+                        onFiltersChange={setFilters}
+                    />
+
+                    {/* Products Grid */}
+                    <div className="products-main-content">
+                        <div className="products-grid-listing">
+                            {displayedProducts.map((product, index) => (
+                                <Link
+                                    key={index}
+                                    href={`/product/${product.slug}`}
+                                    className="product-card-listing">
+                                    <div className="product-image-wrapper-listing">
+                                        {product.promocje && (
+                                            <div className="product-discount-badge">
+                                                -
+                                                {
+                                                    (product.promocje as Promos)
+                                                        .procent
+                                                }
+                                                %
+                                            </div>
+                                        )}
+                                        {product.media ? (
+                                            <Image
+                                                src={product.media[0].path}
+                                                alt={product.media[0].alt}
+                                                width={300}
+                                                height={300}
+                                                className="product-image-listing"
+                                            />
+                                        ) : (
+                                            <div className="product-placeholder-listing">
+                                                <span>{product.nazwa}</span>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="product-info-listing">
+                                        <h3 className="product-name-listing">
+                                            {product.nazwa}
+                                        </h3>
+                                        {renderStars(product.ocena)}
+                                        <div className="product-price-listing">
+                                            {product.promocje && (
+                                                <span className="product-original-price">
+                                                    {product.cena} zł
+                                                </span>
+                                            )}
+                                            <span className="product-current-price">
+                                                {(
+                                                    product.cena *
+                                                    ((100 -
+                                                        (
+                                                            product.promocje as Promos
+                                                        ).procent) /
+                                                        100)
+                                                ).toFixed(2)}{" "}
+                                                zł
+                                            </span>
+                                        </div>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+
+                        {/* Pagination */}
+                        {totalPages > 1 && (
+                            <div className="pagination">
+                                <button
+                                    className="pagination-button"
+                                    disabled={currentPage === 1}
+                                    onClick={handlePrevPage}>
+                                    ← Poprzednia
+                                </button>
+                                <div className="pagination-numbers">
+                                    {Array.from(
+                                        { length: totalPages },
+                                        (_, i) => {
+                                            const pageNum = i + 1;
+                                            if (
+                                                pageNum === 1 ||
+                                                pageNum === totalPages ||
+                                                (pageNum >= currentPage - 1 &&
+                                                    pageNum <= currentPage + 1)
+                                            ) {
+                                                return (
+                                                    <button
+                                                        key={pageNum}
+                                                        className={`pagination-number ${
+                                                            currentPage ===
+                                                            pageNum
+                                                                ? "active"
+                                                                : ""
+                                                        }`}
+                                                        onClick={() =>
+                                                            handlePageChange(
+                                                                pageNum
+                                                            )
+                                                        }>
+                                                        {pageNum}
+                                                    </button>
+                                                );
+                                            } else if (
+                                                pageNum === currentPage - 2 ||
+                                                pageNum === currentPage + 2
+                                            ) {
+                                                return (
+                                                    <span
+                                                        key={pageNum}
+                                                        className="pagination-ellipsis">
+                                                        ...
+                                                    </span>
+                                                );
+                                            }
+                                            return null;
+                                        }
+                                    )}
+                                </div>
+                                <button
+                                    className="pagination-button"
+                                    disabled={currentPage === totalPages}
+                                    onClick={handleNextPage}>
+                                    Następna →
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}

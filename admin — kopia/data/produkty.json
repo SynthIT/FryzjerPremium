@@ -1,7 +1,7 @@
 [
     {
         "_id": "693b21da42e05b40e4e7e708",
-        "slug": "fotel-męski-do-strzyżenia",
+        "slug": "fotel-meski-do-strzyzenia",
         "nazwa": "Fotel męski do strzyżenia",
         "cena": 1499.99,
         "dostepnosc": "Ograniczona",
@@ -89,13 +89,14 @@
                 "_id": "693b21da42e05b40e4e7e70e"
             }
         ],
+        "aktywne": true,
         "createdAt": "2025-12-11T19:56:10.097Z",
         "updatedAt": "2025-12-11T19:56:10.097Z",
         "__v": 0
     },
     {
         "_id": "693b21da42e05b40e4e7e714",
-        "slug": "piórnik-dla-narzędzi-techniki-rzemieślniczej",
+        "slug": "piornik-dla-narzedzi-techniki-rzemieslniczej",
         "nazwa": "Piórnik dla narzędzi techniki rzemieślniczej",
         "cena": 49.99,
         "dostepnosc": "Duża",
@@ -167,6 +168,7 @@
                 "updatedAt": "2025-12-11T19:56:10.203Z"
             }
         ],
+        "aktywne": true,
         "createdAt": "2025-12-11T19:56:10.097Z",
         "wariant": [],
         "updatedAt": "2025-12-11T19:56:10.097Z",
@@ -174,7 +176,7 @@
     },
     {
         "_id": "693b21da42e05b40e4e7e71e",
-        "slug": "szampon-pielęgnujący-do-brody",
+        "slug": "szampon-pielegnujacy-do-brody",
         "nazwa": "Szampon pielęgnujący do brody",
         "cena": 40,
         "dostepnosc": "Duza",
@@ -255,6 +257,7 @@
                 "_id": "693b21da42e05b40e4e7e723"
             }
         ],
+        "aktywne": true,
         "createdAt": "2025-12-11T19:56:10.097Z",
         "updatedAt": "2025-12-11T19:56:10.097Z",
         "__v": 0

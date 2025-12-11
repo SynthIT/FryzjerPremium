@@ -3,9 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import "@/app/globals.css";
-import { renderStars } from "@/lib/utils";
+import { getProducts, renderStars } from "@/lib/utils";
 import { useEffect, useState } from "react";
-import { ProductsResponse } from "@/lib/interfaces/ax";
 import { Products, Promos } from "@/lib/models/Products";
 
 export default function Bestsellers() {
@@ -13,12 +12,10 @@ export default function Bestsellers() {
     const [products, setProducts] = useState<Products[] | null>(null);
     useEffect(() => {
         async function getProductsBest() {
-            const { data } = await axios.get<ProductsResponse>(
-                "/api/v1/products/get"
-            );
+            const data = await getProducts();
             if (data.status === 200) {
                 setProducts(
-                    [...data.products]
+                    [...data.products!]
                         .sort((a, b) => b.ocena - a.ocena)
                         .slice(0, 4)
                 );
@@ -44,7 +41,7 @@ export default function Bestsellers() {
                     <div className="products-section-wrapper-inner">
                         <div className="products-grid">
                             {typeof products != null ? (
-                                products!.map((product, index) => (
+                                products?.map((product, index) => (
                                     <Link
                                         key={index}
                                         href={`/product/${product.slug}`}

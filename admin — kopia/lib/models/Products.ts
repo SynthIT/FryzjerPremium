@@ -18,6 +18,7 @@ export interface Products {
     kod_produkcyjny: string;
     ocena: number;
     opinie: Opinie[] | null;
+    createdAt: Date;
     wariant?: Warianty[];
     kod_ean?: string | null;
     sku?: string | null;
@@ -83,7 +84,6 @@ const reviewProductSchema = new Schema<Opinie>(
     {
         uzytkownik: { type: String, required: true },
         tresc: { type: String },
-        utworzenie: { type: Date, default: new Date() },
         ocena: { type: Number, default: 0 },
         zweryfikowane: { type: Boolean },
     },
