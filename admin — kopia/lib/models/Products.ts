@@ -7,9 +7,12 @@ export interface Products {
     slug: string;
     nazwa: string;
     cena: number;
+/* select pomiedzy 3-4 opcjami*/
     dostepnosc: string;
+/* [0].slug = kategoria produktu [0].nazwa podkategoria */ 
     kategoria: Categories[] | Types.ObjectId[] | string[];
     producent: Producents | Types.ObjectId | string;
+/* [0] baner (zdjecie) produktu*/
     media: Media[];
     promocje: Promos | Types.ObjectId | string | null;
     opis: string;
@@ -74,6 +77,7 @@ export interface Media {
     path: string;
 }
 
+/*wartosci w przypadku kolor/objetosc/rozmiar dla wariantu*/
 export interface props {
     name: string;
     val: string;
