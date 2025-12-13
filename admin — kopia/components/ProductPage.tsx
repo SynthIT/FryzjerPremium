@@ -15,6 +15,7 @@ import {
 } from "@/lib/models/Products";
 import RelatedProduct from "./productComponents/RelatedProduct";
 import ReviewTabs from "./productComponents/ReviewTabs";
+import PriceElement from "./productComponents/PriceElement";
 
 interface ProductPageProps {
     productSlug?: string;
@@ -23,18 +24,34 @@ interface ProductPageProps {
 export default function ProductPage({ productSlug }: ProductPageProps) {
     const [product, setProduct] = useState<Products | null>(null);
     const [allProducts, setAllProduct] = useState<Products[]>([]);
-    const [newPrice, setNewPrice] = useState(0);
+    const [selectedPrice, setSelectedPrice] = useState(0);
+    const [selectedWariant, setSelectedWariant] = useState<
+        Warianty | undefined
+    >();
 
     useEffect(() => {
         async function getProduct(p: string) {
             const data = await getProducts(p);
             setProduct(data.product!);
             // Oblicz nową cenę, jeśli produkt ma promocję
-            if (data.product!.promocje) {
-                const promo = data.product!.promocje as Promos;
-                const discountedPrice =
-                    data.product!.cena * (1 - promo.procent / 100);
-                setNewPrice(parseFloat(discountedPrice.toFixed(2)));
+            if (data.product?.wariant) {
+                setSelectedWariant(data.product.wariant[0]);
+            }
+            let basePrice = data.product!.cena;
+            if (data.product?.wariant && data.product?.wariant.length > 0) {
+                if (
+                    data.product.wariant[0].nadpisuje_cene &&
+                    data.product.wariant[0].nowa_cena
+                ) {
+                    basePrice = data.product.wariant[0].nowa_cena;
+                }
+                if (data.product!.promocje) {
+                    basePrice =
+                        basePrice *
+                        ((100 - (data.product!.promocje as Promos).procent) /
+                            100);
+                }
+                setSelectedPrice(basePrice);
             }
         }
         if (productSlug) {
@@ -52,9 +69,7 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
     // Jeśli produkt nie został znaleziony, pokaż komunikat
 
     const [selectedImage, setSelectedImage] = useState(0);
-    const [selectedWariant, setSelectedWariant] = useState<
-        Warianty | undefined
-    >(product?.wariant ? product.wariant[0] : undefined);
+
     const [quantity, setQuantity] = useState(1);
     const [activeTab, setActiveTab] = useState<"details" | "reviews" | "faqs">(
         "reviews"
@@ -86,34 +101,31 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
         setSelectedImage(index);
     }, []);
 
-    const handleWariantSelect = useCallback((w: Warianty) => {
-        setSelectedWariant(w);
-    }, []);
+    const handleWariantSelect = useCallback(
+        (w: Warianty) => {
+            let basePrice = product!.cena;
+            if (w.nadpisuje_cene && w.nowa_cena) {
+                basePrice = w.nowa_cena;
+            }
+            if (product!.promocje) {
+                basePrice =
+                    basePrice *
+                    ((100 - (product!.promocje as Promos).procent) / 100);
+            }
+            setSelectedPrice(basePrice);
+            setSelectedWariant(w);
+        },
+        [product]
+    );
 
     const { addToCart } = useCart();
 
     const handleAddToCart = useCallback(() => {
         if (product?.aktywne && product.ilosc > 0) {
-            addToCart(
-                product,
-                quantity,
-                newPrice == 0 ? product.cena : newPrice,
-                selectedWariant
-            );
+            addToCart(product, quantity, selectedPrice, selectedWariant);
             // Można dodać powiadomienie o dodaniu do koszyka
         }
-    }, [product, quantity, newPrice, selectedWariant, addToCart]);
-
-    const applyDiscount = (wariant: Warianty) => {
-        if (product && product.promocje) {
-            const promo = product.promocje as Promos;
-            const discountedPrice = product.cena * (1 - promo.procent / 100);
-            setNewPrice(parseFloat(discountedPrice.toFixed(2)));
-            return wariant.nadpisuje_cene
-                ? wariant.nowa_cena!.toString().replace(".", ",")
-                : discountedPrice.toString().replace(".", ",");
-        }
-    };
+    }, [product, quantity, selectedPrice, selectedWariant, addToCart]);
 
     if (!product) {
         return (
@@ -240,34 +252,10 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
 
                         {renderStars(product.ocena, 20)}
 
-                        <div className="product-price-section">
-                            {selectedWariant?.nadpisuje_cene &&
-                            newPrice != 0 ? (
-                                <>
-                                    <span className="product-original-price">
-                                        {selectedWariant
-                                            .nowa_cena!.toString()
-                                            .replace(".", ",")}{" "}
-                                        zł
-                                    </span>
-                                    <span className="product-current-price">
-                                        {applyDiscount(selectedWariant)} zł
-                                    </span>
-                                </>
-                            ) : newPrice != 0 ? (
-                                <>
-                                    <span className="product-current-price">
-                                        {newPrice.toString().replace(".", ",")}{" "}
-                                        zł
-                                    </span>
-                                </>
-                            ) : (
-                                <span className="product-current-price">
-                                    {product.cena.toString().replace(".", ",")}{" "}
-                                    zł
-                                </span>
-                            )}
-                        </div>
+                        <PriceElement
+                            cena={product.cena}
+                            promocje={product.promocje as Promos}
+                            selectedWariant={selectedWariant}></PriceElement>
 
                         {/* Color Selection */}
                         {product.wariant && product.wariant.length > 0 && (
@@ -291,18 +279,21 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                                             title={w.nazwa}
                                             aria-label={w.nazwa}>
                                             {selectedWariant === w && (
-                                                <svg
-                                                    className="color-checkmark"
-                                                    viewBox="0 0 24 24"
-                                                    fill="none"
-                                                    stroke="currentColor">
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth={2}
-                                                        d="M5 13l4 4L19 7"
-                                                    />
-                                                </svg>
+                                                <>
+                                                    <svg
+                                                        className="color-checkmark"
+                                                        viewBox="0 0 24 24"
+                                                        fill="none"
+                                                        stroke="currentColor">
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth={2}
+                                                            d="M5 13l4 4L19 7"
+                                                        />
+                                                    </svg>
+                                                    {w.nazwa}
+                                                </>
                                             )}
                                         </button>
                                     ))}

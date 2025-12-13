@@ -1,12 +1,28 @@
 import React from "react";
 import { ProductsResponse } from "./interfaces/ax";
-import axios from "axios"
+import axios from "axios";
+import { Promos, Warianty } from "./models/Products";
 
 export const getProducts = async (slug?: string) => {
-    const { data } = await axios.get<ProductsResponse>("/api/v1/products/get", {
+    const { data } = await axios.get<ProductsResponse>("http://localhost:3000/api/v1/products/get", {
         params: { slug: slug },
     });
     return data;
+};
+
+export const finalPrice = (
+    cena: number,
+    selectedWariant?: Warianty,
+    promocje?: Promos
+) => {
+    let basePrice = cena;
+    if (selectedWariant?.nadpisuje_cene && selectedWariant.nowa_cena) {
+        basePrice = selectedWariant.nowa_cena;
+    }
+    if (promocje) {
+        basePrice = basePrice * ((100 - promocje.procent) / 100);
+    }
+    return basePrice.toFixed(2).toString().replace(".", ",");
 };
 
 /**

@@ -3,16 +3,16 @@
 import Image from "next/image";
 import Link from "next/link";
 import "@/app/globals.css";
-import { getProducts, renderStars } from "@/lib/utils";
+import { renderStars } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { Products, Promos } from "@/lib/models/Products";
+import { ProductsResponse } from "@/lib/interfaces/ax";
 
-export default function Bestsellers() {
+export default function Bestsellers({ data }: { data: ProductsResponse }) {
     // Sortuj produkty według oceny (najwyższe na górze) i weź 4 najlepsze
     const [products, setProducts] = useState<Products[] | null>(null);
     useEffect(() => {
         async function getProductsBest() {
-            const data = await getProducts();
             if (data.status === 200) {
                 setProducts(
                     [...data.products!]
@@ -24,7 +24,7 @@ export default function Bestsellers() {
             }
         }
         getProductsBest();
-    }, []);
+    }, [data]);
 
     // const products = [...allProducts]
     //     .sort((a, b) => b.rating - a.rating)

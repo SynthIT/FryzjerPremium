@@ -4,7 +4,6 @@ import { useCart } from "@/contexts/CartContext";
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useState } from "react";
-import { parsePrice } from "@/lib/utils";
 import "@/app/globals.css";
 
 export default function CartPage() {
@@ -168,7 +167,7 @@ export default function CartPage() {
                                             </div>
                                             <div className="cart-item-price">
                                                 <span className="cart-item-current-price">
-                                                    {item.price} zł
+                                                    {itemTotal} zł
                                                 </span>
                                             </div>
                                         </div>

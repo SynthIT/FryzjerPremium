@@ -1,19 +1,18 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import "@/app/globals.css";
 import FiltersSidebar from "@/components/FiltersSidebar";
 import {
-    renderStars,
     getCategoryDisplayName,
     decodeCategory,
     getSubcategoryKeywords,
     getProducts,
 } from "@/lib/utils";
-import { Categories, Products, Promos } from "@/lib/models/Products";
+import { Categories, Products } from "@/lib/models/Products";
+import ProductElement from "./productsComponents/ProductElement";
 
 interface ProductsPageProps {
     categoryName?: string;
@@ -234,61 +233,11 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
                     <div className="products-main-content">
                         <div className="products-grid-listing">
                             {displayedProducts.map((product, index) => (
-                                <Link
+                                <ProductElement
+                                    index={index}
                                     key={index}
-                                    href={`/product/${product.slug}`}
-                                    className="product-card-listing">
-                                    <div className="product-image-wrapper-listing">
-                                        {product.promocje && (
-                                            <div className="product-discount-badge">
-                                                -
-                                                {
-                                                    (product.promocje as Promos)
-                                                        .procent
-                                                }
-                                                %
-                                            </div>
-                                        )}
-                                        {product.media ? (
-                                            <Image
-                                                src={product.media[0].path}
-                                                alt={product.media[0].alt}
-                                                width={300}
-                                                height={300}
-                                                className="product-image-listing"
-                                            />
-                                        ) : (
-                                            <div className="product-placeholder-listing">
-                                                <span>{product.nazwa}</span>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div className="product-info-listing">
-                                        <h3 className="product-name-listing">
-                                            {product.nazwa}
-                                        </h3>
-                                        {renderStars(product.ocena)}
-                                        <div className="product-price-listing">
-                                            {product.promocje && (
-                                                <span className="product-original-price">
-                                                    {product.cena} zł
-                                                </span>
-                                            )}
-                                            <span className="product-current-price">
-                                                {(
-                                                    product.cena *
-                                                    ((100 -
-                                                        (
-                                                            product.promocje as Promos
-                                                        ).procent) /
-                                                        100)
-                                                ).toFixed(2)}{" "}
-                                                zł
-                                            </span>
-                                        </div>
-                                    </div>
-                                </Link>
+                                    product={product}
+                                />
                             ))}
                         </div>
 

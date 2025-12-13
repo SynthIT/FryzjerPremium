@@ -233,14 +233,6 @@
         ],
         "wariant": [
             {
-                "nazwa": "Czerwony",
-                "slug": "czerwony",
-                "typ": "kolor",
-                "nadpisuje_cene": true,
-                "nowa_cena": 1799,
-                "_id": "693b21da42e05b40e4e7e721"
-            },
-            {
                 "nazwa": "120ml",
                 "slug": "120ml",
                 "typ": "objetosc",

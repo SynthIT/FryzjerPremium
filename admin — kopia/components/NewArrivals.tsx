@@ -3,32 +3,26 @@
 import Image from "next/image";
 import Link from "next/link";
 import "@/app/globals.css";
-import { getProducts, renderStars } from "@/lib/utils";
+import { renderStars } from "@/lib/utils";
 import { ProductsResponse } from "@/lib/interfaces/ax";
 import { Products } from "@/lib/models/Products";
 import { useState, useEffect } from "react";
 
-export default function NewArrivals() {
+export default function NewArrivals({ data }: { data: ProductsResponse }) {
     // Sortuj produkty według ID (najnowsze na górze) i weź 4 najnowsze
     const [products, setProducts] = useState<Products[] | null>(null);
     useEffect(() => {
         async function getProductsBest() {
-            const data = await getProducts()
-            if (data.status === 200) {
-                setProducts(
-                    [...data.products!]
-                        .sort(
-                            (a, b) =>
-                                b.createdAt.getTime() - a.createdAt.getTime()
-                        )
-                        .slice(0, 4)
-                );
-            } else {
-                return [];
-            }
+            setProducts(
+                [...data.products!]
+                    .sort(
+                        (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
+                    )
+                    .slice(0, 4)
+            );
         }
         getProductsBest();
-    }, []);
+    }, [data]);
 
     return (
         <section className="new-arrivals-section" id="new-arrivals-section">
