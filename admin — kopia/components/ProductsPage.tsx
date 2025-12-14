@@ -54,7 +54,7 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
     });
 
     useEffect(() => {
-        if (urlCategory) {
+        function setSelected(urlCategory: string) {
             setSelectedCategory(getCategoryDisplayName(urlCategory));
             setFilters({
                 priceRange: { min: 0, max: 15000 },
@@ -64,6 +64,9 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
                 selectedTypes: [],
             });
             setCurrentPage(1);
+        }
+        if (urlCategory) {
+            setSelected(urlCategory);
         }
     }, [urlCategory]);
 
@@ -86,7 +89,18 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
     }, [allProducts, sortBy]);
 
     // Mapowanie subkategorii - memoized
-    const subcategoryMap = useMemo(() => getSubcategoryKeywords(), []);
+
+    const [subcategoryMap, setSubcategoryMap] = useState<{
+        [key: string]: string[];
+    }>({});
+
+    useEffect(() => {
+        async function fetchSubcategoryMap() {
+            const map = await getSubcategoryKeywords();
+            setSubcategoryMap(map);
+        }
+        fetchSubcategoryMap();
+    }, []);
 
     // Filtruj produkty według kategorii i wszystkich filtrów - memoized
     const filteredProducts = useMemo(() => {

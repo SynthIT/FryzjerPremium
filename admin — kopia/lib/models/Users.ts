@@ -22,7 +22,7 @@ export interface Users {
     email: string;
     haslo: string;
     nr_domu: string;
-    nr_lokalu?: string | null;
+    nr_lokalu?: string;
     ulica: string;
     miasto: string;
     kraj: string;
@@ -45,7 +45,7 @@ const roleSchema = new Schema(
     }
 );
 
-export const userSchema = new Schema(
+export const userSchema = new Schema<Users>(
     {
         imie: { type: String, required: true },
         nazwisko: { type: String, required: true },
@@ -59,7 +59,7 @@ export const userSchema = new Schema(
         kod_pocztowy: { type: String, required: true },
         telefon: { type: String, required: true },
         nip: String,
-        zamowienia: { type: [schemaOrderList], defualt: [] },
+        zamowienia: { type: [schemaOrderList], default: [] },
         faktura: { type: Boolean, default: false },
         osoba_prywatna: { type: Boolean, default: true },
         role: { type: [roleSchema], default: [] },
@@ -70,4 +70,4 @@ export const userSchema = new Schema(
 );
 
 export const Role = model("Roles", roleSchema);
-export const User = model("Users", userSchema);
+export const User = model<Users>("Users", userSchema);

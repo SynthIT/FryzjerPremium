@@ -1,13 +1,42 @@
 import React from "react";
-import { ProductsResponse } from "./interfaces/ax";
 import axios from "axios";
 import { Promos, Warianty } from "./models/Products";
 
 export const getProducts = async (slug?: string) => {
-    const { data } = await axios.get<ProductsResponse>("http://localhost:3000/api/v1/products/get", {
-        params: { slug: slug },
+    const url = new URL("http://localhost:3000/api/v1/products");
+    if (slug) {
+        url.searchParams.append("slug", slug);
+    }
+    const data = await fetch(url, {
+        cache: "default",
+    });
+    return data.json();
+};
+
+export const registerUser = async (email: string, password: string) => {
+    const url = new URL("http://localhost:3000/api/v1/auth/register");
+    const data = await fetch(url, {
+        method: "POST",
+        body: JSON.stringify({ email, password }),
     });
     return data;
+};
+
+export const loginUser = async (email: string, password: string) => {
+    const url = new URL("http://localhost:3000/api/v1/auth/login");
+    const data = await fetch(url, {
+        method: "POST",
+        body: JSON.stringify({ email, password }),
+    });
+    return data;
+};
+
+const getCategories = async () => {
+    const data = await fetch(
+        "http://localhost:3000/api/v1/products/categories",
+        { cache: "force-cache", next: { revalidate: 300 } }
+    );
+    return data.json();
 };
 
 export const finalPrice = (
@@ -102,18 +131,14 @@ export const renderStars = (
 /**
  * Mapowanie nazw kategorii z URL na wyświetlane nazwy
  */
-export const getCategoryDisplayName = (categorySlug: string): string => {
+export const getCategoryDisplayName = async (
+    categorySlug: string
+): Promise<string> => {
+    const categories = await getCategories();
     if (!categorySlug) return "Wszystkie produkty";
-    const categoryMap: { [key: string]: string } = {
-        "kosmetyki": "Kosmetyki",
-        "sprzęty": "Sprzęty",
-        "sprzety": "Sprzęty",
-        "meble": "Meble",
-        "szkolenia": "Szkolenia",
-    };
     const lowerSlug = categorySlug.toLowerCase();
     return (
-        categoryMap[lowerSlug] ||
+        categories.categories![lowerSlug] ||
         categorySlug.charAt(0).toUpperCase() + categorySlug.slice(1)
     );
 };
@@ -132,27 +157,9 @@ export const decodeCategory = (categorySlug: string): string => {
 /**
  * Mapowanie podkategorii na słowa kluczowe w nazwie produktu
  */
-export const getSubcategoryKeywords = (): { [key: string]: string[] } => {
-    return {
-        "Szampony": ["szampon", "shampoo"],
-        "Odżywki": ["odżywka", "odzywka"],
-        "Lakiery": ["lakier"],
-        "Maseczki": ["maska", "maske"],
-        "Olejki": ["olejek"],
-        "Myjnie": ["myjnia", "myjnia"],
-        "Suszarki": ["suszarka", "suszarki"],
-        "Nożyczki": ["nożyczki", "nozyczki"],
-        "Maszynki": ["maszynka"],
-        "Prostownice": ["prostownica"],
-        "Fotele": ["fotel"],
-        "Stanowiska do mycia": ["stanowisko"],
-        "Lustra": ["lustro"],
-        "Szafki": ["szafka"],
-        "Stoliki": ["stolik"],
-        "Koloryzacja": ["koloryzacja", "koloryzacji"],
-        "Strzyżenie": ["strzyżenie", "strzyzenia", "strzyzenia"],
-        "Stylizacja": ["stylizacja"],
-        "Manicure": ["manicure"],
-        "Makijaż": ["makijaż", "makijaz"],
-    };
+export const getSubcategoryKeywords = async (): Promise<{
+    [key: string]: string[];
+}> => {
+    const categories = await getCategories();
+    return categories.categories!;
 };
