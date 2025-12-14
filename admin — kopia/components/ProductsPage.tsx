@@ -8,7 +8,6 @@ import FiltersSidebar from "@/components/FiltersSidebar";
 import {
     getCategoryDisplayName,
     decodeCategory,
-    getSubcategoryKeywords,
     getProducts,
 } from "@/lib/utils";
 import { Categories, Products } from "@/lib/models/Products";
@@ -101,19 +100,21 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
         });
     }, [allProducts, sortBy]);
 
-    // Mapowanie subkategorii - memoized
-
-    const [subcategoryMap, setSubcategoryMap] = useState<{
-        [key: string]: string[];
-    }>({});
-
-    useEffect(() => {
-        async function fetchSubcategoryMap() {
-            const map = await getSubcategoryKeywords();
-            setSubcategoryMap(map);
-        }
-        fetchSubcategoryMap();
-    }, []);
+    // Tworzymy mapę nazwa -> slug dla wszystkich kategorii w produktach
+    const categoryNameToSlugMap = useMemo(() => {
+        const map = new Map<string, string>();
+        allProducts.forEach((product) => {
+            const productCategories = product.kategoria as Categories[];
+            if (productCategories && productCategories.length > 0) {
+                productCategories.forEach((cat) => {
+                    if (cat.nazwa && cat.slug) {
+                        map.set(cat.nazwa, cat.slug.toLowerCase());
+                    }
+                });
+            }
+        });
+        return map;
+    }, [allProducts]);
 
     // Filtruj produkty według kategorii i wszystkich filtrów - memoized
     const filteredProducts = useMemo(() => {
@@ -136,16 +137,26 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
                 return false;
             }
 
-            // Filtrowanie według podkategorii
+            // Filtrowanie według podkategorii - filtrujemy po nazwie, ale porównujemy slugi kategorii
             if (filters.selectedSubcategories.length > 0) {
-                const productNameLower = product.nazwa.toLowerCase();
-                const matchesAnySubcategory =
-                    filters.selectedSubcategories.some((subcategory) => {
-                        const keywords = subcategoryMap[subcategory] || [];
-                        return keywords.some((keyword) =>
-                            productNameLower.includes(keyword)
-                        );
-                    });
+                const productCategories = product.kategoria as Categories[];
+                if (!productCategories || productCategories.length === 0) {
+                    return false;
+                }
+                
+                // Dla każdej wybranej nazwy podkategorii znajdź odpowiadający slug
+                // i porównaj z slugami kategorii produktu
+                const matchesAnySubcategory = filters.selectedSubcategories.some((selectedNazwa) => {
+                    const selectedSlug = categoryNameToSlugMap.get(selectedNazwa);
+                    if (!selectedSlug) {
+                        // Jeśli nie znaleziono slug dla nazwy, porównaj bezpośrednio po nazwie
+                        return productCategories.some((cat) => cat.nazwa === selectedNazwa);
+                    }
+                    // Porównaj slug kategorii produktu z slugiem wybranej podkategorii
+                    return productCategories.some((cat) => 
+                        cat.slug.toLowerCase() === selectedSlug
+                    );
+                });
 
                 if (!matchesAnySubcategory) {
                     return false;
@@ -171,7 +182,7 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
 
             return true;
         });
-    }, [sortedProducts, urlCategory, filters, subcategoryMap]);
+    }, [sortedProducts, urlCategory, filters, categoryNameToSlugMap]);
 
     // Resetuj stronę gdy zmienią się filtry
     useEffect(() => {
@@ -252,6 +263,7 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
                     {/* Sidebar with Filters */}
                     <FiltersSidebar
                         category={urlCategory}
+                        products={allProducts}
                         filters={filters}
                         onFiltersChange={setFilters}
                     />

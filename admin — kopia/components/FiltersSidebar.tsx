@@ -2,9 +2,12 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import "@/app/globals.css";
+import { Products, Categories, Producents } from "@/lib/models/Products";
+import { getSubcategoryKeywords } from "@/lib/utils";
 
 interface FiltersSidebarProps {
   category?: string;
+  products: Products[];
   filters: {
     priceRange: { min: number; max: number };
     selectedSubcategories: string[];
@@ -21,80 +24,111 @@ interface FiltersSidebarProps {
   }) => void;
 }
 
-export default function FiltersSidebar({ category, filters, onFiltersChange }: FiltersSidebarProps) {
-  // Filtry spersonalizowane pod kategorię
-  const getFiltersForCategory = (categoryName: string) => {
-    const categoryLower = categoryName.toLowerCase();
-    
-    if (categoryLower === 'kosmetyki') {
-      return {
-        subcategories: ['Szampony', 'Odżywki', 'Lakiery', 'Maseczki', 'Olejki'],
-        brands: ['Wella', 'L\'Oréal', 'Schwarzkopf', 'Redken', 'Matrix'],
-        sizes: null, // Kosmetyki nie mają rozmiarów
-        types: ['Do włosów suchych', 'Do włosów tłustych', 'Do włosów zniszczonych', 'Koloryzujące'],
-        priceRange: { min: 0, max: 500 },
-      };
-    } else if (categoryLower === 'sprzęty' || categoryLower === 'sprzety') {
-      return {
-        subcategories: ['Myjnie', 'Suszarki', 'Nożyczki', 'Maszynki', 'Prostownice'],
-        brands: ['BaByliss', 'Wahl', 'Remington', 'Philips', 'Dyson'],
-        sizes: null,
-        types: ['Profesjonalne', 'Domowe', 'Bezprzewodowe', 'Z przewodem'],
-        priceRange: { min: 0, max: 10000 },
-      };
-    } else if (categoryLower === 'meble') {
-      return {
-        subcategories: ['Fotele', 'Stanowiska do mycia', 'Lustra', 'Szafki', 'Stoliki'],
-        brands: ['Takara Belmont', 'JRL', 'Sanko', 'Belco', 'Panasonic'],
-        sizes: ['Małe', 'Średnie', 'Duże', 'XXL'],
-        types: ['Klasyczne', 'Nowoczesne', 'Premium', 'Podstawowe'],
-        priceRange: { min: 0, max: 15000 },
-      };
-    } else if (categoryLower === 'szkolenia') {
-      return {
-        subcategories: ['Koloryzacja', 'Strzyżenie', 'Stylizacja', 'Manicure', 'Makijaż'],
-        brands: null, // Szkolenia nie mają brandów
-        sizes: null,
-        types: ['Podstawowe', 'Zaawansowane', 'Mistrzowskie', 'Online', 'Stacjonarne'],
-        priceRange: { min: 0, max: 5000 },
-      };
-    }
-    
-    // Domyślne filtry dla "wszystkie produkty" - pokazujemy wszystkie dostępne opcje
-    return {
-      subcategories: [
-        // Kosmetyki
-        'Szampony', 'Odżywki', 'Lakiery', 'Maseczki', 'Olejki',
-        // Sprzęty
-        'Myjnie', 'Suszarki', 'Nożyczki', 'Maszynki', 'Prostownice',
-        // Meble
-        'Fotele', 'Stanowiska do mycia', 'Lustra', 'Szafki', 'Stoliki',
-        // Szkolenia
-        'Koloryzacja', 'Strzyżenie', 'Stylizacja', 'Manicure', 'Makijaż'
-      ],
-      brands: [
-        'Wella', 'L\'Oréal', 'Schwarzkopf', 'Redken', 'Matrix',
-        'BaByliss', 'Wahl', 'Remington', 'Philips', 'Dyson',
-        'Takara Belmont', 'JRL', 'Sanko', 'Belco', 'Panasonic'
-      ],
-      sizes: null,
-      types: [
-        // Kosmetyki
-        'Do włosów suchych', 'Do włosów tłustych', 'Do włosów zniszczonych', 'Koloryzujące',
-        // Sprzęty
-        'Profesjonalne', 'Domowe', 'Bezprzewodowe', 'Z przewodem',
-        // Meble
-        'Klasyczne', 'Nowoczesne', 'Premium', 'Podstawowe',
-        // Szkolenia
-        'Zaawansowane', 'Mistrzowskie', 'Online', 'Stacjonarne'
-      ],
-      priceRange: { min: 0, max: 15000 }, // Największy zakres z wszystkich kategorii
-    };
-  };
+export default function FiltersSidebar({ category, products, filters, onFiltersChange }: FiltersSidebarProps) {
+  const [subcategoryMap, setSubcategoryMap] = useState<{ [key: string]: string[] }>({});
 
+  // Pobierz mapę podkategorii
+  useEffect(() => {
+    async function fetchSubcategoryMap() {
+      try {
+        const map = await getSubcategoryKeywords();
+        setSubcategoryMap(map);
+      } catch (error) {
+        console.error("Błąd podczas ładowania podkategorii:", error);
+      }
+    }
+    fetchSubcategoryMap();
+  }, []);
+
+  // Dynamicznie generuj filtry na podstawie produktów
   const categoryFilters = useMemo(() => {
-    return category ? getFiltersForCategory(category) : getFiltersForCategory('');
-  }, [category]);
+    // Filtruj produkty według kategorii (jeśli wybrana)
+    const filteredProducts = category
+      ? products.filter((product) => {
+          const productCategories = product.kategoria as Categories[];
+          if (productCategories && productCategories.length > 0) {
+            return productCategories[0].slug.toLowerCase() === category.toLowerCase();
+          }
+          return false;
+        })
+      : products;
+
+    // Generuj unikalne marki z produktów
+    const brandsSet = new Set<string>();
+    filteredProducts.forEach((product) => {
+      if (product.producent) {
+        if (typeof product.producent === 'string') {
+          brandsSet.add(product.producent);
+        } else if (typeof product.producent === 'object' && 'nazwa' in product.producent) {
+          const producent = product.producent as Producents;
+          if (producent.nazwa) {
+            brandsSet.add(producent.nazwa);
+          }
+        }
+      }
+    });
+    const brands = Array.from(brandsSet).sort();
+
+    // Generuj unikalne rozmiary z wariantów produktów
+    const sizesSet = new Set<string>();
+    filteredProducts.forEach((product) => {
+      if (product.wariant && Array.isArray(product.wariant)) {
+        product.wariant.forEach((wariant) => {
+          if (wariant.typ === 'rozmiar' && wariant.rozmiary?.val) {
+            sizesSet.add(wariant.rozmiary.val);
+          }
+        });
+      }
+    });
+    const sizes = sizesSet.size > 0 ? Array.from(sizesSet).sort() : null;
+
+    // Generuj unikalne typy z wariantów (kolory i inne)
+    const typesSet = new Set<string>();
+    filteredProducts.forEach((product) => {
+      if (product.wariant && Array.isArray(product.wariant)) {
+        product.wariant.forEach((wariant) => {
+          if (wariant.typ === 'kolor' && wariant.kolory?.val) {
+            typesSet.add(wariant.kolory.val);
+          }
+        });
+      }
+    });
+    const types = typesSet.size > 0 ? Array.from(typesSet).sort() : null;
+
+    // Generuj podkategorie - używamy slugów kategorii produktów
+    // Tworzymy mapę slug -> nazwa dla wyświetlania
+    const subcategoriesMap = new Map<string, string>();
+    filteredProducts.forEach((product) => {
+      const productCategories = product.kategoria as Categories[];
+      if (productCategories && productCategories.length > 0) {
+        productCategories.forEach((cat) => {
+          if (cat.slug && cat.nazwa) {
+            // Używamy slug jako klucz, ale przechowujemy też nazwę dla wyświetlania
+            subcategoriesMap.set(cat.slug.toLowerCase(), cat.nazwa);
+          }
+        });
+      }
+    });
+    
+    // Zwracamy tablicę obiektów {slug, nazwa} dla łatwiejszego użycia
+    const subcategories = subcategoriesMap.size > 0 
+      ? Array.from(subcategoriesMap.entries()).map(([slug, nazwa]) => ({ slug, nazwa })).sort((a, b) => a.nazwa.localeCompare(b.nazwa))
+      : null;
+
+    // Oblicz zakres cen z produktów
+    const prices = filteredProducts.map((p) => p.cena);
+    const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
+    const maxPrice = prices.length > 0 ? Math.max(...prices) : 15000;
+    const priceRange = { min: Math.max(0, Math.floor(minPrice)), max: Math.ceil(maxPrice) };
+
+    return {
+      subcategories,
+      brands: brands.length > 0 ? brands : null,
+      sizes,
+      types,
+      priceRange,
+    };
+  }, [products, category, subcategoryMap]);
 
   const [expandedSections, setExpandedSections] = useState<{ [key: string]: boolean }>({
     subcategory: true,
@@ -104,19 +138,21 @@ export default function FiltersSidebar({ category, filters, onFiltersChange }: F
     type: false,
   });
 
-  // Aktualizuj zakres cen gdy zmieni się kategoria
+  // Aktualizuj zakres cen gdy zmieni się kategoria lub produkty
   useEffect(() => {
-    if (categoryFilters.priceRange && categoryFilters.priceRange.max !== filters.priceRange.max) {
+    if (categoryFilters.priceRange && 
+        (categoryFilters.priceRange.max !== filters.priceRange.max || 
+         categoryFilters.priceRange.min !== filters.priceRange.min)) {
       onFiltersChange({
         priceRange: categoryFilters.priceRange,
-        selectedSubcategories: [],
-        selectedBrands: [],
-        selectedSizes: [],
-        selectedTypes: [],
+        selectedSubcategories: filters.selectedSubcategories,
+        selectedBrands: filters.selectedBrands,
+        selectedSizes: filters.selectedSizes,
+        selectedTypes: filters.selectedTypes,
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [category]);
+  }, [category, categoryFilters.priceRange]);
 
   // Funkcja pomocnicza do toggle'owania wartości w tablicy - memoized
   const toggleFilter = useCallback((array: string[], value: string): string[] => {
@@ -162,15 +198,15 @@ export default function FiltersSidebar({ category, filters, onFiltersChange }: F
           </button>
           {expandedSections.subcategory && (
             <div className="filter-section-content">
-              {categoryFilters.subcategories.map((subcategory) => {
-                const isSelected = filters.selectedSubcategories.includes(subcategory);
+              {categoryFilters.subcategories?.map((subcategory) => {
+                const isSelected = filters.selectedSubcategories.includes(subcategory.nazwa);
                 return (
                   <div 
-                    key={subcategory} 
+                    key={subcategory.slug} 
                     className={`filter-category-item ${isSelected ? 'selected' : ''}`}
                     onClick={() => onFiltersChange({
                       ...filters,
-                      selectedSubcategories: toggleFilter(filters.selectedSubcategories, subcategory)
+                      selectedSubcategories: toggleFilter(filters.selectedSubcategories, subcategory.nazwa)
                     })}
                   >
                     <input
@@ -180,7 +216,7 @@ export default function FiltersSidebar({ category, filters, onFiltersChange }: F
                       onClick={(e) => e.stopPropagation()}
                       className="filter-checkbox"
                     />
-                    <span>{subcategory}</span>
+                    <span>{subcategory.nazwa}</span>
                   </div>
                 );
               })}
@@ -385,7 +421,7 @@ export default function FiltersSidebar({ category, filters, onFiltersChange }: F
       <button 
         className="apply-filter-button"
         onClick={() => onFiltersChange({
-          priceRange: categoryFilters.priceRange || { min: 0, max: 15000 },
+          priceRange: categoryFilters.priceRange || { min: 0, max: 0 },
           selectedSubcategories: [],
           selectedBrands: [],
           selectedSizes: [],
