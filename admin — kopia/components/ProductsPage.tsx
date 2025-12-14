@@ -23,8 +23,13 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
 
     useEffect(() => {
         async function getProduct() {
-            const data = await getProducts();
-            setAllProduct(data.products!);
+            try {
+                const data = await getProducts();
+                setAllProduct(data.products || []);
+            } catch (error) {
+                console.error("Błąd podczas ładowania produktów:", error);
+                setAllProduct([]);
+            }
         }
         getProduct();
     }, []);
@@ -36,9 +41,7 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
         () => decodeCategory(urlCategoryParam),
         [urlCategoryParam]
     );
-    const [selectedCategory, setSelectedCategory] = useState(() =>
-        getCategoryDisplayName(urlCategory)
-    );
+    const [selectedCategory, setSelectedCategory] = useState("Wszystkie produkty");
     const [sortBy, setSortBy] = useState("Najpopularniejsze");
     const [currentPage, setCurrentPage] = useState(1);
     const productsPerPage = 9;
@@ -54,8 +57,14 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
     });
 
     useEffect(() => {
-        function setSelected(urlCategory: string) {
-            setSelectedCategory(getCategoryDisplayName(urlCategory));
+        async function setSelected(urlCategory: string) {
+            try {
+                const displayName = await getCategoryDisplayName(urlCategory);
+                setSelectedCategory(displayName);
+            } catch (error) {
+                console.error("Błąd podczas ładowania nazwy kategorii:", error);
+                setSelectedCategory(urlCategory ? urlCategory.charAt(0).toUpperCase() + urlCategory.slice(1) : "Wszystkie produkty");
+            }
             setFilters({
                 priceRange: { min: 0, max: 15000 },
                 selectedSubcategories: [],
@@ -67,6 +76,8 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
         }
         if (urlCategory) {
             setSelected(urlCategory);
+        } else {
+            setSelectedCategory("Wszystkie produkty");
         }
     }, [urlCategory]);
 
@@ -81,7 +92,9 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
                 case "Ocena":
                     return b.ocena - a.ocena;
                 case "Najnowsze":
-                    return b.createdAt.getTime() - a.createdAt.getTime(); // Zakładając, że wyższy ID = nowszy
+                    const dateA = a.createdAt instanceof Date ? a.createdAt.getTime() : new Date(a.createdAt).getTime();
+                    const dateB = b.createdAt instanceof Date ? b.createdAt.getTime() : new Date(b.createdAt).getTime();
+                    return dateB - dateA;
                 default: // 'Najpopularniejsze'
                     return b.ocena - a.ocena;
             }
