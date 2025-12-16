@@ -10,7 +10,7 @@ import {
     decodeCategory,
     getProducts,
 } from "@/lib/utils";
-import { Categories, Products } from "@/lib/models/Products";
+import { Categories, Producents, Products } from "@/lib/models/Products";
 import ProductElement from "./productsComponents/ProductElement";
 
 interface ProductsPageProps {
@@ -40,7 +40,8 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
         () => decodeCategory(urlCategoryParam),
         [urlCategoryParam]
     );
-    const [selectedCategory, setSelectedCategory] = useState("Wszystkie produkty");
+    const [selectedCategory, setSelectedCategory] =
+        useState("Wszystkie produkty");
     const [sortBy, setSortBy] = useState("Najpopularniejsze");
     const [currentPage, setCurrentPage] = useState(1);
     const productsPerPage = 9;
@@ -62,7 +63,12 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
                 setSelectedCategory(displayName);
             } catch (error) {
                 console.error("Błąd podczas ładowania nazwy kategorii:", error);
-                setSelectedCategory(urlCategory ? urlCategory.charAt(0).toUpperCase() + urlCategory.slice(1) : "Wszystkie produkty");
+                setSelectedCategory(
+                    urlCategory
+                        ? urlCategory.charAt(0).toUpperCase() +
+                              urlCategory.slice(1)
+                        : "Wszystkie produkty"
+                );
             }
             setFilters({
                 priceRange: { min: 0, max: 15000 },
@@ -91,8 +97,14 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
                 case "Ocena":
                     return b.ocena - a.ocena;
                 case "Najnowsze":
-                    const dateA = a.createdAt instanceof Date ? a.createdAt.getTime() : new Date(a.createdAt).getTime();
-                    const dateB = b.createdAt instanceof Date ? b.createdAt.getTime() : new Date(b.createdAt).getTime();
+                    const dateA =
+                        a.createdAt instanceof Date
+                            ? a.createdAt.getTime()
+                            : new Date(a.createdAt).getTime();
+                    const dateB =
+                        b.createdAt instanceof Date
+                            ? b.createdAt.getTime()
+                            : new Date(b.createdAt).getTime();
                     return dateB - dateA;
                 default: // 'Najpopularniejsze'
                     return b.ocena - a.ocena;
@@ -108,9 +120,27 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
             if (productCategories && productCategories.length > 0) {
                 productCategories.forEach((cat) => {
                     if (cat.nazwa && cat.slug) {
-                        map.set(cat.nazwa, cat.slug.toLowerCase());
+                        map.set(cat.slug, cat.nazwa.toLowerCase());
                     }
                 });
+            }
+        });
+        return map;
+    }, [allProducts]);
+
+    const produentsToMap = useMemo(() => {
+        const map = new Map<string, string>();
+        allProducts.forEach((product) => {
+            const productProducent = product.producent as Producents;
+            if (
+                productProducent &&
+                productProducent.nazwa &&
+                productProducent.slug
+            ) {
+                map.set(
+                    productProducent.slug,
+                    productProducent.nazwa.toLowerCase()
+                );
             }
         });
         return map;
@@ -143,20 +173,24 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
                 if (!productCategories || productCategories.length === 0) {
                     return false;
                 }
-                
+
                 // Dla każdej wybranej nazwy podkategorii znajdź odpowiadający slug
                 // i porównaj z slugami kategorii produktu
-                const matchesAnySubcategory = filters.selectedSubcategories.some((selectedNazwa) => {
-                    const selectedSlug = categoryNameToSlugMap.get(selectedNazwa);
-                    if (!selectedSlug) {
-                        // Jeśli nie znaleziono slug dla nazwy, porównaj bezpośrednio po nazwie
-                        return productCategories.some((cat) => cat.nazwa === selectedNazwa);
-                    }
-                    // Porównaj slug kategorii produktu z slugiem wybranej podkategorii
-                    return productCategories.some((cat) => 
-                        cat.slug.toLowerCase() === selectedSlug
-                    );
-                });
+                const matchesAnySubcategory =
+                    filters.selectedSubcategories.some((selectedNazwa) => {
+                        const selectedSlug =
+                            categoryNameToSlugMap.get(selectedNazwa);
+                        if (!selectedSlug) {
+                            // Jeśli nie znaleziono slug dla nazwy, porównaj bezpośrednio po nazwie
+                            return productCategories.some(
+                                (cat) => cat.nazwa === selectedNazwa
+                            );
+                        }
+                        // Porównaj slug kategorii produktu z slugiem wybranej podkategorii
+                        return productCategories.some(
+                            (cat) => cat.nazwa.toLowerCase() === selectedSlug
+                        );
+                    });
 
                 if (!matchesAnySubcategory) {
                     return false;
@@ -166,8 +200,30 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
             // Filtrowanie według marki (na razie pomijamy, bo produkty nie mają marki w danych)
             // Jeśli wybrano jakieś marki, produkt musi pasować do przynajmniej jednej
             if (filters.selectedBrands.length > 0) {
-                // Na razie pomijamy, bo produkty nie mają marki w danych
-                // Można dodać później gdy będą marki w danych produktów
+                const productProducent = product.producent as Producents;
+                if (!productProducent) {
+                    return false;
+                }
+
+                // Dla każdej wybranej nazwy podkategorii znajdź odpowiadający slug
+                // i porównaj z slugami kategorii produktu
+                const matchesAnyProducent = filters.selectedBrands.some(
+                    (selectedNazwa) => {
+                        const selectedProducent =
+                            produentsToMap.get(selectedNazwa);
+                        console.log(
+                            "selectedNazwa:",
+                            selectedNazwa,
+                            "mapped to:",
+                            selectedProducent
+                        );
+                        return productProducent.nazwa == selectedProducent;
+                    }
+                );
+
+                if (!matchesAnyProducent) {
+                    return false;
+                }
             }
 
             // Filtrowanie według typu (na razie pomijamy, podobnie jak marka)
@@ -182,7 +238,13 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
 
             return true;
         });
-    }, [sortedProducts, urlCategory, filters, categoryNameToSlugMap]);
+    }, [
+        sortedProducts,
+        urlCategory,
+        filters,
+        categoryNameToSlugMap,
+        produentsToMap,
+    ]);
 
     // Resetuj stronę gdy zmienią się filtry
     useEffect(() => {

@@ -47,7 +47,7 @@ export default function FiltersSidebar({ category, products, filters, onFiltersC
       ? products.filter((product) => {
           const productCategories = product.kategoria as Categories[];
           if (productCategories && productCategories.length > 0) {
-            return productCategories[0].slug.toLowerCase() === category.toLowerCase();
+            return productCategories[0].nazwa.toLowerCase() === category.toLowerCase();
           }
           return false;
         })
@@ -104,7 +104,7 @@ export default function FiltersSidebar({ category, products, filters, onFiltersC
         productCategories.forEach((cat) => {
           if (cat.slug && cat.nazwa) {
             // Używamy slug jako klucz, ale przechowujemy też nazwę dla wyświetlania
-            subcategoriesMap.set(cat.slug.toLowerCase(), cat.nazwa);
+            subcategoriesMap.set(cat.nazwa.toLowerCase(), cat.nazwa);
           }
         });
       }
@@ -128,7 +128,7 @@ export default function FiltersSidebar({ category, products, filters, onFiltersC
       types,
       priceRange,
     };
-  }, [products, category, subcategoryMap]);
+  }, [products, category]);
 
   const [expandedSections, setExpandedSections] = useState<{ [key: string]: boolean }>({
     subcategory: true,

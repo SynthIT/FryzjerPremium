@@ -32,6 +32,7 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
     useEffect(() => {
         async function getProduct(p: string) {
             const data = await getProducts(p);
+            console.log(data);
             setProduct(data.product!);
             // Oblicz nową cenę, jeśli produkt ma promocję
             if (data.product?.wariant) {

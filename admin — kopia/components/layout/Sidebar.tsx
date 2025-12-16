@@ -31,6 +31,8 @@ import {
     ChevronRight,
     User,
     Shield,
+    Factory,
+    FolderKanban,
 } from "lucide-react";
 
 type NavItem = {
@@ -69,24 +71,31 @@ const navItems: NavItem[] = [
         icon: <Receipt className="h-5 w-5" />,
     },
     {
-        href: "/admin/products",
-        label: "Produkty",
-        icon: <Package className="h-5 w-5" />,
+        href: "/admin/manage",
+        label: "Zarządzaj",
+        icon: <FolderKanban className="h-5 w-5" />,
+        children: [
+            {
+                href: "/admin/manage/products",
+                label: "Produkty",
+                icon: <Package className="h-4 w-4" />,
+            },
+            {
+                href: "/admin/manage/producents",
+                label: "Producenci",
+                icon: <Factory className="h-4 w-4" />,
+            },
+            {
+                href: "/admin/manage/categories",
+                label: "Kategorie",
+                icon: <Boxes className="h-4 w-4" />,
+            },
+        ],
     },
     {
-        href: "/admin/products/new",
-        label: "Dodaj produkt",
+        href: "/admin/fast/new",
+        label: "Szybkie dodanie",
         icon: <PlusSquare className="h-5 w-5" />,
-    },
-    {
-        href: "/admin/categories",
-        label: "Kategorie",
-        icon: <FolderTree className="h-5 w-5" />,
-    },
-    {
-        href: "/admin/subcategories",
-        label: "Podkategorie",
-        icon: <Boxes className="h-5 w-5" />,
     },
     {
         href: "/admin/analytics",

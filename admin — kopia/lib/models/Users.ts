@@ -1,4 +1,4 @@
-import { model, Schema } from "mongoose";
+import { model, models, Schema } from "mongoose";
 import { OrderList, schemaOrderList } from "./Orders";
 
 export const PermissionTable = {
@@ -69,5 +69,5 @@ export const userSchema = new Schema<Users>(
     }
 );
 
-export const Role = model("Roles", roleSchema);
-export const User = model<Users>("Users", userSchema);
+export const Role = models.Roles || model<Role>("Roles", roleSchema);
+export const User = models.Users || model<Users>("Users", userSchema);

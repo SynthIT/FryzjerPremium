@@ -7,6 +7,7 @@ import ProductCategories from "@/components/ProductCategories";
 import Footer from "@/components/Footer";
 import { getProducts } from "@/lib/utils";
 
+
 export default async function Home() {
     const retrivetProducts = await getProducts();
 

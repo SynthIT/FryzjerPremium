@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { JwtPayload, sign, verify } from "jsonwebtoken";
 
 import mongoose from "mongoose";
+import { Product } from "./models/Products";
 export function createJWT(email: string) {
     const payload: JwtPayload = {
         email: email,
@@ -44,4 +45,15 @@ export async function addNewUser(email: string, password: string) {
         mongoose.connection.close();
         return u;
     }
+}
+
+export async function collectProducts() {
+    await mongoose.connect("mongodb://localhost:27017/fryzjerpremium");
+    const products = await Product.find()
+        .populate("kategoria")
+        .populate("promocje")
+        .populate("producent")
+        .orFail();
+    mongoose.connection.close();
+    return JSON.stringify(products);
 }

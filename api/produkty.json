@@ -1,13 +1,13 @@
 [
     {
-        "_id": "693b21da42e05b40e4e7e708",
+        "_id": "6941b5a9b05aec2a8d57d179",
         "slug": "fotel-męski-do-strzyżenia",
         "nazwa": "Fotel męski do strzyżenia",
         "cena": 1499.99,
         "dostepnosc": "Ograniczona",
         "kategoria": [
             {
-                "_id": "693b21da42e05b40e4e7e6f0",
+                "_id": "6941b5a9b05aec2a8d57d161",
                 "nazwa": "Fotel",
                 "slug": "sprzet",
                 "image": "/path/to/baner.jpg",
@@ -15,7 +15,7 @@
             }
         ],
         "producent": {
-            "_id": "693b21da42e05b40e4e7e6ff",
+            "_id": "6941b5a9b05aec2a8d57d170",
             "nazwa": "Marka wlasna",
             "slug": "wlasna",
             "__v": 0
@@ -27,9 +27,9 @@
                 "typ": "image",
                 "alt": "baner",
                 "path": "/path/to/baner.jpg",
-                "_id": "693b21da42e05b40e4e7e709",
-                "createdAt": "2025-12-11T19:56:10.188Z",
-                "updatedAt": "2025-12-11T19:56:10.188Z"
+                "_id": "6941b5a9b05aec2a8d57d17a",
+                "createdAt": "2025-12-16T19:40:26.006Z",
+                "updatedAt": "2025-12-16T19:40:26.006Z"
             },
             {
                 "nazwa": "fotel_jakistam",
@@ -37,17 +37,17 @@
                 "typ": "image",
                 "alt": "fotel",
                 "path": "/path/to/fotel.jpg",
-                "_id": "693b21da42e05b40e4e7e70a",
-                "createdAt": "2025-12-11T19:56:10.188Z",
-                "updatedAt": "2025-12-11T19:56:10.188Z"
+                "_id": "6941b5a9b05aec2a8d57d17b",
+                "createdAt": "2025-12-16T19:40:26.006Z",
+                "updatedAt": "2025-12-16T19:40:26.006Z"
             }
         ],
         "promocje": {
-            "_id": "693b21b18b65b0eb653bc185",
+            "_id": "6941b5a9b05aec2a8d57d158",
             "nazwa": "lll",
             "procent": 10,
-            "rozpoczecie": "2025-12-11T19:55:29.524Z",
-            "wygasa": "2025-12-14T19:55:29.524Z",
+            "rozpoczecie": "2025-12-16T19:40:25.896Z",
+            "wygasa": "2025-12-19T19:40:25.896Z",
             "__v": 0
         },
         "opis": "Fotel męski, idealnie wyprofilowany pod każdego mężczyne",
@@ -60,17 +60,17 @@
                 "uzytkownik": "Andrzej K.",
                 "tresc": "Idealnie wykończony. Każdy klient jest zadowolony z usługi, międzyinnymi przez ten wygodny fotel",
                 "ocena": 5,
-                "_id": "693b21da42e05b40e4e7e70b",
-                "createdAt": "2025-12-11T19:56:10.188Z",
-                "updatedAt": "2025-12-11T19:56:10.188Z"
+                "_id": "6941b5a9b05aec2a8d57d17c",
+                "createdAt": "2025-12-16T19:40:26.006Z",
+                "updatedAt": "2025-12-16T19:40:26.006Z"
             },
             {
                 "uzytkownik": "Kapral Kaszmirov",
                 "tresc": "Na zdjęciach wygląda lepiej niż jak w rzeczywistości",
                 "ocena": 3,
-                "_id": "693b21da42e05b40e4e7e70c",
-                "createdAt": "2025-12-11T19:56:10.188Z",
-                "updatedAt": "2025-12-11T19:56:10.188Z"
+                "_id": "6941b5a9b05aec2a8d57d17d",
+                "createdAt": "2025-12-16T19:40:26.006Z",
+                "updatedAt": "2025-12-16T19:40:26.006Z"
             }
         ],
         "wariant": [
@@ -78,7 +78,7 @@
                 "nazwa": "Czarny",
                 "slug": "czarny",
                 "typ": "kolor",
-                "_id": "693b21da42e05b40e4e7e70d"
+                "_id": "6941b5a9b05aec2a8d57d17e"
             },
             {
                 "nazwa": "Niebieski",
@@ -86,22 +86,22 @@
                 "typ": "kolor",
                 "nadpisuje_cene": true,
                 "nowa_cena": 1699,
-                "_id": "693b21da42e05b40e4e7e70e"
+                "_id": "6941b5a9b05aec2a8d57d17f"
             }
         ],
-        "createdAt": "2025-12-11T19:56:10.097Z",
-        "updatedAt": "2025-12-11T19:56:10.097Z",
+        "createdAt": "2025-12-16T19:40:25.896Z",
+        "updatedAt": "2025-12-16T19:40:25.896Z",
         "__v": 0
     },
     {
-        "_id": "693b21da42e05b40e4e7e714",
+        "_id": "6941b5aab05aec2a8d57d185",
         "slug": "piórnik-dla-narzędzi-techniki-rzemieślniczej",
         "nazwa": "Piórnik dla narzędzi techniki rzemieślniczej",
         "cena": 49.99,
         "dostepnosc": "Duża",
         "kategoria": [
             {
-                "_id": "693b21da42e05b40e4e7e6fc",
+                "_id": "6941b5a9b05aec2a8d57d16d",
                 "nazwa": "Nożyczki",
                 "slug": "sprzet",
                 "image": "/path/to/baner.jpg",
@@ -109,7 +109,7 @@
             }
         ],
         "producent": {
-            "_id": "693b21da42e05b40e4e7e6ff",
+            "_id": "6941b5a9b05aec2a8d57d170",
             "nazwa": "Marka wlasna",
             "slug": "wlasna",
             "__v": 0
@@ -121,9 +121,9 @@
                 "typ": "image",
                 "alt": "fotel",
                 "path": "/path/to/fotel.jpg",
-                "_id": "693b21da42e05b40e4e7e715",
-                "createdAt": "2025-12-11T19:56:10.202Z",
-                "updatedAt": "2025-12-11T19:56:10.202Z"
+                "_id": "6941b5aab05aec2a8d57d186",
+                "createdAt": "2025-12-16T19:40:26.018Z",
+                "updatedAt": "2025-12-16T19:40:26.018Z"
             },
             {
                 "nazwa": "jakiswykresczycos",
@@ -131,17 +131,17 @@
                 "typ": "other",
                 "alt": "wykres",
                 "path": "/path/to/photo.xxx",
-                "_id": "693b21da42e05b40e4e7e716",
-                "createdAt": "2025-12-11T19:56:10.203Z",
-                "updatedAt": "2025-12-11T19:56:10.203Z"
+                "_id": "6941b5aab05aec2a8d57d187",
+                "createdAt": "2025-12-16T19:40:26.018Z",
+                "updatedAt": "2025-12-16T19:40:26.018Z"
             }
         ],
         "promocje": {
-            "_id": "693b21b18b65b0eb653bc185",
+            "_id": "6941b5a9b05aec2a8d57d158",
             "nazwa": "lll",
             "procent": 10,
-            "rozpoczecie": "2025-12-11T19:55:29.524Z",
-            "wygasa": "2025-12-14T19:55:29.524Z",
+            "rozpoczecie": "2025-12-16T19:40:25.896Z",
+            "wygasa": "2025-12-19T19:40:25.896Z",
             "__v": 0
         },
         "opis": "Piórnik idealny do przechowywania swoich narzędzi",
@@ -154,33 +154,33 @@
                 "uzytkownik": "Adrianna L.",
                 "tresc": "Idealnie dopasowany pod każdy możliwy typ narzędzia. Polecam!!",
                 "ocena": 5,
-                "_id": "693b21da42e05b40e4e7e717",
-                "createdAt": "2025-12-11T19:56:10.203Z",
-                "updatedAt": "2025-12-11T19:56:10.203Z"
+                "_id": "6941b5aab05aec2a8d57d188",
+                "createdAt": "2025-12-16T19:40:26.018Z",
+                "updatedAt": "2025-12-16T19:40:26.018Z"
             },
             {
                 "uzytkownik": "Mariusz D.",
                 "tresc": "Gówno!!",
                 "ocena": 1,
-                "_id": "693b21da42e05b40e4e7e718",
-                "createdAt": "2025-12-11T19:56:10.203Z",
-                "updatedAt": "2025-12-11T19:56:10.203Z"
+                "_id": "6941b5aab05aec2a8d57d189",
+                "createdAt": "2025-12-16T19:40:26.018Z",
+                "updatedAt": "2025-12-16T19:40:26.018Z"
             }
         ],
-        "createdAt": "2025-12-11T19:56:10.097Z",
+        "createdAt": "2025-12-16T19:40:25.896Z",
         "wariant": [],
-        "updatedAt": "2025-12-11T19:56:10.097Z",
+        "updatedAt": "2025-12-16T19:40:25.896Z",
         "__v": 0
     },
     {
-        "_id": "693b21da42e05b40e4e7e71e",
+        "_id": "6941b5aab05aec2a8d57d18f",
         "slug": "szampon-pielęgnujący-do-brody",
         "nazwa": "Szampon pielęgnujący do brody",
         "cena": 40,
         "dostepnosc": "Duza",
         "kategoria": [
             {
-                "_id": "693b21da42e05b40e4e7e6f3",
+                "_id": "6941b5a9b05aec2a8d57d164",
                 "nazwa": "Szampon",
                 "slug": "kosmetyk",
                 "image": "/path/to/baner.jpg",
@@ -188,7 +188,7 @@
             }
         ],
         "producent": {
-            "_id": "693b21da42e05b40e4e7e702",
+            "_id": "6941b5a9b05aec2a8d57d173",
             "nazwa": "Bielenda",
             "slug": "bielenda",
             "strona_internetowa": "https://okok.pl",
@@ -201,17 +201,17 @@
                 "typ": "other",
                 "alt": "wykres",
                 "path": "/path/to/photo.xxx",
-                "_id": "693b21da42e05b40e4e7e71f",
-                "createdAt": "2025-12-11T19:56:10.216Z",
-                "updatedAt": "2025-12-11T19:56:10.216Z"
+                "_id": "6941b5aab05aec2a8d57d190",
+                "createdAt": "2025-12-16T19:40:26.029Z",
+                "updatedAt": "2025-12-16T19:40:26.029Z"
             }
         ],
         "promocje": {
-            "_id": "693b21b18b65b0eb653bc18b",
+            "_id": "6941b5a9b05aec2a8d57d15d",
             "nazwa": "black friday",
             "procent": 20,
-            "rozpoczecie": "2025-12-11T19:55:29.524Z",
-            "wygasa": "2025-12-13T19:55:29.524Z",
+            "rozpoczecie": "2025-12-16T19:40:25.896Z",
+            "wygasa": "2025-12-18T19:40:25.896Z",
             "__v": 0
         },
         "opis": "Szampon pielęgnujący i dodający objętości włosom",
@@ -224,9 +224,9 @@
                 "uzytkownik": "Admirov Kaszmir",
                 "tresc": "No cieżko żeby to było średnie...",
                 "ocena": 5,
-                "_id": "693b21da42e05b40e4e7e720",
-                "createdAt": "2025-12-11T19:56:10.216Z",
-                "updatedAt": "2025-12-11T19:56:10.216Z"
+                "_id": "6941b5aab05aec2a8d57d191",
+                "createdAt": "2025-12-16T19:40:26.029Z",
+                "updatedAt": "2025-12-16T19:40:26.029Z"
             }
         ],
         "wariant": [
@@ -236,14 +236,14 @@
                 "typ": "kolor",
                 "nadpisuje_cene": true,
                 "nowa_cena": 1799,
-                "_id": "693b21da42e05b40e4e7e721"
+                "_id": "6941b5aab05aec2a8d57d192"
             },
             {
                 "nazwa": "120ml",
                 "slug": "120ml",
                 "typ": "objetosc",
                 "objetosc": 120,
-                "_id": "693b21da42e05b40e4e7e722"
+                "_id": "6941b5aab05aec2a8d57d193"
             },
             {
                 "nazwa": "250ml",
@@ -252,11 +252,11 @@
                 "objetosc": 250,
                 "nadpisuje_cene": true,
                 "nowa_cena": 50,
-                "_id": "693b21da42e05b40e4e7e723"
+                "_id": "6941b5aab05aec2a8d57d194"
             }
         ],
-        "createdAt": "2025-12-11T19:56:10.097Z",
-        "updatedAt": "2025-12-11T19:56:10.097Z",
+        "createdAt": "2025-12-16T19:40:25.896Z",
+        "updatedAt": "2025-12-16T19:40:25.896Z",
         "__v": 0
     }
 ]

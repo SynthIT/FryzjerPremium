@@ -1,4 +1,6 @@
 import { ArrowUpRight, Package, ShoppingBag, DollarSign, Wallet } from "lucide-react"
+import "@/app/globals2.css";
+
 
 export default function AdminPage() {
   return (

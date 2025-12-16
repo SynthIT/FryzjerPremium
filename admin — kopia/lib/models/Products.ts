@@ -1,4 +1,4 @@
-import { Document, model, Schema, Types } from "mongoose";
+import { Document, model, models, Schema, Types } from "mongoose";
 
 export type WariantyTyp = "kolor" | "rozmiar" | "objetosc";
 export type MediaTyp = "video" | "image" | "pdf" | "other";
@@ -7,12 +7,12 @@ export interface Products {
     slug: string;
     nazwa: string;
     cena: number;
-/* select pomiedzy 3-4 opcjami*/
+    /* select pomiedzy 3-4 opcjami*/
     dostepnosc: string;
-/* [0].slug = kategoria produktu [0].nazwa podkategoria */ 
+    /* [0].slug = kategoria produktu [0].nazwa podkategoria */
     kategoria: Categories[] | Types.ObjectId[] | string[];
     producent: Producents | Types.ObjectId | string;
-/* [0] baner (zdjecie) produktu*/
+    /* [0] baner (zdjecie) produktu*/
     media: Media[];
     promocje: Promos | Types.ObjectId | string | null;
     opis: string;
@@ -22,7 +22,7 @@ export interface Products {
     ocena: number;
     opinie: Opinie[] | null;
     createdAt: Date;
-/* [0] bazowy wyglad produktu - wymagany, niech automatycznie sie pojawia okno z kontruktorem na to
+    /* [0] bazowy wyglad produktu - wymagany, niech automatycznie sie pojawia okno z kontruktorem na to
 musze naprawic przez to cala logike w froncie, ale bedo jaja*/
     wariant?: Warianty[];
     kod_ean?: string | null;
@@ -96,7 +96,7 @@ const reviewProductSchema = new Schema<Opinie>(
     { timestamps: true }
 );
 
-const mediaProductSchema = new Schema(
+const mediaProductSchema = new Schema<Media>(
     {
         nazwa: { type: String, required: true, min: 3, max: 25 },
         slug: { type: String, required: true },
@@ -135,7 +135,7 @@ const categoriesSchema = new Schema<Categories>({
     image: { type: String, required: true },
 });
 
-const wariantPropsSchema = new Schema(
+const wariantPropsSchema = new Schema<props>(
     {
         name: { type: String, required: true },
         val: { type: String, required: true },
@@ -144,11 +144,11 @@ const wariantPropsSchema = new Schema(
     { _id: false }
 );
 
-const wariantySchema = new Schema({
+const wariantySchema = new Schema<Warianty>({
     nazwa: { type: String, required: true },
     slug: { type: String, required: true },
     typ: { type: String, enum: ["kolor", "rozmiar", "objetosc"] },
-    kolor: { type: wariantPropsSchema },
+    kolory: { type: wariantPropsSchema },
     rozmiary: { type: wariantPropsSchema },
     objetosc: { type: Number },
     nadpisuje_cene: { type: Boolean },
@@ -183,7 +183,10 @@ export const productSchema = new Schema<Products>(
     { timestamps: true, autoIndex: false }
 );
 
-export const Promo = model<Promos>("promos", promosSchema);
-export const Category = model<Categories>("categories", categoriesSchema);
-export const Producent = model<Producents>("producents", producentsSchema);
-export const Product = model<Products>("products", productSchema);
+export const Promo = models.Promos || model<Promos>("promos", promosSchema);
+export const Category =
+    models.Categories || model<Categories>("categories", categoriesSchema);
+export const Producent =
+    models.Producents || model<Producents>("producents", producentsSchema);
+export const Product =
+    models.Products || model<Products>("products", productSchema);
