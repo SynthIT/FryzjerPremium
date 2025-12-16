@@ -23,20 +23,21 @@ export async function addNewUser(email: string, password: string) {
         mongoose.connection.close();
         return "Użytkownik o podanym emailu już istnieje.";
     } else {
+        const randomNumber = Math.floor(1000 + Math.random() * 9000);
         const sha = createHash("sha256");
         sha.update(password, "utf8");
         const hashedPassword = sha.digest("hex");
         const u = await User.create({
-            imie: "",
-            nazwisko: "",
+            imie: "User",
+            nazwisko: `${randomNumber}`,
             email: email,
             haslo: hashedPassword,
-            nr_domu: "",
-            ulica: "",
-            miasto: "",
-            kraj: "",
-            kod_pocztowy: "",
-            telefon: "",
+            nr_domu: "0",
+            ulica: "0",
+            miasto: "Miasto",
+            kraj: "Kraj",
+            kod_pocztowy: "00-000",
+            telefon: "1234567890",
             osoba_prywatna: true,
             zamowienia: [],
             faktura: false,
@@ -54,6 +55,6 @@ export async function collectProducts() {
         .populate("promocje")
         .populate("producent")
         .orFail();
-    mongoose.connection.close();
+    await mongoose.connection.close();
     return JSON.stringify(products);
 }

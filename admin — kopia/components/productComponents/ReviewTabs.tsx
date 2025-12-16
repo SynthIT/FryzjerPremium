@@ -19,28 +19,31 @@ export default function ReviewTabs({
     const [visibleReviews, setVisibleReviews] = useState(4);
 
     // Sortowanie recenzji
-    const sortedReviews = [...(product?.opinie as Opinie[])].sort((a, b) => {
-        switch (sortOrder) {
-            case "latest":
-                return (
-                    new Date(b.createdAt!).getTime() -
-                    new Date(a.createdAt!).getTime()
-                );
-            case "oldest":
-                return (
-                    new Date(a.createdAt!).getTime() -
-                    new Date(b.createdAt!).getTime()
-                );
-            case "highest":
-                return b.ocena - a.ocena;
-            case "lowest":
-                return a.ocena - b.ocena;
-            default:
-                return 0;
-        }
-    });
+    const sortedReviews = () => {
+        if (!product?.opinie) return [];
+        return [...(product?.opinie as Opinie[])].sort((a, b) => {
+            switch (sortOrder) {
+                case "latest":
+                    return (
+                        new Date(b.createdAt!).getTime() -
+                        new Date(a.createdAt!).getTime()
+                    );
+                case "oldest":
+                    return (
+                        new Date(a.createdAt!).getTime() -
+                        new Date(b.createdAt!).getTime()
+                    );
+                case "highest":
+                    return b.ocena - a.ocena;
+                case "lowest":
+                    return a.ocena - b.ocena;
+                default:
+                    return 0;
+            }
+        });
+    };
 
-    const displayedReviews = sortedReviews.slice(0, visibleReviews);
+    const displayedReviews = sortedReviews().slice(0, visibleReviews);
 
     return (
         <>

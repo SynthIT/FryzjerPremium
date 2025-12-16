@@ -16,9 +16,9 @@ export async function GET(req: NextRequest) {
     );
     if (querystring) {
         const products: Products[] = JSON.parse(file);
-        const product: Products | undefined = products.find(
-            (p) => p.slug === querystring.split("=")[1]
-        );
+        const product: Products | undefined = products.find((p) => {
+            return p.slug == querystring.split("=")[1];
+        });
         const response: ProductsResponse = {
             status: 0,
             product: product!,

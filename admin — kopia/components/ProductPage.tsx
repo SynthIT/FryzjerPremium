@@ -37,6 +37,13 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
             // Oblicz nową cenę, jeśli produkt ma promocję
             if (data.product?.wariant) {
                 setSelectedWariant(data.product.wariant[0]);
+            } else {
+                const wariant: Warianty = {
+                    nazwa: "Podstawowy",
+                    slug: "pdostw",
+                    typ: "kolor",
+                };
+                setSelectedWariant(wariant);
             }
             let basePrice = data.product!.cena;
             if (data.product?.wariant && data.product?.wariant.length > 0) {
@@ -46,6 +53,14 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                 ) {
                     basePrice = data.product.wariant[0].nowa_cena;
                 }
+                if (data.product!.promocje) {
+                    basePrice =
+                        basePrice *
+                        ((100 - (data.product!.promocje as Promos).procent) /
+                            100);
+                }
+                setSelectedPrice(basePrice);
+            } else {
                 if (data.product!.promocje) {
                     basePrice =
                         basePrice *
@@ -258,7 +273,7 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                             promocje={product.promocje as Promos}
                             selectedWariant={selectedWariant}></PriceElement>
 
-                        {/* Color Selection */}
+                        {/* wariant Selection */}
                         {product.wariant && product.wariant.length > 0 && (
                             <div className="product-option-section">
                                 <label className="product-option-label">

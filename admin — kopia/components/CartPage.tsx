@@ -14,8 +14,6 @@ export default function CartPage() {
         clearCart,
         getTotalPrice,
     } = useCart();
-    const [promoCode, setPromoCode] = useState("");
-    const [appliedDiscount, setAppliedDiscount] = useState(0);
 
     const handleQuantityChange = useCallback(
         (itemId: string, delta: number) => {
@@ -35,27 +33,12 @@ export default function CartPage() {
         [removeFromCart]
     );
 
-    const handleApplyPromo = useCallback(
-        (e: React.FormEvent) => {
-            e.preventDefault();
-            // Przykładowy kod promocyjny - 20% zniżki
-            if (promoCode.toLowerCase() === "promo20") {
-                setAppliedDiscount(20);
-            } else {
-                setAppliedDiscount(0);
-                alert("Nieprawidłowy kod promocyjny");
-            }
-        },
-        [promoCode]
-    );
 
     const subtotal = getTotalPrice();
-    const discount = subtotal * (appliedDiscount / 100);
     const deliveryFee = subtotal > 200 ? 0 : 15; // Gratis powyżej 200 zł
-    const total = subtotal - discount + deliveryFee;
+    const total = subtotal + deliveryFee;
 
     const formattedSubtotal = subtotal.toFixed(2).replace(".", ",");
-    const formattedDiscount = discount.toFixed(2).replace(".", ",");
     const formattedDeliveryFee = deliveryFee.toFixed(2).replace(".", ",");
     const formattedTotal = total.toFixed(2).replace(".", ",");
 
@@ -242,18 +225,6 @@ export default function CartPage() {
                                     {formattedSubtotal} zł
                                 </span>
                             </div>
-
-                            {appliedDiscount > 0 && (
-                                <div className="cart-summary-row">
-                                    <span className="cart-summary-label">
-                                        Zniżka (-{appliedDiscount}%)
-                                    </span>
-                                    <span className="cart-summary-value discount">
-                                        -{formattedDiscount} zł
-                                    </span>
-                                </div>
-                            )}
-
                             <div className="cart-summary-row">
                                 <span className="cart-summary-label">
                                     Koszt dostawy
@@ -275,26 +246,6 @@ export default function CartPage() {
                                     {formattedTotal} zł
                                 </span>
                             </div>
-
-                            <form
-                                onSubmit={handleApplyPromo}
-                                className="cart-promo-form">
-                                <input
-                                    type="text"
-                                    value={promoCode}
-                                    onChange={(e) =>
-                                        setPromoCode(e.target.value)
-                                    }
-                                    placeholder="Kod promocyjny"
-                                    className="cart-promo-input"
-                                />
-                                <button
-                                    type="submit"
-                                    className="cart-promo-button">
-                                    Zastosuj
-                                </button>
-                            </form>
-
                             <Link href="/kasa" className="cart-checkout-button">
                                 Przejdź do kasy
                             </Link>

@@ -1,7 +1,8 @@
 "use client";
 
-import { Products } from "@/lib/models/Products";
+import { Categories, Products } from "@/lib/models/Products";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 export default function ProductPage() {
     const [products, setProducts] = useState<Products[] | null>();
@@ -32,18 +33,41 @@ export default function ProductPage() {
                         Dodawaj, edytuj i organizuj produkty.
                     </p>
                 </div>
-                <a
+                <Link
                     href="/admin/manage/products/new"
                     className="w-full rounded-md border px-3 py-2 text-sm transition-colors hover:bg-accent sm:w-auto">
                     Dodaj produkt
-                </a>
+                </Link>
             </div>
             {products ? (
                 products.map((val, index) => {
                     return (
                         <div key={index} className="rounded-lg border">
                             <div className="p-4 text-sm text-muted-foreground">
-                                Nazwa produktu: {val.nazwa}
+                                Nazwa produktu: {val.nazwa} <br></br>
+                                slug: {val.slug} Cena: {val.cena} zł <br></br>
+                                kategoria:{" "}
+                                {/* jezeli cokolwiek jest Array'em [] czy cokolwiek takiego
+                                to musisz se mape jebnąc na to bo inaczje nichuaj nie wyciągniesz
+                                ewentualnie bierzesz konkretny index w arrayu
+                                ale po co to nie wiem i nie wiem co mam ci na ten
+                                temat wiecej napisac xd xd */}
+                                {val.kategoria
+                                    ?.map((cat) => (cat as Categories).nazwa)
+                                    .join(", ")}{" "}
+                                {/* nie kazde tez pole jest tak autentycznie przypisane
+                                    np warianty czy tez pomocje, daltego
+                                    musisz sobie wczesniej sprawdzic czy wogole cokolwiek 
+                                    w tym jest czaisz temat */}
+                                {val.wariant && (
+                                    <>
+                                        <br></br>Warianty:{" "}
+                                        {val.wariant
+                                            .map((w) => w.nazwa)
+                                            .join(", ")}
+                                    </>
+                                )}
+                                <br></br>
                             </div>
                         </div>
                     );

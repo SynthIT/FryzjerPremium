@@ -13,7 +13,7 @@ import {
 } from "./models/Products";
 import { sys } from "typescript";
 import * as fs from "fs";
-import path = require("path");
+import * as path from "path";
 
 async function createProduct(val: Products) {
     const kategorie = await Promise.all(
@@ -90,6 +90,27 @@ export async function saveCategoryFile() {
     sys.exit();
     return 0;
 }
+
+const polishMap: Record<string, string> = {
+    "ą": "a",
+    "ć": "c",
+    "ę": "e",
+    "ł": "l",
+    "ń": "n",
+    "ó": "o",
+    "ś": "s",
+    "ż": "z",
+    "ź": "z",
+    "Ą": "A",
+    "Ć": "C",
+    "Ę": "E",
+    "Ł": "L",
+    "Ń": "N",
+    "Ó": "O",
+    "Ś": "S",
+    "Ż": "Z",
+    "Ź": "Z",
+};
 (async () => {
     try {
         mongoose.connection.on("connected", () =>
@@ -333,7 +354,7 @@ export async function saveCategoryFile() {
                     {
                         nazwa: "Szampon do włosów",
                         slug: "kosmetyk",
-                        image: "/path/to/baner.jpg"
+                        image: "/path/to/baner.jpg",
                     } as Categories,
                 ],
                 producent: "Bielenda",
@@ -372,10 +393,15 @@ export async function saveCategoryFile() {
         for (const val of product) {
             console.log(val);
             const slug =
-                val.slug === ""
-                    ? val.nazwa.toLowerCase().split(" ").join("-")
+                val.slug.trim() === ""
+                    ? val.nazwa
+                          .toLowerCase()
+                          .split(" ")
+                          .join("-")
+                          .replace(/[ąćęłńóśźż]/g, (m) => polishMap[m] ?? m)
                     : val.slug;
             val.slug = slug;
+            val.aktywne = true;
             const exists = await Product.findOne({ nazwa: val.nazwa });
             if (exists === null) {
                 const p = await createProduct(val);
@@ -391,8 +417,6 @@ export async function saveCategoryFile() {
         return 0;
     }
 })();
-
-
 
 import { generateKeyPairSync } from "crypto";
 
