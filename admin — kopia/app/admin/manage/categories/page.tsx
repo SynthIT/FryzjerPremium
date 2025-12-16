@@ -1,4 +1,35 @@
+"use client";
+
+import { Categories, Products } from "@/lib/models/Products";
+import { useEffect, useState } from "react";
+
 export default function CategoriesPage() {
+    const [categories, setCategories] = useState<Categories[]>([]);
+    useEffect(() => {
+        async function fetchProducts() {
+            try {
+                const response = await fetch("/admin/api/v1/products", {
+                    method: "GET",
+                });
+                const data: Products[] = await response.json();
+                console.log("Pobrane produkty:", data);
+                const categoriesSet = new Set<string>();
+                data.forEach((product) =>
+                    (product.kategoria as Categories[]).forEach((category) =>
+                        categoriesSet.add(JSON.stringify(category))
+                    )
+                );
+                console.log("Unikalne kategorie:", categoriesSet);
+                const categoriesArray: Categories[] = Array.from(
+                    categoriesSet
+                ).map((cat) => JSON.parse(cat));
+                setCategories(categoriesArray);
+            } catch (error) {
+                console.error("Błąd podczas pobierania produktów:", error);
+            }
+        }
+        fetchProducts();
+    }, []);
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -16,9 +47,23 @@ export default function CategoriesPage() {
                     Dodaj produkt
                 </a>
             </div>
-            <div className="rounded-lg border p-4 text-sm text-muted-foreground">
-                Brak kategorii — dodaj pierwszą.
-            </div>
+            {categories ? (
+                categories.map((val, index) => {
+                    return (
+                        <div key={index} className="rounded-lg border">
+                            <div className="p-4 text-sm text-muted-foreground">
+                                Nazwa kategorii: {val.nazwa}
+                            </div>
+                        </div>
+                    );
+                })
+            ) : (
+                <div className="rounded-lg border">
+                    <div className="p-4 text-sm text-muted-foreground">
+                        Błąd podczas generowania strony z produktami.
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

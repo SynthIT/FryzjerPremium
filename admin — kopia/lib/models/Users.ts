@@ -35,7 +35,7 @@ export interface Users {
     role?: Role[];
 }
 
-const roleSchema = new Schema(
+const roleSchema = new Schema<Role>(
     {
         nazwa: { type: String, required: true },
         permisje: { type: Number, required: true, default: 0 },
@@ -69,5 +69,5 @@ export const userSchema = new Schema<Users>(
     }
 );
 
-export const Role = models.Roles || model<Role>("Roles", roleSchema);
-export const User = models.Users || model<Users>("Users", userSchema);
+export const Role = models.Roles ?? model<Role>("Roles", roleSchema);
+export const User = models.Users ?? model<Users>("Users", userSchema);

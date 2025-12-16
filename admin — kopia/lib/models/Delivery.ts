@@ -1,4 +1,4 @@
-import { model, Schema } from "mongoose";
+import { model, models, Schema } from "mongoose";
 
 export interface DeliveryMethodsSizes {
     cena: number;
@@ -32,4 +32,4 @@ export const schemaDelivery = new Schema<DeliveryMethods>(
     { autoIndex: false }
 );
 
-export const Delivery = model("delivery", schemaDelivery);
+export const Delivery = models.Delivery ?? model("Delivery", schemaDelivery);

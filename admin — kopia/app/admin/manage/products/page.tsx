@@ -39,11 +39,15 @@ export default function ProductPage() {
                 </a>
             </div>
             {products ? (
-                <div className="rounded-lg border">
-                    <div className="p-4 text-sm text-muted-foreground">
-                        Liczba produktów: {products.length}
-                    </div>
-                </div>
+                products.map((val, index) => {
+                    return (
+                        <div key={index} className="rounded-lg border">
+                            <div className="p-4 text-sm text-muted-foreground">
+                                Nazwa produktu: {val.nazwa}
+                            </div>
+                        </div>
+                    );
+                })
             ) : (
                 <div className="rounded-lg border">
                     <div className="p-4 text-sm text-muted-foreground">

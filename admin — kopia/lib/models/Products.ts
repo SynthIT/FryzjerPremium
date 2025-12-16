@@ -164,11 +164,11 @@ export const productSchema = new Schema<Products>(
         kategoria: {
             type: [Types.ObjectId],
             required: true,
-            ref: "categories",
+            ref: "Categories",
         },
-        producent: { type: Types.ObjectId, required: true, ref: "producents" },
+        producent: { type: Types.ObjectId, required: true, ref: "Producents" },
         media: { type: [mediaProductSchema], default: [] },
-        promocje: { type: Types.ObjectId, ref: "promos" },
+        promocje: { type: Types.ObjectId, ref: "Promos" },
         opis: { type: String, required: true },
         ilosc: { type: Number, min: 0, required: true, default: 0 },
         czas_wysylki: { type: Number, required: true, min: 1 },
@@ -183,10 +183,10 @@ export const productSchema = new Schema<Products>(
     { timestamps: true, autoIndex: false }
 );
 
-export const Promo = models.Promos || model<Promos>("promos", promosSchema);
+export const Promo = models.Promos ?? model<Promos>("Promos", promosSchema);
 export const Category =
-    models.Categories || model<Categories>("categories", categoriesSchema);
+    models.Categories ?? model<Categories>("Categories", categoriesSchema);
 export const Producent =
-    models.Producents || model<Producents>("producents", producentsSchema);
+    models.Producents ?? model<Producents>("Producents", producentsSchema);
 export const Product =
-    models.Products || model<Products>("products", productSchema);
+    models.Products ?? model<Products>("Products", productSchema);
