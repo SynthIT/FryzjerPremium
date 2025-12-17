@@ -13,6 +13,35 @@ export const getProducts = async (slug?: string) => {
     return data.json();
 };
 
+export const updateProduct = async (product: Products) => {
+    const url = new URL("http://localhost:3000/api/v1/products");
+    const response = await fetch(url, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(product),
+    });
+    const data = await response.json();
+    if (data.status !== 0) {
+        throw new Error(data.error || "Błąd podczas aktualizacji produktu");
+    }
+    return data;
+};
+
+export const deleteProduct = async (slug: string) => {
+    const url = new URL("http://localhost:3000/api/v1/products");
+    url.searchParams.append("slug", slug);
+    const response = await fetch(url, {
+        method: "DELETE",
+    });
+    const data = await response.json();
+    if (data.status !== 0) {
+        throw new Error(data.error || "Błąd podczas usuwania produktu");
+    }
+    return data;
+};
+
 export const registerUser = async (email: string, password: string) => {
     const url = new URL("http://localhost:3000/api/v1/auth/register");
     const data = await fetch(url, {
