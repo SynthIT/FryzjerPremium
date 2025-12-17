@@ -1,7 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Products, Categories, Producents, Media, Warianty } from "@/lib/models/Products";
+import {
+    Products,
+    Categories,
+    Producents,
+    Media,
+    Warianty,
+} from "@/lib/models/Products";
 import Image from "next/image";
 import { X, Save, Trash2, Plus, Minus } from "lucide-react";
 
@@ -35,7 +41,10 @@ export default function ProductEditModal({
         if (Array.isArray(editedProduct.kategoria)) {
             return editedProduct.kategoria.filter(
                 (cat): cat is Categories =>
-                    typeof cat === "object" && cat !== null && "nazwa" in cat && "slug" in cat
+                    typeof cat === "object" &&
+                    cat !== null &&
+                    "nazwa" in cat &&
+                    "slug" in cat
             ) as Categories[];
         }
         return [];
@@ -46,7 +55,10 @@ export default function ProductEditModal({
         if (typeof editedProduct.producent === "string") {
             return { nazwa: editedProduct.producent };
         }
-        if (typeof editedProduct.producent === "object" && "nazwa" in editedProduct.producent) {
+        if (
+            typeof editedProduct.producent === "object" &&
+            "nazwa" in editedProduct.producent
+        ) {
             return editedProduct.producent as Producents;
         }
         return null;
@@ -60,7 +72,10 @@ export default function ProductEditModal({
             if (result.status === 0) {
                 onUpdate(editedProduct);
             } else {
-                alert("Błąd podczas zapisywania produktu: " + (result.error || "Nieznany błąd"));
+                alert(
+                    "Błąd podczas zapisywania produktu: " +
+                        (result.error || "Nieznany błąd")
+                );
             }
         } catch (error) {
             console.error("Błąd podczas zapisywania produktu:", error);
@@ -80,7 +95,10 @@ export default function ProductEditModal({
             if (result.status === 0) {
                 onDelete(product.slug);
             } else {
-                alert("Błąd podczas usuwania produktu: " + (result.error || "Nieznany błąd"));
+                alert(
+                    "Błąd podczas usuwania produktu: " +
+                        (result.error || "Nieznany błąd")
+                );
             }
         } catch (error) {
             console.error("Błąd podczas usuwania produktu:", error);
@@ -88,11 +106,18 @@ export default function ProductEditModal({
         }
     };
 
-    const updateField = <K extends keyof Products>(field: K, value: Products[K]) => {
+    const updateField = <K extends keyof Products>(
+        field: K,
+        value: Products[K]
+    ) => {
         setEditedProduct((prev) => ({ ...prev, [field]: value }));
     };
 
-    const updateCategory = (index: number, field: keyof Categories, value: string) => {
+    const updateCategory = (
+        index: number,
+        field: keyof Categories,
+        value: string
+    ) => {
         const categories = getCategories();
         const updated = [...categories];
         if (updated[index]) {
@@ -111,7 +136,10 @@ export default function ProductEditModal({
 
     const removeCategory = (index: number) => {
         const categories = getCategories();
-        updateField("kategoria", categories.filter((_, i) => i !== index));
+        updateField(
+            "kategoria",
+            categories.filter((_, i) => i !== index)
+        );
     };
 
     const addMedia = () => {
@@ -132,7 +160,10 @@ export default function ProductEditModal({
 
     const removeMedia = (index: number) => {
         const media = editedProduct.media || [];
-        updateField("media", media.filter((_, i) => i !== index));
+        updateField(
+            "media",
+            media.filter((_, i) => i !== index)
+        );
     };
 
     return (
@@ -143,8 +174,7 @@ export default function ProductEditModal({
                     <h2 className="text-2xl font-bold">Edytuj produkt</h2>
                     <button
                         onClick={onClose}
-                        className="p-2 hover:bg-accent rounded-md transition-colors"
-                    >
+                        className="p-2 hover:bg-accent rounded-md transition-colors">
                         <X className="h-5 w-5" />
                     </button>
                 </div>
@@ -153,7 +183,9 @@ export default function ProductEditModal({
                 <div className="flex-1 overflow-y-auto p-6 space-y-6">
                     {/* Basic Info */}
                     <div className="space-y-4">
-                        <h3 className="text-lg font-semibold">Podstawowe informacje</h3>
+                        <h3 className="text-lg font-semibold">
+                            Podstawowe informacje
+                        </h3>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-sm font-medium mb-1">
@@ -162,38 +194,54 @@ export default function ProductEditModal({
                                 <input
                                     type="text"
                                     value={editedProduct.nazwa || ""}
-                                    onChange={(e) => updateField("nazwa", e.target.value)}
-                                    className="w-full px-3 py-2 border rounded-md"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium mb-1">Slug *</label>
-                                <input
-                                    type="text"
-                                    value={editedProduct.slug || ""}
-                                    onChange={(e) => updateField("slug", e.target.value)}
-                                    className="w-full px-3 py-2 border rounded-md"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium mb-1">Cena (zł) *</label>
-                                <input
-                                    type="number"
-                                    step="0.01"
-                                    value={editedProduct.cena || 0}
                                     onChange={(e) =>
-                                        updateField("cena", parseFloat(e.target.value) || 0)
+                                        updateField("nazwa", e.target.value)
                                     }
                                     className="w-full px-3 py-2 border rounded-md"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-1">Ilość *</label>
+                                <label className="block text-sm font-medium mb-1">
+                                    Slug *
+                                </label>
+                                <input
+                                    type="text"
+                                    value={editedProduct.slug || ""}
+                                    onChange={(e) =>
+                                        updateField("slug", e.target.value)
+                                    }
+                                    className="w-full px-3 py-2 border rounded-md"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium mb-1">
+                                    Cena (zł) *
+                                </label>
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    value={editedProduct.cena || 0}
+                                    onChange={(e) =>
+                                        updateField(
+                                            "cena",
+                                            parseFloat(e.target.value) || 0
+                                        )
+                                    }
+                                    className="w-full px-3 py-2 border rounded-md"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium mb-1">
+                                    Ilość *
+                                </label>
                                 <input
                                     type="number"
                                     value={editedProduct.ilosc || 0}
                                     onChange={(e) =>
-                                        updateField("ilosc", parseInt(e.target.value) || 0)
+                                        updateField(
+                                            "ilosc",
+                                            parseInt(e.target.value) || 0
+                                        )
                                     }
                                     className="w-full px-3 py-2 border rounded-md"
                                 />
@@ -204,13 +252,23 @@ export default function ProductEditModal({
                                 </label>
                                 <select
                                     value={editedProduct.dostepnosc || ""}
-                                    onChange={(e) => updateField("dostepnosc", e.target.value)}
-                                    className="w-full px-3 py-2 border rounded-md"
-                                >
+                                    onChange={(e) =>
+                                        updateField(
+                                            "dostepnosc",
+                                            e.target.value
+                                        )
+                                    }
+                                    className="w-full px-3 py-2 border rounded-md">
                                     <option value="dostępny">Dostępny</option>
-                                    <option value="niedostępny">Niedostępny</option>
-                                    <option value="na zamówienie">Na zamówienie</option>
-                                    <option value="wyprzedany">Wyprzedany</option>
+                                    <option value="niedostępny">
+                                        Niedostępny
+                                    </option>
+                                    <option value="na zamówienie">
+                                        Na zamówienie
+                                    </option>
+                                    <option value="wyprzedany">
+                                        Wyprzedany
+                                    </option>
                                 </select>
                             </div>
                             <div>
@@ -221,7 +279,10 @@ export default function ProductEditModal({
                                     type="number"
                                     value={editedProduct.czas_wysylki || 1}
                                     onChange={(e) =>
-                                        updateField("czas_wysylki", parseInt(e.target.value) || 1)
+                                        updateField(
+                                            "czas_wysylki",
+                                            parseInt(e.target.value) || 1
+                                        )
                                     }
                                     className="w-full px-3 py-2 border rounded-md"
                                 />
@@ -233,12 +294,19 @@ export default function ProductEditModal({
                                 <input
                                     type="text"
                                     value={editedProduct.kod_produkcyjny || ""}
-                                    onChange={(e) => updateField("kod_produkcyjny", e.target.value)}
+                                    onChange={(e) =>
+                                        updateField(
+                                            "kod_produkcyjny",
+                                            e.target.value
+                                        )
+                                    }
                                     className="w-full px-3 py-2 border rounded-md"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-1">Ocena</label>
+                                <label className="block text-sm font-medium mb-1">
+                                    Ocena
+                                </label>
                                 <input
                                     type="number"
                                     step="0.1"
@@ -246,26 +314,37 @@ export default function ProductEditModal({
                                     max="5"
                                     value={editedProduct.ocena || 0}
                                     onChange={(e) =>
-                                        updateField("ocena", parseFloat(e.target.value) || 0)
+                                        updateField(
+                                            "ocena",
+                                            parseFloat(e.target.value) || 0
+                                        )
                                     }
                                     className="w-full px-3 py-2 border rounded-md"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-1">Kod EAN</label>
+                                <label className="block text-sm font-medium mb-1">
+                                    Kod EAN
+                                </label>
                                 <input
                                     type="text"
                                     value={editedProduct.kod_ean || ""}
-                                    onChange={(e) => updateField("kod_ean", e.target.value)}
+                                    onChange={(e) =>
+                                        updateField("kod_ean", e.target.value)
+                                    }
                                     className="w-full px-3 py-2 border rounded-md"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-1">SKU</label>
+                                <label className="block text-sm font-medium mb-1">
+                                    SKU
+                                </label>
                                 <input
                                     type="text"
                                     value={editedProduct.sku || ""}
-                                    onChange={(e) => updateField("sku", e.target.value)}
+                                    onChange={(e) =>
+                                        updateField("sku", e.target.value)
+                                    }
                                     className="w-full px-3 py-2 border rounded-md"
                                 />
                             </div>
@@ -273,20 +352,28 @@ export default function ProductEditModal({
                                 <input
                                     type="checkbox"
                                     checked={editedProduct.aktywne !== false}
-                                    onChange={(e) => updateField("aktywne", e.target.checked)}
+                                    onChange={(e) =>
+                                        updateField("aktywne", e.target.checked)
+                                    }
                                     className="w-4 h-4"
                                 />
-                                <label className="text-sm font-medium">Produkt aktywny</label>
+                                <label className="text-sm font-medium">
+                                    Produkt aktywny
+                                </label>
                             </div>
                         </div>
                     </div>
 
                     {/* Description */}
                     <div>
-                        <label className="block text-sm font-medium mb-1">Opis *</label>
+                        <label className="block text-sm font-medium mb-1">
+                            Opis *
+                        </label>
                         <textarea
                             value={editedProduct.opis || ""}
-                            onChange={(e) => updateField("opis", e.target.value)}
+                            onChange={(e) =>
+                                updateField("opis", e.target.value)
+                            }
                             rows={4}
                             className="w-full px-3 py-2 border rounded-md"
                         />
@@ -298,22 +385,27 @@ export default function ProductEditModal({
                             <h3 className="text-lg font-semibold">Kategorie</h3>
                             <button
                                 onClick={addCategory}
-                                className="px-3 py-1 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90 flex items-center gap-1"
-                            >
+                                className="px-3 py-1 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90 flex items-center gap-1">
                                 <Plus className="h-4 w-4" />
                                 Dodaj kategorię
                             </button>
                         </div>
                         <div className="space-y-2">
                             {getCategories().map((cat, index) => (
-                                <div key={index} className="flex gap-2 items-start p-3 border rounded-md">
+                                <div
+                                    key={index}
+                                    className="flex gap-2 items-start p-3 border rounded-md">
                                     <div className="flex-1 grid grid-cols-3 gap-2">
                                         <input
                                             type="text"
                                             placeholder="Nazwa kategorii"
                                             value={cat.nazwa || ""}
                                             onChange={(e) =>
-                                                updateCategory(index, "nazwa", e.target.value)
+                                                updateCategory(
+                                                    index,
+                                                    "nazwa",
+                                                    e.target.value
+                                                )
                                             }
                                             className="px-3 py-2 border rounded-md"
                                         />
@@ -322,7 +414,11 @@ export default function ProductEditModal({
                                             placeholder="Slug kategorii"
                                             value={cat.slug || ""}
                                             onChange={(e) =>
-                                                updateCategory(index, "slug", e.target.value)
+                                                updateCategory(
+                                                    index,
+                                                    "slug",
+                                                    e.target.value
+                                                )
                                             }
                                             className="px-3 py-2 border rounded-md"
                                         />
@@ -331,22 +427,26 @@ export default function ProductEditModal({
                                             placeholder="URL obrazka"
                                             value={cat.image || ""}
                                             onChange={(e) =>
-                                                updateCategory(index, "image", e.target.value)
+                                                updateCategory(
+                                                    index,
+                                                    "image",
+                                                    e.target.value
+                                                )
                                             }
                                             className="px-3 py-2 border rounded-md"
                                         />
                                     </div>
                                     <button
                                         onClick={() => removeCategory(index)}
-                                        className="p-2 text-red-600 hover:bg-red-50 rounded-md"
-                                    >
+                                        className="p-2 text-red-600 hover:bg-red-50 rounded-md">
                                         <Minus className="h-4 w-4" />
                                     </button>
                                 </div>
                             ))}
                             {getCategories().length === 0 && (
                                 <p className="text-sm text-muted-foreground text-center py-4">
-                                    Brak kategorii. Kliknij "Dodaj kategorię" aby dodać.
+                                    Brak kategorii. Kliknij {'"'}Dodaj kategorię
+                                    {'"'} aby dodać.
                                 </p>
                             )}
                         </div>
@@ -354,7 +454,9 @@ export default function ProductEditModal({
 
                     {/* Producer */}
                     <div>
-                        <h3 className="text-lg font-semibold mb-2">Producent</h3>
+                        <h3 className="text-lg font-semibold mb-2">
+                            Producent
+                        </h3>
                         <div className="grid grid-cols-2 gap-4">
                             <input
                                 type="text"
@@ -389,64 +491,81 @@ export default function ProductEditModal({
                             <h3 className="text-lg font-semibold">Media</h3>
                             <button
                                 onClick={addMedia}
-                                className="px-3 py-1 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90 flex items-center gap-1"
-                            >
+                                className="px-3 py-1 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90 flex items-center gap-1">
                                 <Plus className="h-4 w-4" />
                                 Dodaj media
                             </button>
                         </div>
                         <div className="space-y-2">
                             {(editedProduct.media || []).map((media, index) => (
-                                <div key={index} className="flex gap-2 items-start p-3 border rounded-md">
+                                <div
+                                    key={index}
+                                    className="flex gap-2 items-start p-3 border rounded-md">
                                     <div className="flex-1 grid grid-cols-2 gap-2">
                                         <input
                                             type="text"
                                             placeholder="Ścieżka do pliku"
                                             value={media.path || ""}
-                                            onChange={(e) => updateMedia(index, "path", e.target.value)}
+                                            onChange={(e) =>
+                                                updateMedia(
+                                                    index,
+                                                    "path",
+                                                    e.target.value
+                                                )
+                                            }
                                             className="px-3 py-2 border rounded-md"
                                         />
                                         <input
                                             type="text"
                                             placeholder="Alt text"
                                             value={media.alt || ""}
-                                            onChange={(e) => updateMedia(index, "alt", e.target.value)}
+                                            onChange={(e) =>
+                                                updateMedia(
+                                                    index,
+                                                    "alt",
+                                                    e.target.value
+                                                )
+                                            }
                                             className="px-3 py-2 border rounded-md"
                                         />
                                         <select
                                             value={media.typ || "image"}
                                             onChange={(e) =>
-                                                updateMedia(index, "typ", e.target.value as any)
+                                                updateMedia(
+                                                    index,
+                                                    "typ",
+                                                    e.target.value
+                                                )
                                             }
-                                            className="px-3 py-2 border rounded-md"
-                                        >
+                                            className="px-3 py-2 border rounded-md">
                                             <option value="image">Obraz</option>
                                             <option value="video">Video</option>
                                             <option value="pdf">PDF</option>
                                             <option value="other">Inne</option>
                                         </select>
-                                        {media.path && media.typ === "image" && (
-                                            <div className="relative w-full h-24 border rounded-md overflow-hidden">
-                                                <Image
-                                                    src={media.path}
-                                                    alt={media.alt || ""}
-                                                    fill
-                                                    className="object-cover"
-                                                />
-                                            </div>
-                                        )}
+                                        {media.path &&
+                                            media.typ === "image" && (
+                                                <div className="relative w-full h-24 border rounded-md overflow-hidden">
+                                                    <Image
+                                                        src={media.path}
+                                                        alt={media.alt || ""}
+                                                        fill
+                                                        className="object-cover"
+                                                    />
+                                                </div>
+                                            )}
                                     </div>
                                     <button
                                         onClick={() => removeMedia(index)}
-                                        className="p-2 text-red-600 hover:bg-red-50 rounded-md"
-                                    >
+                                        className="p-2 text-red-600 hover:bg-red-50 rounded-md">
                                         <Minus className="h-4 w-4" />
                                     </button>
                                 </div>
                             ))}
                             {(editedProduct.media || []).length === 0 && (
                                 <p className="text-sm text-muted-foreground text-center py-4">
-                                    Brak mediów. Kliknij "Dodaj media" aby dodać.
+                                    Brak mediów. Kliknij {'"'}Dodaj media{'"'}{" "}
+                                    aby dodać.
                                 </p>
                             )}
                         </div>
@@ -457,23 +576,20 @@ export default function ProductEditModal({
                 <div className="flex items-center justify-between p-6 border-t bg-muted/50">
                     <button
                         onClick={handleDelete}
-                        className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-2"
-                    >
+                        className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-2">
                         <Trash2 className="h-4 w-4" />
                         Usuń produkt
                     </button>
                     <div className="flex gap-2">
                         <button
                             onClick={onClose}
-                            className="px-4 py-2 border rounded-md hover:bg-accent"
-                        >
+                            className="px-4 py-2 border rounded-md hover:bg-accent">
                             Anuluj
                         </button>
                         <button
                             onClick={handleSave}
                             disabled={isSaving}
-                            className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 flex items-center gap-2 disabled:opacity-50"
-                        >
+                            className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 flex items-center gap-2 disabled:opacity-50">
                             <Save className="h-4 w-4" />
                             {isSaving ? "Zapisywanie..." : "Zapisz zmiany"}
                         </button>
@@ -483,4 +599,3 @@ export default function ProductEditModal({
         </div>
     );
 }
-

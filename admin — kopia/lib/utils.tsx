@@ -1,6 +1,5 @@
 import React from "react";
-import axios from "axios";
-import { Promos, Warianty } from "./models/Products";
+import { Products, Promos, Warianty } from "./models/Products";
 
 export const getProducts = async (slug?: string) => {
     const url = new URL("http://localhost:3000/api/v1/products");
@@ -14,8 +13,10 @@ export const getProducts = async (slug?: string) => {
 };
 
 export const updateProduct = async (product: Products) => {
+    const bd = new URL("http://localhost:3000/admin/api/v1/products");
     const url = new URL("http://localhost:3000/api/v1/products");
-    const response = await fetch(url, {
+
+    const response = await fetch(bd, {
         method: "PUT",
         headers: {
             "Content-Type": "application/json",
@@ -26,19 +27,32 @@ export const updateProduct = async (product: Products) => {
     if (data.status !== 0) {
         throw new Error(data.error || "Błąd podczas aktualizacji produktu");
     }
+    await fetch(url, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(product),
+    });
     return data;
 };
 
 export const deleteProduct = async (slug: string) => {
+    const bd = new URL("http://localhost:3000/admin/api/v1/products");
     const url = new URL("http://localhost:3000/api/v1/products");
-    url.searchParams.append("slug", slug);
-    const response = await fetch(url, {
+
+    bd.searchParams.append("slug", slug);
+    const response = await fetch(bd, {
         method: "DELETE",
     });
     const data = await response.json();
     if (data.status !== 0) {
         throw new Error(data.error || "Błąd podczas usuwania produktu");
     }
+    url.searchParams.append("slug", slug);
+    await fetch(url, {
+        method: "DELETE",
+    });
     return data;
 };
 

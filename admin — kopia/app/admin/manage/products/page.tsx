@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { getProducts } from "@/lib/utils";
 import { Products, Categories, Producents } from "@/lib/models/Products";
 import AdminProductCard from "@/components/admin/AdminProductCard";
 import ProductEditModal from "@/components/admin/ProductEditModal";
@@ -10,7 +9,9 @@ import Link from "next/link";
 export default function ProductPage() {
     const [products, setProducts] = useState<Products[]>([]);
     const [loading, setLoading] = useState(true);
-    const [selectedProduct, setSelectedProduct] = useState<Products | null>(null);
+    const [selectedProduct, setSelectedProduct] = useState<Products | null>(
+        null
+    );
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [searchQuery, setSearchQuery] = useState("");
@@ -20,9 +21,11 @@ export default function ProductPage() {
         async function fetchProducts() {
             try {
                 setLoading(true);
-                const data = await getProducts();
+                const data = await fetch("/admin/api/v1/products").then((res) =>
+                    res.json()
+                );
                 // Pobierz produkty z API - to samo API co w sklepie
-                setProducts(data.products || []);
+                setProducts(data || []);
             } catch (error) {
                 console.error("Błąd podczas ładowania produktów:", error);
                 setProducts([]);
@@ -41,7 +44,11 @@ export default function ProductPage() {
             const nazwa = product.nazwa?.toLowerCase() || "";
             const opis = product.opis?.toLowerCase() || "";
             const kod = product.kod_produkcyjny?.toLowerCase() || "";
-            return nazwa.includes(query) || opis.includes(query) || kod.includes(query);
+            return (
+                nazwa.includes(query) ||
+                opis.includes(query) ||
+                kod.includes(query)
+            );
         });
     }, [products, searchQuery]);
 
@@ -58,13 +65,17 @@ export default function ProductPage() {
     const handleProductUpdate = async (updatedProduct: Products) => {
         // Odśwież listę produktów z API
         try {
-            const data = await getProducts();
+            const data = await fetch("/admin/api/v1/products").then((res) =>
+                res.json()
+            );
             setProducts(data.products || []);
         } catch (error) {
             console.error("Błąd podczas odświeżania produktów:", error);
             // Fallback - lokalna aktualizacja
             setProducts((prev) =>
-                prev.map((p) => (p.slug === updatedProduct.slug ? updatedProduct : p))
+                prev.map((p) =>
+                    p.slug === updatedProduct.slug ? updatedProduct : p
+                )
             );
         }
         setIsEditModalOpen(false);
@@ -74,7 +85,9 @@ export default function ProductPage() {
     const handleProductDelete = async (productSlug: string) => {
         // Odśwież listę produktów z API
         try {
-            const data = await getProducts();
+            const data = await fetch("/admin/api/v1/products").then((res) =>
+                res.json()
+            );
             setProducts(data.products || []);
         } catch (error) {
             console.error("Błąd podczas odświeżania produktów:", error);
@@ -90,7 +103,9 @@ export default function ProductPage() {
             <div className="flex items-center justify-center min-h-[400px]">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
-                    <p className="mt-4 text-muted-foreground">Ładowanie produktów...</p>
+                    <p className="mt-4 text-muted-foreground">
+                        Ładowanie produktów...
+                    </p>
                 </div>
             </div>
         );
@@ -138,7 +153,9 @@ export default function ProductPage() {
                         <div className="text-6xl">📦</div>
                         <div>
                             <h3 className="text-xl font-semibold">
-                                {searchQuery ? "Nie znaleziono produktów" : "Brak produktów"}
+                                {searchQuery
+                                    ? "Nie znaleziono produktów"
+                                    : "Brak produktów"}
                             </h3>
                             <p className="text-muted-foreground mt-2">
                                 {searchQuery
@@ -164,29 +181,37 @@ export default function ProductPage() {
                     {totalPages > 1 && (
                         <div className="flex items-center justify-center gap-2 mt-6">
                             <button
-                                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                                onClick={() =>
+                                    setCurrentPage((prev) =>
+                                        Math.max(1, prev - 1)
+                                    )
+                                }
                                 disabled={currentPage === 1}
-                                className="px-4 py-2 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-accent transition-colors"
-                            >
+                                className="px-4 py-2 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-accent transition-colors">
                                 Poprzednia
                             </button>
                             <div className="flex items-center gap-1">
-                                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                                {Array.from(
+                                    { length: totalPages },
+                                    (_, i) => i + 1
+                                ).map((page) => {
                                     if (
                                         page === 1 ||
                                         page === totalPages ||
-                                        (page >= currentPage - 1 && page <= currentPage + 1)
+                                        (page >= currentPage - 1 &&
+                                            page <= currentPage + 1)
                                     ) {
                                         return (
                                             <button
                                                 key={page}
-                                                onClick={() => setCurrentPage(page)}
+                                                onClick={() =>
+                                                    setCurrentPage(page)
+                                                }
                                                 className={`px-3 py-2 border rounded-md min-w-[40px] ${
                                                     currentPage === page
                                                         ? "bg-primary text-primary-foreground"
                                                         : "hover:bg-accent"
-                                                } transition-colors`}
-                                            >
+                                                } transition-colors`}>
                                                 {page}
                                             </button>
                                         );
@@ -205,11 +230,12 @@ export default function ProductPage() {
                             </div>
                             <button
                                 onClick={() =>
-                                    setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                                    setCurrentPage((prev) =>
+                                        Math.min(totalPages, prev + 1)
+                                    )
                                 }
                                 disabled={currentPage === totalPages}
-                                className="px-4 py-2 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-accent transition-colors"
-                            >
+                                className="px-4 py-2 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-accent transition-colors">
                                 Następna
                             </button>
                         </div>

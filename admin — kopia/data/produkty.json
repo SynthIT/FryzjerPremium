@@ -98,8 +98,8 @@
     "_id": "6941ea321e807e3fbaaf4cb7",
     "slug": "piornik-dla-narzedzi-techniki-rzemieslniczej",
     "nazwa": "Piórnik dla narzędzi techniki rzemieślniczej",
-    "cena": 49.99,
-    "dostepnosc": "Duża",
+    "cena": 129.99,
+    "dostepnosc": "na zamówienie",
     "kategoria": [
       {
         "_id": "6941b5a9b05aec2a8d57d16d",
@@ -145,10 +145,10 @@
       "wygasa": "2025-12-19T19:40:25.896Z",
       "__v": 0
     },
-    "opis": "Piórnik idealny do przechowywania swoich narzędzi",
+    "opis": "Piórnik przeznaczony do przechowywania i przemieszczania swoich narzędzi do techniki obróbki włosów. Ma atest, więc nie mogą cię pozwać za zniszczenie włosów. A jak to zrobią, to ty im dajesz pozew za niesławienie dobrego imienia firmy.",
     "ilosc": 100,
-    "czas_wysylki": 2,
-    "kod_produkcyjny": "ABC-1234",
+    "czas_wysylki": 7,
+    "kod_produkcyjny": "PDN-0031",
     "ocena": 4.9,
     "opinie": [
       {
@@ -178,7 +178,7 @@
     "_id": "6941ea321e807e3fbaaf4cc1",
     "slug": "szampon-pielegnujacy-do-brody",
     "nazwa": "Szampon pielęgnujący do brody",
-    "cena": 234234,
+    "cena": 49.99,
     "dostepnosc": "Duza",
     "kategoria": [
       {
@@ -266,8 +266,8 @@
     "_id": "6941ea321e807e3fbaaf4ccd",
     "slug": "szampon-pielegnujacy-do-wlosow",
     "nazwa": "Szampon pielęgnujący do włosów",
-    "cena": 40,
-    "dostepnosc": "Duza",
+    "cena": 29.99,
+    "dostepnosc": "na zamówienie",
     "kategoria": [
       {
         "_id": "6941b5a9b05aec2a8d57d164",
@@ -312,9 +312,9 @@
       "__v": 0
     },
     "opis": "Szampon pielęgnujący i dodający objętości włosom",
-    "ilosc": 200,
-    "czas_wysylki": 1,
-    "kod_produkcyjny": "BCD-123",
+    "ilosc": 100,
+    "czas_wysylki": 5,
+    "kod_produkcyjny": "SPD-123",
     "ocena": 5,
     "opinie": null,
     "wariant": [
