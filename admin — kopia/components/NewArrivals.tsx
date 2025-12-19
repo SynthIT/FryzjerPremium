@@ -1,22 +1,22 @@
 "use client";
-
-import Image from "next/image";
-import Link from "next/link";
 import "@/app/globals.css";
-import { renderStars } from "@/lib/utils";
 import { ProductsResponse } from "@/lib/interfaces/ax";
 import { Products } from "@/lib/models/Products";
 import { useState, useEffect } from "react";
+import ProductElement from "./productsComponents/ProductElement";
 
 export default function NewArrivals({ data }: { data: ProductsResponse }) {
     // Sortuj produkty według ID (najnowsze na górze) i weź 4 najnowsze
     const [products, setProducts] = useState<Products[] | null>(null);
     useEffect(() => {
         async function getProductsBest() {
+            const array: number[] = [];
             setProducts(
                 [...data.products!]
                     .sort(
-                        (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
+                        (a, b) =>
+                            new Date(b.createdAt).getTime() -
+                            new Date(a.createdAt).getTime()
                     )
                     .slice(0, 4)
             );
@@ -34,52 +34,57 @@ export default function NewArrivals({ data }: { data: ProductsResponse }) {
                         <div className="products-grid">
                             {products ? (
                                 products.map((product, index) => (
-                                    <Link
+                                    <ProductElement
                                         key={index}
-                                        href={`/product/${product.slug}`}
-                                        className="product-card-link">
-                                        <div className="product-card">
-                                            <div className="product-image-wrapper">
-                                                {product.media ? (
-                                                    <Image
-                                                        src={
-                                                            product.media[0]
-                                                                .path
-                                                        }
-                                                        alt={
-                                                            product.media[0].alt
-                                                        }
-                                                        width={300}
-                                                        height={300}
-                                                        className="product-image"
-                                                    />
-                                                ) : (
-                                                    <div className="product-placeholder">
-                                                        <span>
-                                                            {product.nazwa}
-                                                        </span>
-                                                    </div>
-                                                )}
-                                            </div>
+                                        product={product}
+                                        index={index}
+                                    />
+                                    // <Link
+                                    //     key={index}
+                                    //     href={`/product/${product.slug}`}
+                                    //     className="product-card-link">
+                                    //     <div className="product-card-listing">
+                                    //         <div className="product-image-wrapper">
+                                    //             {product.media ? (
+                                    //                 <Image
+                                    //                     src={
+                                    //                         product.media[0]
+                                    //                             .path
+                                    //                     }
+                                    //                     alt={
+                                    //                         product.media[0].alt
+                                    //                     }
+                                    //                     width={300}
+                                    //                     height={300}
+                                    //                     className="product-image"
+                                    //                 />
+                                    //             ) : (
+                                    //                 <div className="product-placeholder">
+                                    //                     <span>
+                                    //                         {product.nazwa}
+                                    //                     </span>
+                                    //                 </div>
+                                    //             )}
+                                    //         </div>
 
-                                            <div className="product-info">
-                                                <h3 className="product-name">
-                                                    {product.nazwa}
-                                                </h3>
-                                                <div className="product-rating">
-                                                    {renderStars(
-                                                        product.ocena,
-                                                        18
-                                                    )}
-                                                </div>
-                                                <div className="product-price">
-                                                    <span>
-                                                        {product.cena} zł
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </Link>
+                                    //         <div className="product-info">
+                                    //             <h3 className="product-name">
+                                    //                 {product.nazwa}
+                                    //             </h3>
+                                    //             <div className="product-rating">
+                                    //                 {renderStars(
+                                    //                     product.ocena,
+                                    //                     18
+                                    //                 )}
+                                    //             </div>
+                                    //             <div className="product-price">
+                                    //                 <span>
+                                    //                     {product.cena} zł
+                                    //                 </span>
+                                    //             </div>
+                                    //         </div>
+                                    //     </div>
+                                    // </Link>
                                 ))
                             ) : (
                                 <>

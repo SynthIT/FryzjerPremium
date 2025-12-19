@@ -181,6 +181,8 @@ export default function Header() {
         setShowDropdown((prev) => !prev);
     }, []);
 
+    
+
     return (
         <header>
             <div className="header-container">

@@ -421,11 +421,11 @@ const polishMap: Record<string, string> = {
 import { generateKeyPairSync } from "crypto";
 
 // (async () => {
-//     const { privateKey, publicKey } = generateKeyPairSync("rsa", {
-//         modulusLength: 4096,
-//         publicKeyEncoding: { type: "spki", format: "pem" },
-//         privateKeyEncoding: { type: "pkcs8", format: "pem" },
-//     });
+// const { privateKey, publicKey } = generateKeyPairSync("rsa", {
+//     modulusLength: 4096,
+//     publicKeyEncoding: { type: "spki", format: "pem",  },
+//     privateKeyEncoding: { type: "pkcs8", format: "pem" },
+// });
 
 //     fs.writeFileSync(
 //         ".env.private",

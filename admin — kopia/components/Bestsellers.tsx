@@ -46,7 +46,7 @@ export default function Bestsellers({ data }: { data: ProductsResponse }) {
                                         key={index}
                                         href={`/product/${product.slug}`}
                                         className="product-card-link">
-                                        <div className="product-card">
+                                        <div className="product-card-listing">
                                             <div className="product-image-wrapper">
                                                 {product.media ? (
                                                     <Image

@@ -4,9 +4,9 @@ import { addNewUser, createJWT } from "@/lib/admin_utils";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
-    const reqBody: { email: string; password: string } = await req.json();
+    const reqBody = await req.json();
     console.log("Rejestracja użytkownika:", reqBody);
-    const result = await addNewUser(reqBody.email, reqBody.password);
+    const result = await addNewUser(reqBody);
     if (result instanceof User) {
         const response: UsersReponse = {
             status: 201,
@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
         };
         const nextResponse = NextResponse.json(response, { status: 201 });
         const token = createJWT(reqBody.email);
-        nextResponse.cookies.set("authToken", token, {
+        nextResponse.cookies.set("Authorization", `Bearer ${token}`, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             sameSite: "lax",

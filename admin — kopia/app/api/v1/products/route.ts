@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
     }
     const products: Products[] = JSON.parse(file);
     const response: ProductsResponse = {
-        status: 0,
+        status: 200,
         products: products,
     };
     return NextResponse.json(response);

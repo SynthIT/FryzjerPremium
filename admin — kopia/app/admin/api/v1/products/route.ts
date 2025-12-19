@@ -2,8 +2,15 @@ import { collectProducts } from "@/lib/admin_utils";
 import { Products, productSchema } from "@/lib/models/Products";
 import mongoose, { model, models } from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
+import { checkRequestAuth } from "../utils";
 
 export async function GET(req: NextRequest) {
+    if (!checkRequestAuth(req)) {
+        return NextResponse.json(
+            { status: 1, error: "Brak autoryzacji" },
+            { status: 401 }
+        );
+    }
     const products = await collectProducts();
     return NextResponse.json(JSON.parse(products));
 }
@@ -62,4 +69,5 @@ async function updateProduct(productData: Products) {
     await Product.findOneAndUpdate({ slug: productData.slug }, productData, {
         new: true,
     });
-    await mongoose.connection.close();}
+    await mongoose.connection.close();
+}
