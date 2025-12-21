@@ -16,7 +16,7 @@ interface UserContextType {
         newPassword: string,
         oldPassword: string
     ) => Promise<boolean>;
-    changeUserData: (changed: Partial<Users>) => boolean;
+    changeUserData: (changed: Partial<Users>) => false | Promise<boolean>;
     logout: () => void;
     deleteAccount: () => void;
     addNewOrder: (order: OrderList) => boolean;
@@ -78,12 +78,66 @@ export function UserProvider({ children }: { children: ReactNode }) {
         []
     );
 
-    const changeUserData = useCallback((changed: Partial<Users>) => {
-        
-    }, [user]);
+    const changeUserData = useCallback(
+        (changed: Partial<Users>) => {
+            async function editUser(edit: Users) {
+                const req = await fetch("/api/v1/auth/change/user", {
+                    method: "PUT",
+                    credentials: "include",
+                    body: JSON.stringify({ user: edit }),
+                })
+                    .then((res) => res.json())
+                    .then((data) => {
+                        return data.status === 201;
+                    });
+                return req;
+            }
+            if (!user) return false;
+            const editUsers = {
+                ...user,
+                ...changed,
+            } satisfies Users;
+            return editUser(editUsers);
+        },
+        [user]
+    );
+    const logout = useCallback(() => {
+        async function out() {
+            await fetch("/api/v1/auth/logout", {
+                method: "POST",
+                credentials: "include",
+            });
+            setUser(undefined);
+            setOrders([]);
+        }
+        out();
+    }, []);
+
+    const deleteAccount = useCallback(() => {
+        async function del() {
+            await fetch("/api/v1/auth/deleteacc", {
+                method: "DELETE",
+                credentials: "include",
+            });
+            setUser(undefined);
+            setOrders([]);
+        }
+        del();
+    }, []);
+
+    const addNewOrder = useCallback((order: OrderList) => {}, [])
 
     return (
-        <UserContext.Provider value={{ user, orders, addUser, changePassword }}>
+        <UserContext.Provider
+            value={{
+                user,
+                orders,
+                addUser,
+                changePassword,
+                changeUserData,
+                logout,
+                deleteAccount,
+            }}>
             {children}
         </UserContext.Provider>
     );

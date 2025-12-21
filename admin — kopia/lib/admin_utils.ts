@@ -169,7 +169,7 @@ export async function changePassword(
     req: NextRequest,
     newPassword: string,
     oldPassword: string
-): Promise<{ mess: string; user?: Users; jwt?: string }> {
+): Promise<{ mess: string; user?: Users; jwt?: string[] }> {
     const { val, user, mess } = verifyJWT(req);
     if (!val || typeof user === "undefined") return { mess: mess! };
     try {
@@ -181,15 +181,45 @@ export async function changePassword(
         res.save();
         await dbclose();
         const jwt = createJWT(res, true);
-        return { mess: "Hasło zostało zmienione", user: res, jwt: jwt[0] };
+        return { mess: "Hasło zostało zmienione", user: res, jwt: jwt };
     } catch (err) {
         return { mess: `${err}` };
     }
 }
 
-export async function editUser(req: NextRequest, newUser: Users) {
+export async function editUser(
+    req: NextRequest,
+    newUser: Users
+): Promise<{ mess: string; user?: Users; jwt?: string[] }> {
     const { val, user, mess } = verifyJWT(req);
     if (!val || typeof user === "undefined") return { mess: mess! };
+    try {
+        await db();
+        const res = await User.findByIdAndUpdate(
+            { email: user.email },
+            { $set: newUser }
+        ).orFail();
+        await dbclose();
+        const jwt = createJWT(res, true);
+        return { mess: "Użytkownik został zedytowany", user: res, jwt };
+    } catch (err) {
+        return { mess: `${err}` };
+    }
+}
+
+export async function deleteUser(
+    req: NextRequest
+): Promise<{ mess: string; deleted?: boolean }> {
+    const { val, user, mess } = verifyJWT(req);
+    if (!val || typeof user === "undefined") return { mess: mess! };
+    try {
+        await db();
+        const o = await User.findOneAndDelete({ email: user.email }).orFail();
+        if (user == o) return { mess: "Konto zostało usunięte", deleted: true };
+        else return { mess: "Błąd podczas usuwania konta", deleted: false };
+    } catch (err) {
+        return { mess: `${err}` };
+    }
 }
 
 export async function collectProducts() {
