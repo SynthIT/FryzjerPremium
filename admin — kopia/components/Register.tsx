@@ -1,5 +1,4 @@
 import { Users } from "@/lib/models/Users";
-import { ReceiptTurkishLiraIcon } from "lucide-react";
 import { useState, useCallback, ChangeEvent } from "react";
 
 export default function RegisterPage() {

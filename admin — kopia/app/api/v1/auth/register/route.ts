@@ -14,7 +14,13 @@ export async function POST(req: NextRequest) {
         };
         const nextResponse = NextResponse.json(response, { status: 201 });
         const token = createJWT(reqBody);
+        const refreshtoken = createJWT(reqBody, true);
         nextResponse.cookies.set("Authorization", `Bearer ${token}`, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+        });
+        nextResponse.cookies.set("Refresh-Token", `Bearer ${refreshtoken}`, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             sameSite: "lax",

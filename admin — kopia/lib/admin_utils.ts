@@ -9,50 +9,21 @@ import { JwtPayload, sign, verify } from "jsonwebtoken";
 import mongoose from "mongoose";
 import { Product } from "./models/Products";
 import { NextRequest } from "next/server";
-import { argon2id, hash, verify as passverify } from "argon2";
+import { hash, verify as passverify } from "argon2";
 
 export function checkRequestAuth(req: NextRequest): {
     val: boolean;
     user?: Users;
     mess?: string;
 } {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    function typeCheck(obj: any): obj is Users {
-        return (
-            obj !== null &&
-            typeof obj === "object" &&
-            typeof obj.email === "string" &&
-            typeof obj.nazwisko == "string"
-        );
-    }
-    const cookieAuth = req.cookies.get("Authorization");
-    if (!cookieAuth) return { val: false };
-    if (cookieAuth.value.split(" ")[0] !== "Bearer") return { val: false };
-    try {
-        const cookie = verify(
-            cookieAuth.value.split(" ")[1],
-            createPublicKey({
-                key: process.env.JWT_PUBLIC_KEY!,
-                format: "pem",
-                type: "pkcs1",
-            } as PublicKeyInput)
-        );
-        const user = (cookie as JwtPayload).user;
-        if (typeCheck(user)) {
-            if (!user.role) return { val: false, mess: "Brak uprawnień" };
-            return { val: true };
-        }
-
-        return { val: false };
-    } catch (err) {
-        return { val: false, mess: `${err}` };
-    }
+    const { val } = verifyJWT(req);
+    return { val };
 }
 
 export async function checkExistingUser(email: string, haslo: string) {
-    await mongoose.connect("mongodb://localhost:27017/fryzjerpremium");
+    await db();
     const existingUser: Users | null = await User.findOne({ email: email });
-    mongoose.connection.close();
+    await dbclose();
     if (existingUser) {
         if (!(await passverify(existingUser.haslo.trim(), haslo.trim())))
             return "Hasła nie są takie same";
@@ -62,7 +33,29 @@ export async function checkExistingUser(email: string, haslo: string) {
     return "Użytkownik nie istnieje";
 }
 
-export function createJWT(payloaduser: Users) {
+export function createJWT(
+    payloaduser: Users,
+    refresh?: boolean
+): Array<string> {
+    let refreshtoken: string = "";
+    if (refresh) {
+        const payload: JwtPayload = {
+            email: payloaduser.email,
+            iat: Math.floor(Date.now() / 1000),
+        };
+        refreshtoken = sign(
+            payload,
+            createPrivateKey({
+                key: process.env.JWT_REFRESH_PRIVATE_KEY,
+                format: "pem",
+                type: "pkcs8",
+            } as PrivateKeyInput),
+            {
+                algorithm: "RS256",
+                expiresIn: "7d",
+            }
+        );
+    }
     const payload: JwtPayload = {
         user: payloaduser,
         iat: Math.floor(Date.now() / 1000),
@@ -79,7 +72,7 @@ export function createJWT(payloaduser: Users) {
             expiresIn: "1d",
         }
     );
-    return token;
+    return [token, refreshtoken];
 }
 
 export function verifyJWT(req: NextRequest): {
@@ -114,21 +107,42 @@ export function verifyJWT(req: NextRequest): {
             return { val: true, user: user };
         }
     } catch (err) {
+        const refreshToken = req.cookies.get("Refresh-Token");
+        if (refreshToken) {
+            const token = refreshToken.value.split(" ")[1];
+            try {
+                const cookie = verify(
+                    token,
+                    createPublicKey({
+                        key: process.env.JWT_REFRESH_PUBLIC_KEY!,
+                        format: "pem",
+                        type: "pkcs1",
+                    } as PublicKeyInput)
+                );
+                const user = (cookie as JwtPayload).user;
+                if (typeCheck(user)) {
+                    if (!user.role)
+                        return { val: false, mess: "Brak uprawnień" };
+                    return { val: true, user: user };
+                }
+            } catch (err) {
+                throw err;
+            }
+        }
         return { val: false, mess: `${err}` };
     }
-
     return { val: false };
 }
 
 export async function addNewUser(payload: Users) {
-    await mongoose.connect("mongodb://localhost:27017/fryzjerpremium");
+    await db();
     const existingUser = await User.findOne({ email: payload.email });
     if (existingUser && existingUser.email === payload.email) {
-        mongoose.connection.close();
+        await dbclose();
         return "Użytkownik o podanym emailu już istnieje.";
     } else {
         const hashedPassword = await hash(payload.haslo, { type: 2 });
-        const u = await User.create({
+        const upayload: Users = {
             imie: payload.imie,
             nazwisko: payload.nazwisko,
             email: payload.email,
@@ -143,21 +157,55 @@ export async function addNewUser(payload: Users) {
             osoba_prywatna: true,
             zamowienia: [],
             faktura: false,
-            role: { nazwa: "admin", permisje: 1 } as Role,
-        });
-        u.haslo = "";
-        mongoose.connection.close();
+            role: [{ nazwa: "admin", permisje: 1 } as Role],
+        };
+        const u = await User.create(upayload);
+        await dbclose();
         return u;
     }
 }
 
+export async function changePassword(
+    req: NextRequest,
+    newPassword: string,
+    oldPassword: string
+): Promise<{ mess: string; user?: Users; jwt?: string }> {
+    const { val, user, mess } = verifyJWT(req);
+    if (!val || typeof user === "undefined") return { mess: mess! };
+    try {
+        await db();
+        const res = await User.findOne({ email: user.email }).orFail();
+        const ok = await passverify(res.haslo, oldPassword);
+        if (!ok) throw new Error("Hasla nie sa takie same");
+        res.haslo = await hash(newPassword, { type: 2 });
+        res.save();
+        await dbclose();
+        const jwt = createJWT(res, true);
+        return { mess: "Hasło zostało zmienione", user: res, jwt: jwt[0] };
+    } catch (err) {
+        return { mess: `${err}` };
+    }
+}
+
+export async function editUser(req: NextRequest, newUser: Users) {
+    const { val, user, mess } = verifyJWT(req);
+    if (!val || typeof user === "undefined") return { mess: mess! };
+}
+
 export async function collectProducts() {
-    await mongoose.connect("mongodb://localhost:27017/fryzjerpremium");
+    await db();
     const products = await Product.find()
         .populate("kategoria")
         .populate("promocje")
         .populate("producent")
         .orFail();
-    await mongoose.connection.close();
+    await dbclose();
     return JSON.stringify(products);
+}
+
+async function db() {
+    await mongoose.connect("mongodb://localhost:27017/fryzjerpremium");
+}
+async function dbclose() {
+    await mongoose.connection.close();
 }
