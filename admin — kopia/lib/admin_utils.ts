@@ -82,6 +82,44 @@ export function createJWT(payloaduser: Users) {
     return token;
 }
 
+export function verifyJWT(req: NextRequest): {
+    val: boolean;
+    user?: Users;
+    mess?: string;
+} {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    function typeCheck(obj: any): obj is Users {
+        return (
+            obj !== null &&
+            typeof obj === "object" &&
+            typeof obj.email === "string" &&
+            typeof obj.nazwisko == "string"
+        );
+    }
+    const cookieAuth = req.cookies.get("Authorization");
+    if (!cookieAuth) return { val: false };
+    if (cookieAuth.value.split(" ")[0] !== "Bearer") return { val: false };
+    try {
+        const cookie = verify(
+            cookieAuth.value.split(" ")[1],
+            createPublicKey({
+                key: process.env.JWT_PUBLIC_KEY!,
+                format: "pem",
+                type: "pkcs1",
+            } as PublicKeyInput)
+        );
+        const user = (cookie as JwtPayload).user;
+        if (typeCheck(user)) {
+            if (!user.role) return { val: false, mess: "Brak uprawnień" };
+            return { val: true, user: user };
+        }
+    } catch (err) {
+        return { val: false, mess: `${err}` };
+    }
+
+    return { val: false };
+}
+
 export async function addNewUser(payload: Users) {
     await mongoose.connect("mongodb://localhost:27017/fryzjerpremium");
     const existingUser = await User.findOne({ email: payload.email });

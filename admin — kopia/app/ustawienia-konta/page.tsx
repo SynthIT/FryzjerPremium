@@ -3,52 +3,18 @@
 import { useState } from 'react';
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { Info, LockKeyhole, MapPin, Settings, User } from 'lucide-react';
 
 export default function AccountSettingsPage() {
   const [activeSection, setActiveSection] = useState('personal');
 
-  const UserIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="20" height="20">
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-      <circle cx="12" cy="7" r="4"></circle>
-    </svg>
-  );
-
-  const MapPinIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="20" height="20">
-      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-      <circle cx="12" cy="10" r="3"></circle>
-    </svg>
-  );
-
-  const LockIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="20" height="20">
-      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-      <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-    </svg>
-  );
-
-  const SettingsIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="20" height="20">
-      <circle cx="12" cy="12" r="3"></circle>
-      <path d="M12 1v6m0 6v6M5.64 5.64l4.24 4.24m4.24 4.24l4.24 4.24M1 12h6m6 0h6M5.64 18.36l4.24-4.24m4.24-4.24l4.24-4.24"></path>
-    </svg>
-  );
-
-  const InfoIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="20" height="20">
-      <circle cx="12" cy="12" r="10"></circle>
-      <path d="M12 16v-4"></path>
-      <path d="M12 8h.01"></path>
-    </svg>
-  );
 
   const sections = [
-    { id: 'personal', label: 'Dane osobowe', icon: <UserIcon /> },
-    { id: 'address', label: 'Adres dostawy', icon: <MapPinIcon /> },
-    { id: 'password', label: 'Zmiana hasła', icon: <LockIcon /> },
-    { id: 'preferences', label: 'Preferencje', icon: <SettingsIcon /> },
-    { id: 'actions', label: 'Akcje konta', icon: <InfoIcon /> },
+    { id: 'personal', label: 'Dane osobowe', icon: <User /> },
+    { id: 'address', label: 'Adres dostawy', icon: <MapPin /> },
+    { id: 'password', label: 'Zmiana hasła', icon: <LockKeyhole /> },
+    { id: 'preferences', label: 'Preferencje', icon: <Settings /> },
+    { id: 'actions', label: 'Akcje konta', icon: < Info/> },
   ];
 
   return (

@@ -8,6 +8,8 @@ import "@/app/globals.css";
 import { useCart } from "@/contexts/CartContext";
 import { loginUser } from "@/lib/utils";
 import { Users } from "@/lib/models/Users";
+import LoggedBadge from "./LoggedBadge";
+import { User } from "lucide-react";
 
 export default function Header() {
     const [searchQuery, setSearchQuery] = useState("");
@@ -26,6 +28,21 @@ export default function Header() {
     const searchInputRef = useRef<HTMLInputElement>(null);
     const { getTotalItems, lastAddedItem, clearLastAddedItem } = useCart();
     const cartItemsCount = getTotalItems();
+    const [user, setUser] = useState<Users>();
+
+    useEffect(() => {
+        async function setuser() {
+            const request = await fetch("/api/v1/auth/check", {
+                method: "POST",
+                credentials: "include",
+                cache: "force-cache",
+            }).then((res) => res.json());
+            if (request.user) {
+                setUser(request.user);
+            }
+        }
+        setuser();
+    }, []);
 
     // Upewnij się, że komponent jest zamontowany (dla Portal)
     useEffect(() => {
@@ -467,26 +484,21 @@ export default function Header() {
                             </div>
                         )}
                     </div>
-                    {<button
-                        className="login-button"
-                        onClick={() => {
-                            setShowLoginModal(true);
-                            closeMobileMenu();
-                        }}
-                        aria-label="Zaloguj się">
-                        <svg
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                            className="basket-icon">
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                            />
-                        </svg>
-                    </button>}
+                    {user ? (
+                        <>
+                            <LoggedBadge user={user}></LoggedBadge>
+                        </>
+                    ) : (
+                        <button
+                            className="login-button"
+                            onClick={() => {
+                                setShowLoginModal(true);
+                                closeMobileMenu();
+                            }}
+                            aria-label="Zaloguj się">
+                            <User></User>
+                        </button>
+                    )}
                     <button
                         className={`mobile-menu-toggle ${
                             isMobileMenuOpen ? "is-active" : ""
