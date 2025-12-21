@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
             user: result,
         };
         const nextResponse = NextResponse.json(response, { status: 201 });
-        const token = createJWT(result);
+        const [token] = createJWT(result);
         nextResponse.cookies.set("Authorization", `Bearer ${token}`, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",

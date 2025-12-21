@@ -16,8 +16,8 @@ export function checkRequestAuth(req: NextRequest): {
     user?: Users;
     mess?: string;
 } {
-    const { val } = verifyJWT(req);
-    return { val };
+    const { val, mess } = verifyJWT(req);
+    return { val, mess };
 }
 
 export async function checkExistingUser(email: string, haslo: string) {
@@ -126,10 +126,10 @@ export function verifyJWT(req: NextRequest): {
                     return { val: true, user: user };
                 }
             } catch (err) {
-                throw err;
+                throw `${err} catch w catch`;
             }
         }
-        return { val: false, mess: `${err}` };
+        return { val: false, mess: `${err} catch` };
     }
     return { val: false };
 }
