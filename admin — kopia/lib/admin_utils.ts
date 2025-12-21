@@ -1,29 +1,33 @@
-import { User, Users } from "./models/Users";
+import { Role, User, Users } from "./models/Users";
 import {
-    createHash,
     createPrivateKey,
     createPublicKey,
     PrivateKeyInput,
     PublicKeyInput,
 } from "node:crypto";
-import {
-    JwtPayload,
-    sign,
-    verify,
-    VerifyCallback,
-    VerifyErrors,
-} from "jsonwebtoken";
-
+import { JwtPayload, sign, verify } from "jsonwebtoken";
 import mongoose from "mongoose";
 import { Product } from "./models/Products";
-
 import { NextRequest } from "next/server";
+import { argon2id, hash, verify as passverify } from "argon2";
 
-export function checkRequestAuth(req: NextRequest): boolean {
+export function checkRequestAuth(req: NextRequest): {
+    val: boolean;
+    user?: Users;
+    mess?: string;
+} {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    function typeCheck(obj: any): obj is Users {
+        return (
+            obj !== null &&
+            typeof obj === "object" &&
+            typeof obj.email === "string" &&
+            typeof obj.nazwisko == "string"
+        );
+    }
     const cookieAuth = req.cookies.get("Authorization");
-    console.log(cookieAuth);
-    if (!cookieAuth) return false;
-    if (cookieAuth.value.split(" ")[0] !== "Bearer") return false;
+    if (!cookieAuth) return { val: false };
+    if (cookieAuth.value.split(" ")[0] !== "Bearer") return { val: false };
     try {
         const cookie = verify(
             cookieAuth.value.split(" ")[1],
@@ -33,15 +37,34 @@ export function checkRequestAuth(req: NextRequest): boolean {
                 type: "pkcs1",
             } as PublicKeyInput)
         );
-        return true;
+        const user = (cookie as JwtPayload).user;
+        if (typeCheck(user)) {
+            if (!user.role) return { val: false, mess: "Brak uprawnień" };
+            return { val: true };
+        }
+
+        return { val: false };
     } catch (err) {
-        return false;
+        return { val: false, mess: `${err}` };
     }
 }
 
-export function createJWT(email: string) {
+export async function checkExistingUser(email: string, haslo: string) {
+    await mongoose.connect("mongodb://localhost:27017/fryzjerpremium");
+    const existingUser: Users | null = await User.findOne({ email: email });
+    mongoose.connection.close();
+    if (existingUser) {
+        if (!(await passverify(existingUser.haslo.trim(), haslo.trim())))
+            return "Hasła nie są takie same";
+        existingUser.haslo = "";
+        return existingUser;
+    }
+    return "Użytkownik nie istnieje";
+}
+
+export function createJWT(payloaduser: Users) {
     const payload: JwtPayload = {
-        email: email,
+        user: payloaduser,
         iat: Math.floor(Date.now() / 1000),
     };
     const token = sign(
@@ -66,9 +89,7 @@ export async function addNewUser(payload: Users) {
         mongoose.connection.close();
         return "Użytkownik o podanym emailu już istnieje.";
     } else {
-        const sha = createHash("sha256");
-        sha.update(payload.haslo, "utf8");
-        const hashedPassword = sha.digest("hex");
+        const hashedPassword = await hash(payload.haslo, { type: 2 });
         const u = await User.create({
             imie: payload.imie,
             nazwisko: payload.nazwisko,
@@ -84,6 +105,7 @@ export async function addNewUser(payload: Users) {
             osoba_prywatna: true,
             zamowienia: [],
             faktura: false,
+            role: { nazwa: "admin", permisje: 1 } as Role,
         });
         u.haslo = "";
         mongoose.connection.close();

@@ -6,6 +6,8 @@ import Image from "next/image";
 import Link from "next/link";
 import "@/app/globals.css";
 import { useCart } from "@/contexts/CartContext";
+import { loginUser } from "@/lib/utils";
+import { Users } from "@/lib/models/Users";
 
 export default function Header() {
     const [searchQuery, setSearchQuery] = useState("");
@@ -180,8 +182,6 @@ export default function Header() {
     const toggleDropdown = useCallback(() => {
         setShowDropdown((prev) => !prev);
     }, []);
-
-    
 
     return (
         <header>
@@ -467,7 +467,7 @@ export default function Header() {
                             </div>
                         )}
                     </div>
-                    <button
+                    {<button
                         className="login-button"
                         onClick={() => {
                             setShowLoginModal(true);
@@ -486,7 +486,7 @@ export default function Header() {
                                 d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                             />
                         </svg>
-                    </button>
+                    </button>}
                     <button
                         className={`mobile-menu-toggle ${
                             isMobileMenuOpen ? "is-active" : ""
@@ -641,7 +641,14 @@ export default function Header() {
                                         disabled={
                                             !loginForm.email ||
                                             !loginForm.password
-                                        }>
+                                        }
+                                        onClick={() => {
+                                            const response = loginUser(
+                                                loginForm.email,
+                                                loginForm.password
+                                            );
+                                            alert(response);
+                                        }}>
                                         Zaloguj się
                                     </button>
                                     <button

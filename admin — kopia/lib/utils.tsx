@@ -70,6 +70,8 @@ export const loginUser = async (email: string, password: string) => {
     const data = await fetch(url, {
         method: "POST",
         body: JSON.stringify({ email, password }),
+    }).then((res) => {
+        return res.json().toString();
     });
     return data;
 };
