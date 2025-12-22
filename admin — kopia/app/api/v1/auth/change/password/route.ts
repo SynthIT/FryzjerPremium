@@ -1,6 +1,5 @@
 import { changePassword } from "@/lib/admin_utils";
 import { NextRequest, NextResponse } from "next/server";
-import { resourceLimits } from "node:worker_threads";
 
 export async function POST(req: NextRequest) {
     const body = await req.json();

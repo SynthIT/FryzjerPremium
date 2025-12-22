@@ -1,9 +1,12 @@
+"use client";
+
 import { OrderList } from "@/lib/models/Orders";
 import { Users } from "@/lib/models/Users";
 import {
     createContext,
     ReactNode,
     useCallback,
+    useContext,
     useEffect,
     useState,
 } from "react";
@@ -19,8 +22,8 @@ interface UserContextType {
     changeUserData: (changed: Partial<Users>) => false | Promise<boolean>;
     logout: () => void;
     deleteAccount: () => void;
-    addNewOrder: (order: OrderList) => boolean;
-    getOneOrder: (nr_zam: string) => OrderList;
+    addNewOrder: (order: OrderList) => Promise<boolean>;
+    getOneOrder: (nr_zam: string) => OrderList | undefined;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -30,17 +33,27 @@ export function UserProvider({ children }: { children: ReactNode }) {
     const [orders, setOrders] = useState<OrderList[]>([]);
 
     useEffect(() => {
+        if (user !== undefined) {
+            localStorage.setItem("user", JSON.stringify(user));
+        }
+        localStorage.setItem("user", "");
+    }, [user, orders]);
+
+    useEffect(() => {
         const loggedUser = localStorage.getItem("user");
         if (loggedUser) {
             try {
                 function u(c: Users) {
                     setUser(c);
                     if (c.zamowienia.length > 0) {
-                        setOrders(c.zamowienia);
+                        setOrders(c.zamowienia as OrderList[]);
                     }
                 }
-                const parsedUser: Users = JSON.parse(loggedUser);
-                u(parsedUser);
+                const parsedUser: Users | undefined = JSON.parse(loggedUser);
+                console.log(parsedUser);
+                if (parsedUser) {
+                    u(parsedUser);
+                }
             } catch (err) {
                 console.log("Błąd podczas ładowania użytkownika: ", err);
             }
@@ -48,7 +61,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     }, []);
 
     const addUser = useCallback((user: Users) => {
-        const orders = user.zamowienia;
+        const orders = user.zamowienia as OrderList[];
         if (orders.length > 0) {
             setOrders(orders);
             setUser(user);
@@ -125,7 +138,33 @@ export function UserProvider({ children }: { children: ReactNode }) {
         del();
     }, []);
 
-    const addNewOrder = useCallback((order: OrderList) => {}, [])
+    const addNewOrder = useCallback((order: OrderList) => {
+        async function add() {
+            const res = await fetch("/api/v1/products/orders", {
+                method: "POST",
+                credentials: "include",
+                body: JSON.stringify({ order: order }),
+            })
+                .then((res) => res.json())
+                .then((data) => {
+                    return data.status === 201;
+                });
+            if (!res) return false;
+            setOrders((prev) => [...prev, order]);
+            return true;
+        }
+        return add();
+    }, []);
+
+    const getOneOrder = useCallback(
+        (nr_zam: string) => {
+            const order = orders.find(({ numer_zamowienia }) => {
+                return numer_zamowienia == nr_zam;
+            });
+            return order;
+        },
+        [orders]
+    );
 
     return (
         <UserContext.Provider
@@ -137,8 +176,16 @@ export function UserProvider({ children }: { children: ReactNode }) {
                 changeUserData,
                 logout,
                 deleteAccount,
+                addNewOrder,
+                getOneOrder,
             }}>
             {children}
         </UserContext.Provider>
     );
+}
+
+export function useUser() {
+    const context = useContext(UserContext);
+    if (context === undefined) throw new Error("Something went wrong");
+    return context;
 }

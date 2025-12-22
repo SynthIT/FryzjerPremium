@@ -1,4 +1,4 @@
-import { Model, model, models, Schema } from "mongoose";
+import { Model, model, models, Schema, Types } from "mongoose";
 import { OrderList, schemaOrderList } from "./Orders";
 
 export const PermissionTable = {
@@ -29,10 +29,10 @@ export interface Users {
     kod_pocztowy: string;
     telefon: string;
     osoba_prywatna: boolean;
-    zamowienia: OrderList[];
+    zamowienia: OrderList[] | Types.ObjectId[];
     nip?: string | null;
     faktura?: boolean | null;
-    role?: Role[];
+    role?: Role[] | Types.ObjectId[];
 }
 
 const roleSchema = new Schema<Role>(
@@ -59,16 +59,20 @@ export const userSchema = new Schema<Users>(
         kod_pocztowy: { type: String, required: true },
         telefon: { type: String, required: true },
         nip: String,
-        zamowienia: { type: [schemaOrderList], default: [] },
+        zamowienia: { type: [Types.ObjectId], ref: "Orders", default: [] },
         faktura: { type: Boolean, default: false },
         osoba_prywatna: { type: Boolean, default: true },
-        role: { type: [roleSchema], default: [] },
+        role: { type: [Types.ObjectId], ref: "Roles", default: [] },
     },
     {
         timestamps: true,
     }
 );
 
-export const Role = models.Roles ?? model<Role>("Roles", roleSchema);
+export const Role: Model<Role> =
+    (models.Roles as Model<Role>) ?? model<Role>("Roles", roleSchema);
 export const User: Model<Users> =
     (models.Users as Model<Users>) ?? model<Users>("Users", userSchema);
+
+export const Order: Model<OrderList> =
+    models.Orders ?? model<OrderList>("Orders", schemaOrderList);

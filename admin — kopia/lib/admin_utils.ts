@@ -22,7 +22,11 @@ export function checkRequestAuth(req: NextRequest): {
 
 export async function checkExistingUser(email: string, haslo: string) {
     await db();
-    const existingUser: Users | null = await User.findOne({ email: email });
+    
+    const existingUser: Users = await User.findOne({ email: email })
+        .populate("role")
+        .populate("zamowienia")
+        .orFail();
     await dbclose();
     if (existingUser) {
         if (!(await passverify(existingUser.haslo.trim(), haslo.trim())))
@@ -103,7 +107,6 @@ export function verifyJWT(req: NextRequest): {
         );
         const user = (cookie as JwtPayload).user;
         if (typeCheck(user)) {
-            if (!user.role) return { val: false, mess: "Brak uprawnień" };
             return { val: true, user: user };
         }
     } catch (err) {
@@ -121,8 +124,6 @@ export function verifyJWT(req: NextRequest): {
                 );
                 const user = (cookie as JwtPayload).user;
                 if (typeCheck(user)) {
-                    if (!user.role)
-                        return { val: false, mess: "Brak uprawnień" };
                     return { val: true, user: user };
                 }
             } catch (err) {
@@ -136,6 +137,7 @@ export function verifyJWT(req: NextRequest): {
 
 export async function addNewUser(payload: Users) {
     await db();
+    const rola = await Role.create({ nazwa: "admin", permisje: 1 });
     const existingUser = await User.findOne({ email: payload.email });
     if (existingUser && existingUser.email === payload.email) {
         await dbclose();
@@ -157,7 +159,7 @@ export async function addNewUser(payload: Users) {
             osoba_prywatna: true,
             zamowienia: [],
             faktura: false,
-            role: [{ nazwa: "admin", permisje: 1 } as Role],
+            role: [rola._id],
         };
         const u = await User.create(upayload);
         await dbclose();
@@ -206,6 +208,8 @@ export async function editUser(
         return { mess: `${err}` };
     }
 }
+import { writeFileSync } from "node:fs";
+import path from "node:path";
 
 export async function deleteUser(
     req: NextRequest
@@ -214,6 +218,18 @@ export async function deleteUser(
     if (!val || typeof user === "undefined") return { mess: mess! };
     try {
         await db();
+        if (user.zamowienia.length > 0) {
+            writeFileSync(
+                path.join(
+                    process.cwd(),
+                    "data",
+                    "uzytkownicy_cache",
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    `${(user as any)._id}.json`
+                ),
+                JSON.stringify(user.zamowienia)
+            );
+        }
         const o = await User.findOneAndDelete({ email: user.email }).orFail();
         if (user == o) return { mess: "Konto zostało usunięte", deleted: true };
         else return { mess: "Błąd podczas usuwania konta", deleted: false };

@@ -1,4 +1,4 @@
-import { Schema, Types } from "mongoose";
+import { model, Model, models, Schema, Types } from "mongoose";
 import { Products } from "./Products";
 import { DeliveryMethods } from "./Delivery";
 import { randomBytes } from "crypto";
@@ -7,9 +7,9 @@ function createOrderNumber() {
     const h = randomBytes(2 ** 3).toString("hex");
     const a = new Date();
     const d =
-        `${a.getDate() < 10 ? `0${a.getDate()}` : a.getDate()}` +
+        `${h}-${a.getDate() < 10 ? `0${a.getDate()}` : a.getDate()}` +
         `${a.getMonth() < 10 ? `0${a.getMonth()}` : a.getMonth()}` +
-        `${a.getFullYear()}-${h}`;
+        `${a.getFullYear()}`;
     return d;
 }
 
@@ -35,3 +35,4 @@ export const schemaOrderList = new Schema<OrderList>(
     },
     { timestamps: true }
 );
+

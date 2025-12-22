@@ -10,6 +10,7 @@ import { loginUser } from "@/lib/utils";
 import { Users } from "@/lib/models/Users";
 import LoggedBadge from "./LoggedBadge";
 import { User } from "lucide-react";
+import { useUser } from "@/contexts/UserContext";
 
 export default function Header() {
     const [searchQuery, setSearchQuery] = useState("");
@@ -27,8 +28,9 @@ export default function Header() {
     const searchContainerRef = useRef<HTMLDivElement>(null);
     const searchInputRef = useRef<HTMLInputElement>(null);
     const { getTotalItems, lastAddedItem, clearLastAddedItem } = useCart();
+    const { addUser, user } = useUser();
+
     const cartItemsCount = getTotalItems();
-    const [user, setUser] = useState<Users>();
 
     useEffect(() => {
         async function setuser() {
@@ -38,7 +40,7 @@ export default function Header() {
                 cache: "force-cache",
             }).then((res) => res.json());
             if (request.user) {
-                setUser(request.user);
+                addUser(request.user);
             }
         }
         setuser();
@@ -654,12 +656,19 @@ export default function Header() {
                                             !loginForm.email ||
                                             !loginForm.password
                                         }
-                                        onClick={() => {
-                                            const response = loginUser(
+                                        onClick={async () => {
+                                            const response = await loginUser(
                                                 loginForm.email,
                                                 loginForm.password
                                             );
-                                            alert(response);
+                                            if (response.status == 201) {
+                                                addUser(response.user);
+                                                alert("Zostałeś zalogowany");
+                                            } else {
+                                                alert(
+                                                    "Email albo hasło, są niepoprawne"
+                                                );
+                                            }
                                         }}>
                                         Zaloguj się
                                     </button>

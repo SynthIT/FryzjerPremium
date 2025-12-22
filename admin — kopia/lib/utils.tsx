@@ -71,7 +71,7 @@ export const loginUser = async (email: string, password: string) => {
         method: "POST",
         body: JSON.stringify({ email, password }),
     }).then((res) => {
-        return res.json().toString();
+        return res.json();
     });
     return data;
 };
