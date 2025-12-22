@@ -7,7 +7,6 @@ import Link from "next/link";
 import "@/app/globals.css";
 import { useCart } from "@/contexts/CartContext";
 import { loginUser } from "@/lib/utils";
-import { Users } from "@/lib/models/Users";
 import LoggedBadge from "./LoggedBadge";
 import { User } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
@@ -44,11 +43,14 @@ export default function Header() {
             }
         }
         setuser();
-    }, []);
+    }, [addUser]);
 
     // Upewnij się, że komponent jest zamontowany (dla Portal)
     useEffect(() => {
-        setMounted(true);
+        function a() {
+            setMounted(true);
+        }
+        a();
     }, []);
 
     // Pokazuj okienko po dodaniu produktu
