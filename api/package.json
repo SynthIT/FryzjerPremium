@@ -13,6 +13,7 @@
         "@types/mongodb": "^4.0.6",
         "mongodb": "^7.0.0",
         "mongoose": "^9.0.0",
+        "tinypdf": "^0.1.0",
         "ts-node": "^10.9.2",
         "tsc": "^2.0.4",
         "typescript": "^5.9.3"

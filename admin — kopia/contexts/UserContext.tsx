@@ -1,7 +1,7 @@
 "use client";
 
 import { OrderList } from "@/lib/models/Orders";
-import { Users } from "@/lib/models/Users";
+import { Role, Users } from "@/lib/models/Users";
 import {
     createContext,
     ReactNode,
@@ -24,6 +24,7 @@ interface UserContextType {
     deleteAccount: () => void;
     addNewOrder: (order: OrderList) => Promise<boolean>;
     getOneOrder: (nr_zam: string) => OrderList | undefined;
+    isAdmin: () => boolean;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -36,6 +37,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
         if (user !== undefined) {
             localStorage.setItem("user", JSON.stringify(user));
         }
+        if (localStorage.getItem("user")) return;
         localStorage.setItem("user", "");
     }, [user, orders]);
 
@@ -122,6 +124,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
             });
             setUser(undefined);
             setOrders([]);
+            document.location.href = "/";
+            localStorage.setItem("user", "");
         }
         out();
     }, []);
@@ -134,6 +138,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
             });
             setUser(undefined);
             setOrders([]);
+            document.location.href = "/";
+            localStorage.setItem("user", "");
         }
         del();
     }, []);
@@ -166,6 +172,12 @@ export function UserProvider({ children }: { children: ReactNode }) {
         [orders]
     );
 
+    const isAdmin = useCallback(() => {
+        if (!user) return false;
+        if (!user.role) return false;
+        return user.role.length > 0 && (user.role[0] as Role).nazwa === "admin";
+    }, [user]);
+
     return (
         <UserContext.Provider
             value={{
@@ -178,6 +190,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
                 deleteAccount,
                 addNewOrder,
                 getOneOrder,
+                isAdmin,
             }}>
             {children}
         </UserContext.Provider>

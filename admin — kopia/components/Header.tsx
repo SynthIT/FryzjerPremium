@@ -26,8 +26,10 @@ export default function Header() {
     const cartDropdownRef = useRef<HTMLDivElement>(null);
     const searchContainerRef = useRef<HTMLDivElement>(null);
     const searchInputRef = useRef<HTMLInputElement>(null);
+    const [showModalMenu, setShowModalMenu] = useState<boolean>(false);
+
     const { getTotalItems, lastAddedItem, clearLastAddedItem } = useCart();
-    const { addUser, user } = useUser();
+    const { addUser, user, isAdmin, logout } = useUser();
 
     const cartItemsCount = getTotalItems();
 
@@ -490,7 +492,11 @@ export default function Header() {
                     </div>
                     {user ? (
                         <>
-                            <LoggedBadge user={user}></LoggedBadge>
+                            <LoggedBadge
+                                user={user}
+                                setModalMenu={() => {
+                                    setShowModalMenu(!showModalMenu);
+                                }}></LoggedBadge>
                         </>
                     ) : (
                         <button
@@ -519,6 +525,29 @@ export default function Header() {
                     </button>
                 </div>
             </div>
+            {showModalMenu && (
+                <div className="absolute flex flex-col max-w-xs max-h-xs bg-zinc-900 p-4">
+                    {isAdmin() && (
+                        <Link className="max-w-xs max-h-xs" href="/admin">
+                            Panel zarządzania
+                        </Link>
+                    )}
+                    <Link className="max-w-xs max-h-xs" href="/zamowienia">
+                        Zamówienia
+                    </Link>
+                    <Link
+                        className="max-w-xs max-h-xs"
+                        href="/ustawienia-konta">
+                        Ustawienia konta
+                    </Link>
+                    <Link
+                        className="max-w-xs max-h-xs"
+                        href="#"
+                        onClick={logout}>
+                        Wyloguj się
+                    </Link>
+                </div>
+            )}
 
             {isMobileMenuOpen && (
                 <div
