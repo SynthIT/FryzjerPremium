@@ -5,7 +5,6 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
     const reqBody = await req.json();
-    console.log("Rejestracja użytkownika:", reqBody);
     const result = await addNewUser(reqBody);
     if (result instanceof User) {
         const response: UsersReponse = {
@@ -13,7 +12,7 @@ export async function POST(req: NextRequest) {
             user: result,
         };
         const nextResponse = NextResponse.json(response, { status: 201 });
-        const [token, refreshtoken] = createJWT(reqBody, true);
+        const [token, refreshtoken] = createJWT(result, true);
         nextResponse.cookies.set("Authorization", `Bearer ${token}`, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",

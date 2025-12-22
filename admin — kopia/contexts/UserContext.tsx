@@ -103,9 +103,12 @@ export function UserProvider({ children }: { children: ReactNode }) {
                 })
                     .then((res) => res.json())
                     .then((data) => {
-                        return data.status === 201;
+                        return data;
                     });
-                return req;
+                if (req.status === 201) {
+                    setUser(edit);
+                }
+                return req.status === 201;
             }
             if (!user) return false;
             const editUsers = {

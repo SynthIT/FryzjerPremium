@@ -4,13 +4,14 @@ import { NextRequest, NextResponse } from "next/server";
 export async function PUT(req: NextRequest) {
     const body = await req.json();
     const { mess, user, jwt } = await editUser(req, body.user);
+    console.log(mess);
     if (!user)
         return NextResponse.json(
             { status: 400, message: mess },
             { status: 400 }
         );
     const res = NextResponse.json(
-        { status: 201, message: mess },
+        { status: 201, message: mess, user: user },
         { status: 201 }
     );
     res.cookies.set("Authorization", `Bearer ${jwt![0]}`, {
@@ -25,4 +26,5 @@ export async function PUT(req: NextRequest) {
             sameSite: "lax",
         });
     }
+    return res;
 }

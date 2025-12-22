@@ -24,6 +24,7 @@ export interface Products {
     createdAt: Date;
     /* [0] bazowy wyglad produktu - wymagany, niech automatycznie sie pojawia okno z kontruktorem na to
 musze naprawic przez to cala logike w froncie, ale bedo jaja*/
+    vat: number;
     wariant?: Warianty[];
     kod_ean?: string | null;
     sku?: string | null;
@@ -175,6 +176,7 @@ export const productSchema = new Schema<Products>(
         kod_produkcyjny: { type: String, required: true },
         ocena: { type: Number, required: true, default: 0 },
         opinie: { type: [reviewProductSchema], default: [] },
+        vat: { type: Number, required: true, default: 23 },
         wariant: { type: [wariantySchema] },
         kod_ean: String,
         sku: String,

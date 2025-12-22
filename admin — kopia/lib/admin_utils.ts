@@ -22,7 +22,7 @@ export function checkRequestAuth(req: NextRequest): {
 
 export async function checkExistingUser(email: string, haslo: string) {
     await db();
-    
+
     const existingUser: Users = await User.findOne({ email: email })
         .populate("role")
         .populate("zamowienia")
@@ -31,7 +31,6 @@ export async function checkExistingUser(email: string, haslo: string) {
     if (existingUser) {
         if (!(await passverify(existingUser.haslo.trim(), haslo.trim())))
             return "Hasła nie są takie same";
-        existingUser.haslo = "";
         return existingUser;
     }
     return "Użytkownik nie istnieje";
@@ -197,7 +196,8 @@ export async function editUser(
     if (!val || typeof user === "undefined") return { mess: mess! };
     try {
         await db();
-        const res = await User.findByIdAndUpdate(
+        newUser.haslo = user.haslo;
+        const res = await User.findOneAndUpdate(
             { email: user.email },
             { $set: newUser }
         ).orFail();

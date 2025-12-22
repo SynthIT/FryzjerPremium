@@ -1,3 +1,4 @@
+import { useUser } from "@/contexts/UserContext";
 import { Users } from "@/lib/models/Users";
 import { useState, useCallback, ChangeEvent } from "react";
 
@@ -16,6 +17,7 @@ export default function RegisterPage() {
     const [confirmPassword, setConfirmPassword] = useState<string>("");
     const [showAlert, setShowAlert] = useState<boolean>(false);
     const [alertInfo, setAlertInfo] = useState<string[]>([]);
+    const { addUser } = useUser();
 
     const validatePost = (e: ChangeEvent<HTMLInputElement>) => {
         e.target.checkValidity();
@@ -104,9 +106,11 @@ export default function RegisterPage() {
                     return response.json();
                 })
                 .then((data) => {
-                    return data.status === 201
-                        ? (window.location.href = "/")
-                        : (setAlertInfo([data.message]), setShowAlert(true));
+                    if (data.status === 201) {
+                        addUser(data.user);
+                        return (window.location.href = "/");
+                    }
+                    return setAlertInfo([data.message]), setShowAlert(true);
                 });
         }
     };
