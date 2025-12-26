@@ -3,7 +3,7 @@
     "_id": "6941ea321e807e3fbaaf4cab",
     "slug": "fotel-meski-do-strzyzenia",
     "nazwa": "Fotel męski do strzyżenia",
-    "cena": 1499.99,
+    "cena": 3999.99,
     "dostepnosc": "Ograniczona",
     "kategoria": [
       {
@@ -28,8 +28,8 @@
         "alt": "baner",
         "path": "/path/to/baner.jpg",
         "_id": "6941ea321e807e3fbaaf4cac",
-        "createdAt": "2025-12-16T23:24:34.894Z",
-        "updatedAt": "2025-12-16T23:24:34.894Z"
+        "createdAt": "2025-12-26T01:03:20.771Z",
+        "updatedAt": "2025-12-26T01:03:20.771Z"
       },
       {
         "nazwa": "fotel_jakistam",
@@ -38,8 +38,8 @@
         "alt": "fotel",
         "path": "/path/to/fotel.jpg",
         "_id": "6941ea321e807e3fbaaf4cad",
-        "createdAt": "2025-12-16T23:24:34.894Z",
-        "updatedAt": "2025-12-16T23:24:34.894Z"
+        "createdAt": "2025-12-26T01:03:20.771Z",
+        "updatedAt": "2025-12-26T01:03:20.771Z"
       }
     ],
     "promocje": {
@@ -51,7 +51,7 @@
       "__v": 0
     },
     "opis": "Fotel męski, idealnie wyprofilowany pod każdego mężczyne",
-    "ilosc": 10,
+    "ilosc": 19,
     "czas_wysylki": 15,
     "kod_produkcyjny": "ABC-123",
     "ocena": 4.5,
@@ -61,16 +61,16 @@
         "tresc": "Idealnie wykończony. Każdy klient jest zadowolony z usługi, międzyinnymi przez ten wygodny fotel",
         "ocena": 5,
         "_id": "6941ea321e807e3fbaaf4cae",
-        "createdAt": "2025-12-16T23:24:34.894Z",
-        "updatedAt": "2025-12-16T23:24:34.894Z"
+        "createdAt": "2025-12-26T01:03:20.771Z",
+        "updatedAt": "2025-12-26T01:03:20.771Z"
       },
       {
         "uzytkownik": "Kapral Kaszmirov",
         "tresc": "Na zdjęciach wygląda lepiej niż jak w rzeczywistości",
         "ocena": 3,
         "_id": "6941ea321e807e3fbaaf4caf",
-        "createdAt": "2025-12-16T23:24:34.895Z",
-        "updatedAt": "2025-12-16T23:24:34.895Z"
+        "createdAt": "2025-12-26T01:03:20.771Z",
+        "updatedAt": "2025-12-26T01:03:20.771Z"
       }
     ],
     "wariant": [
@@ -91,8 +91,9 @@
     ],
     "aktywne": true,
     "createdAt": "2025-12-16T23:24:34.807Z",
-    "updatedAt": "2025-12-16T23:24:34.807Z",
-    "__v": 0
+    "updatedAt": "2025-12-26T01:03:20.771Z",
+    "__v": 0,
+    "vat": 23
   },
   {
     "_id": "6941ea321e807e3fbaaf4cb7",

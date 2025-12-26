@@ -1,0 +1,158 @@
+import { mkdir } from "fs/promises";
+import {
+    access,
+    appendFile,
+    constants,
+    copyFileSync,
+    readFileSync,
+    rm,
+    stat,
+    writeFileSync,
+} from "fs";
+import path from "path";
+
+export interface IFLogServiceConf {
+    kind: "log" | "error" | "warn" | "backup";
+    position: "api" | "admin" | "front";
+    http: string;
+    force?: boolean;
+    operation?: string;
+    payload?: string;
+}
+
+const config = {
+    log: path.join(process.cwd(), "logs", "log.log"),
+    error: path.join(process.cwd(), "logs", "error.log"),
+    warn: path.join(process.cwd(), "logs", "warn.log"),
+    backup: "",
+} as const;
+
+const configExtra = {
+    backup: (operation: string) =>
+        path.join(
+            process.cwd(),
+            "logs",
+            "backup",
+            `${operation}-${new Date(Date.now()).getDate}-backup.backup.json`
+        ),
+} as const;
+
+export interface IFLogService {
+    file: string;
+    prefix: string;
+    http: string;
+    backupContent?: string;
+    log(mesage: string): void;
+    error(message: string): void;
+    backup(content: string): void;
+}
+/**
+ * @constructor
+ * @param kind to masz autofill
+ * @param position też autofill, wybierz jedynie z opcji
+ * @param force nie zaimplementowany bo po co
+ * @param operation i piętro niżej
+ * @param payload jedynie jak kind = "backup"
+ * @method log
+ * @method error  obydwa tak samo działa, ale imersyjnie łączyć z kind
+ */
+export class LogService implements IFLogService {
+    file: string;
+    prefix: string;
+    http: string;
+    backupContent?: string;
+    constructor(conf: IFLogServiceConf) {
+        if (conf.kind === "backup" && conf.operation) {
+            const file = configExtra.backup(conf.operation);
+            this.backupContent = conf.payload;
+            this.file = file;
+        } else {
+            this.file = config[conf.kind];
+        }
+        this.http = conf.http;
+        this.prefix = conf.position;
+        return this;
+    }
+
+    private changeExistingLog(file = this.file) {
+        access(file, constants.F_OK, (err) => {
+            if (err) return;
+            stat(file, (err, stats) => {
+                if (err) throw err;
+                if (stats.birthtimeMs < 24 * 60 * 60 * 1000) {
+                    copyFileSync(
+                        this.file,
+                        path.join(
+                            process.cwd(),
+                            "logs",
+                            `${stats.birthtimeMs}-log.log`
+                        )
+                    );
+                    rm(this.file, (err) => {
+                        if (err) throw err;
+                    });
+                    appendFile(this.file, "", (err) => {
+                        if (err) throw err;
+                    });
+                }
+            });
+        });
+    }
+
+    async log(message: string) {
+        await mkdir(path.join(process.cwd(), "logs"), { recursive: true });
+        this.changeExistingLog();
+        access(this.file, (err) => {
+            if (err) {
+                appendFile(this.file, "", (err) => {
+                    if (err) throw err;
+                });
+
+                const info = `${this.http} | ${this.prefix} | ${new Date(
+                    Date.now()
+                ).toISOString()} ${message}`;
+                writeFileSync(this.file, info);
+            } else {
+                const info = `${readFileSync(this.file)}\n${this.http} | ${
+                    this.prefix
+                } | ${new Date(Date.now()).toISOString()} ${message}`;
+                writeFileSync(this.file, info);
+            }
+        });
+    }
+
+    async error(message: string) {
+        await mkdir(path.join(process.cwd(), "logs"), { recursive: true });
+
+        this.changeExistingLog();
+        access(this.file, (err) => {
+            if (err) {
+                appendFile(this.file, "", (err) => {
+                    if (err) throw err;
+                });
+
+                const info = `${this.http} | ${this.prefix} | ${new Date(
+                    Date.now()
+                ).toISOString()} ${message}`;
+                writeFileSync(this.file, info);
+            } else {
+                const info = `${readFileSync(this.file)}\n ${this.http} | ${
+                    this.prefix
+                } | ${new Date(Date.now()).toISOString()} ${message}`;
+                writeFileSync(this.file, info);
+            }
+        });
+    }
+
+    /**
+     *
+     * @param content zostaw puste, no chyba że masz coś lepszego do zaproponowania
+     */
+
+    async backup(content = this.backupContent) {
+        await mkdir(path.join(process.cwd(), "logs", "backup"), {
+            recursive: true,
+        });
+        writeFileSync(this.file, `${content}`);
+    }
+}

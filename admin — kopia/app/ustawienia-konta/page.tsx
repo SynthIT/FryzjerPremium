@@ -57,7 +57,7 @@ export default function AccountSettingsPage() {
     };
 
     const handlePasswordChange = async (old: string, n: string) => {
-        const ok = await changePassword(old, n);
+        const ok = await changePassword(n, old);
         alert(ok);
     };
 
@@ -65,7 +65,10 @@ export default function AccountSettingsPage() {
         function b() {
             setPassNot(!passNot);
         }
-        if (newPass !== reNewPass && reNewPass !== '' && passNot) {
+        if (newPass !== reNewPass && reNewPass !== "" && passNot) {
+            b();
+        }
+        if (newPass === reNewPass && newPass !== "" && reNewPass !== "" && passNot) {
             b();
         }
     }, [newPass, reNewPass, passNot]);

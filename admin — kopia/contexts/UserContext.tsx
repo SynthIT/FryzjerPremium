@@ -38,18 +38,27 @@ export function UserProvider({ children }: { children: ReactNode }) {
             localStorage.setItem("user", JSON.stringify(user));
         }
         if (localStorage.getItem("user")) return;
-        localStorage.setItem("user", "");
     }, [user, orders]);
 
     useEffect(() => {
         const loggedUser = localStorage.getItem("user");
         if (loggedUser) {
             try {
-                function u(c: Users) {
-                    setUser(c);
-                    if (c.zamowienia.length > 0) {
-                        setOrders(c.zamowienia as OrderList[]);
-                    }
+                async function u(c: Users) {
+                    fetch("/api/v1/auth/check", {
+                        method: "POST",
+                        credentials: "include",
+                    }).then((res) => {
+                        if (res.status === 200) {
+                            setUser(c);
+                            if (c.zamowienia.length > 0) {
+                                setOrders(c.zamowienia as OrderList[]);
+                            }
+                        } else {
+                            setUser(undefined);
+                            localStorage.setItem("user", "");
+                        }
+                    });
                 }
                 const parsedUser: Users | undefined = JSON.parse(loggedUser);
                 console.log(parsedUser);

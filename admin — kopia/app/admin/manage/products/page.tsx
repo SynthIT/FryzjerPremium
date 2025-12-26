@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Products, Categories, Producents } from "@/lib/models/Products";
+import { Products, } from "@/lib/models/Products";
 import AdminProductCard from "@/components/admin/AdminProductCard";
 import ProductEditModal from "@/components/admin/ProductEditModal";
 import Link from "next/link";

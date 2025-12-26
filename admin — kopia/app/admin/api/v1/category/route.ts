@@ -1,12 +1,12 @@
 import {
-    collectProducts,
-    createProduct,
-    deleteProductBySlug,
-    updateProduct,
+    checkRequestAuth,
+    collectCategories,
+    createCategory,
+    deleteCatBySlug,
+    updateCategory,
 } from "@/lib/admin_utils";
-import { NextRequest, NextResponse } from "next/server";
-import { checkRequestAuth } from "@/lib/admin_utils";
 import { LogService } from "@/lib/log_service";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
     const { val, mess } = checkRequestAuth(req);
@@ -17,8 +17,8 @@ export async function GET(req: NextRequest) {
             { status: 401 }
         );
     }
-    const products = await collectProducts();
-    return NextResponse.json(JSON.parse(products));
+    const cat = await collectCategories();
+    return NextResponse.json(JSON.parse(cat));
 }
 
 export async function DELETE(req: NextRequest) {
@@ -31,12 +31,12 @@ export async function DELETE(req: NextRequest) {
         );
     }
     try {
-        const doc = await deleteProductBySlug(slug);
+        const p = await deleteCatBySlug(slug);
         new LogService({
             kind: "log",
             position: "admin",
             http: req.method,
-        }).log(`Produkt: ${doc?._id} - (${doc?.nazwa}) został usunięty`);
+        }).log(`Kategoria: ${p?._id} - (${p.nazwa}) została usunięta`);
         return NextResponse.json({ status: 0, message: "Produkt usunięty" });
     } catch (e) {
         new LogService({
@@ -52,21 +52,20 @@ export async function DELETE(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
-    const productData = await req.json();
-    console.log("Otrzymane dane produktu do aktualizacji:", productData);
+    const catData = await req.json();
+    console.log("Otrzymane dane produktu do aktualizacji:", catData);
     try {
-        const res = await updateProduct(productData);
+        const res = await updateCategory(catData);
         new LogService({
             kind: "log",
             position: "admin",
             http: req.method,
-        }).log(`Produkt: ${res?._id} - (${res?.nazwa}) został zedytowany`);
+        }).log(`Kategoria: ${res?._id} - (${res.nazwa}) została zedytowana`);
         return NextResponse.json({
-            status: 0,
-            message: `Produkt (${res?.nazwa}) zaktualizowany`,
+            status: 200,
+            message: `Kategoria (${res?.nazwa}) zaktualizowana`,
         });
     } catch (e) {
-        console.log(e);
         new LogService({
             kind: "error",
             position: "admin",
@@ -80,16 +79,16 @@ export async function PUT(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-    const productData = await req.json();
+    const catData = await req.json();
     try {
-        const res = await createProduct(productData);
+        const res = await createCategory(catData);
         new LogService({
             kind: "log",
             position: "admin",
             http: req.method,
-        }).log(`Produkt: ${res?._id} został dodany`);
+        }).log(`Kategoria: ${res?._id} - (${res.nazwa}) została dodana`);
         return NextResponse.json(
-            { status: 201, error: "Produkt został dodany" },
+            { status: 201, error: "Błąd podczas aktualizacji produktu" },
             { status: 201 }
         );
     } catch (e) {

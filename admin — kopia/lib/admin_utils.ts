@@ -6,11 +6,32 @@ import {
     PublicKeyInput,
 } from "node:crypto";
 import { JwtPayload, sign, verify } from "jsonwebtoken";
-import mongoose from "mongoose";
-import { Product } from "./models/Products";
+import mongoose, { mongo } from "mongoose";
+import {
+    Categories,
+    Category,
+    Producent,
+    Producents,
+    Product,
+    Products,
+} from "./models/Products";
 import { NextRequest } from "next/server";
 import { hash, verify as passverify } from "argon2";
 
+import { writeFileSync } from "node:fs";
+import path from "node:path";
+
+/*
+    FUNKCJE ODNOŚCIE UŻYTKOWNIKÓW WYCHODZĄCE Z 
+    FRONTU, ORAZ DO ADMIN PANELU
+*/
+
+/**
+ * @name checkRequestAuth
+ * @description Zwraca val true jeżeli użytkownik może odtworzyć adminpanel
+ * @param req
+ * @returns {val: true|false, user: Users }
+ */
 export function checkRequestAuth(req: NextRequest): {
     val: boolean;
     user?: Users;
@@ -208,8 +229,6 @@ export async function editUser(
         return { mess: `${err}` };
     }
 }
-import { writeFileSync } from "node:fs";
-import path from "node:path";
 
 export async function deleteUser(
     req: NextRequest
@@ -238,6 +257,13 @@ export async function deleteUser(
     }
 }
 
+/*
+    ADMIN CZESC, CZYLI JAKIES TAM DODATKO
+    WYCIAGANIE, WKLADANIE I TAK DALEJ
+*/
+
+// crud produktowy
+
 export async function collectProducts() {
     await db();
     const products = await Product.find()
@@ -247,6 +273,117 @@ export async function collectProducts() {
         .orFail();
     await dbclose();
     return JSON.stringify(products);
+}
+
+export async function createProduct(productData: Products) {
+    await db();
+    const prod = await Product.create(productData);
+    await dbclose();
+    return prod;
+}
+
+export async function deleteProductBySlug(slug: string) {
+    await db();
+    const prod = await Product.findOneAndDelete({ slug: slug });
+    await dbclose();
+    return prod;
+}
+
+export async function updateProduct(productData: Products) {
+    await db();
+    const prod = await Product.findOneAndUpdate(
+        { slug: productData.slug },
+        productData,
+        {
+            new: true,
+        }
+    );
+    await dbclose();
+    return prod;
+}
+
+// crud kategorii
+export async function collectCategories() {
+    await db();
+    const categories = await Category.find({}).orFail();
+    await dbclose();
+    return JSON.stringify(categories);
+}
+
+export async function createCategory(catData: Categories) {
+    await db();
+    const cat = await Category.create(catData);
+    await dbclose();
+    return cat;
+}
+
+export async function deleteCatBySlug(slug: string) {
+    await db();
+    const category = await Category.findOne({ slug: slug }).orFail();
+    const productsWithCat = await Product.find({
+        kategoria: new mongoose.Types.ObjectId(category._id),
+    }).orFail();
+    for (const doc of productsWithCat) {
+        const newArray = doc.kategoria.filter(
+            (elem): elem is mongoose.Types.ObjectId =>
+                !(elem as mongoose.Types.ObjectId)._id.equals(category._id)
+        );
+        doc.kategoria = newArray;
+        await doc.save();
+    }
+    await category.deleteOne();
+    return category;
+}
+
+export async function updateCategory(newCat: Categories) {
+    const category = await Category.findOneAndUpdate(
+        {
+            slug: newCat.slug,
+        },
+        newCat
+    ).orFail();
+    return category;
+}
+
+// crud producenci
+
+export async function collectProducents() {
+    await db();
+    const producent = await Producent.find({}).orFail();
+    await dbclose();
+    return JSON.stringify(producent);
+}
+
+export async function createProducent(prodData: Producents) {
+    await db();
+    const cat = await Producent.create(prodData);
+    await dbclose();
+    return cat;
+}
+
+export async function deleteProducentBySlug(slug: string) {
+    await db();
+    const producent = await Producent.findOne({ slug: slug }).orFail();
+    const productsWithProd = await Product.find({
+        producent: new mongoose.Types.ObjectId(producent._id),
+    }).orFail();
+    const cb: typeof productsWithProd = [];
+    for (const doc of productsWithProd) {
+        cb.push(doc);
+        doc.deleteOne();
+    }
+    await producent.deleteOne();
+    return { products: cb, producent: producent };
+}
+
+export async function updateProducent(newProducent: Categories) {
+    const producent = await Producent.findOneAndUpdate(
+        {
+            slug: newProducent.slug,
+        },
+        newProducent
+    ).orFail();
+    return producent;
 }
 
 async function db() {

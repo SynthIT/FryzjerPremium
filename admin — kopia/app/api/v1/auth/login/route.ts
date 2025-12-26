@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
     const reqBody = await req.json();
+    console.log(reqBody);
 
     const result = await checkExistingUser(reqBody.email, reqBody.password);
 
@@ -14,12 +15,19 @@ export async function POST(req: NextRequest) {
             user: result,
         };
         const nextResponse = NextResponse.json(response, { status: 201 });
-        const [token] = createJWT(result);
+        const [token, refresh] = createJWT(result, reqBody.refreshToken);
         nextResponse.cookies.set("Authorization", `Bearer ${token}`, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             sameSite: "lax",
         });
+        if (reqBody.refreshToken) {
+            nextResponse.cookies.set("Refresh-Token", `Bearer ${refresh}`, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: "lax",
+            });
+        }
         return nextResponse;
     }
     return NextResponse.json({ status: 400, error: result }, { status: 400 });

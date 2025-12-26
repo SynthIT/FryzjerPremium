@@ -8,7 +8,23 @@ export async function POST(req: NextRequest) {
         if ((user.role as Role[]).length > 0) {
             return NextResponse.json({ status: 200 }, { status: 200 });
         }
-        return NextResponse.json({ status: 400 }, { status: 400 });
+        const res = NextResponse.json(
+            { status: 400, error: mess },
+            { status: 400 }
+        );
+        res.cookies.set("Authorization", "", {
+            expires: Date.now() / 1000 - 20,
+        });
+        res.cookies.set("Refresh-Token", "", {
+            expires: Date.now() / 1000 - 20,
+        });
+        return res;
     }
-    return NextResponse.json({ status: 400, message: mess }, { status: 400 });
+    const res = NextResponse.json(
+        { status: 400, error: mess },
+        { status: 400 }
+    );
+    res.cookies.set("Authorization", "", { expires: Date.now() / 1000 - 20 });
+    res.cookies.set("Refresh-Token", "", { expires: Date.now() / 1000 - 20 });
+    return res;
 }

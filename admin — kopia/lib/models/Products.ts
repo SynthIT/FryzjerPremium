@@ -1,4 +1,4 @@
-import { Document, model, models, Schema, Types } from "mongoose";
+import { Document, Model, model, models, Schema, Types } from "mongoose";
 
 export type WariantyTyp = "kolor" | "rozmiar" | "objetosc";
 export type MediaTyp = "video" | "image" | "pdf" | "other";
@@ -185,10 +185,17 @@ export const productSchema = new Schema<Products>(
     { timestamps: true, autoIndex: false }
 );
 
-export const Promo = models.Promos ?? model<Promos>("Promos", promosSchema);
-export const Category =
-    models.Categories ?? model<Categories>("Categories", categoriesSchema);
-export const Producent =
-    models.Producents ?? model<Producents>("Producents", producentsSchema);
-export const Product =
-    models.Products ?? model<Products>("Products", productSchema);
+export const Promo: Model<Promos> =
+    (models.Promos as Model<Promos>) ?? model<Promos>("Promos", promosSchema);
+
+export const Category: Model<Categories> =
+    (models.Categories as Model<Categories>) ??
+    model<Categories>("Categories", categoriesSchema);
+
+export const Producent: Model<Producents> =
+    (models.Producents as Model<Producents>) ??
+    model<Producents>("Producents", producentsSchema);
+
+export const Product: Model<Products> =
+    (models.Products as Model<Products>) ??
+    model<Products>("Products", productSchema);

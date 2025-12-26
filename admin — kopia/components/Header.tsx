@@ -21,6 +21,7 @@ export default function Header() {
     const [loginForm, setLoginForm] = useState({
         email: "",
         password: "",
+        refreshToken: false,
     });
     const [mounted, setMounted] = useState(false);
     const cartDropdownRef = useRef<HTMLDivElement>(null);
@@ -604,7 +605,11 @@ export default function Header() {
                                     // Tutaj można dodać logikę logowania
                                     console.log("Login submitted:", loginForm);
                                     setShowLoginModal(false);
-                                    setLoginForm({ email: "", password: "" });
+                                    setLoginForm({
+                                        email: "",
+                                        password: "",
+                                        refreshToken: false,
+                                    });
                                 }}>
                                 <div className="login-modal-field">
                                     <label
@@ -653,6 +658,14 @@ export default function Header() {
                                 <div className="login-modal-options">
                                     <label className="login-modal-checkbox">
                                         <input
+                                            checked={loginForm.refreshToken}
+                                            onChange={() =>
+                                                setLoginForm({
+                                                    ...loginForm,
+                                                    refreshToken:
+                                                        !loginForm.refreshToken,
+                                                })
+                                            }
                                             type="checkbox"
                                             aria-label="Zapamiętaj mnie"
                                         />
@@ -688,10 +701,9 @@ export default function Header() {
                                             !loginForm.password
                                         }
                                         onClick={async () => {
-                                            const response = await loginUser(
-                                                loginForm.email,
-                                                loginForm.password
-                                            );
+                                            const response = await loginUser({
+                                                payload: loginForm,
+                                            });
                                             if (response.status == 201) {
                                                 addUser(response.user);
                                                 alert("Zostałeś zalogowany");
@@ -711,6 +723,7 @@ export default function Header() {
                                             setLoginForm({
                                                 email: "",
                                                 password: "",
+                                                refreshToken: false,
                                             });
                                         }}>
                                         Anuluj

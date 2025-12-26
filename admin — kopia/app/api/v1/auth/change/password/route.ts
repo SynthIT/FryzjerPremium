@@ -8,11 +8,14 @@ export async function POST(req: NextRequest) {
         body.newPassword,
         body.oldPassword
     );
-    if (!user)
+    if (!user) {
+        console.log(body);
+        console.log(mess);
         return NextResponse.json(
             { status: 400, message: mess },
             { status: 400 }
         );
+    }
     const res = NextResponse.json(
         { status: 201, message: mess },
         { status: 201 }

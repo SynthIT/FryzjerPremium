@@ -65,11 +65,15 @@ export const registerUser = async (email: string, password: string) => {
     return data;
 };
 
-export const loginUser = async (email: string, password: string) => {
+export const loginUser = async ({
+    payload,
+}: {
+    payload: { email: string; password: string; refreshToken: boolean };
+}) => {
     const url = new URL("http://localhost:3000/api/v1/auth/login");
     const data = await fetch(url, {
         method: "POST",
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify(payload),
     }).then((res) => {
         return res.json();
     });
