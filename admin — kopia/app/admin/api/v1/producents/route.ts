@@ -33,12 +33,14 @@ export async function DELETE(req: NextRequest) {
     try {
         const { products, producent } = await deleteProducentBySlug(slug);
         for (const doc of products) {
-            new LogService({ kind: "log", position: "admin", http: req.method }).log(
-                `Produkt: ${doc._id} - (${doc.nazwa}) został usunięty`
-            );
+            new LogService({
+                kind: "log",
+                position: "admin",
+                http: req.method,
+            }).log(`Produkt: ${doc._id} - (${doc.nazwa}) został usunięty`);
         }
         const backupinfo = new LogService({
-            http: req.method
+            http: req.method,
             kind: "backup",
             position: "api",
             payload: JSON.stringify(products),
@@ -49,7 +51,11 @@ export async function DELETE(req: NextRequest) {
         );
         backupinfo.backup();
 
-        new LogService({ kind: "log", position: "admin", http: req.method }).log(
+        new LogService({
+            kind: "log",
+            position: "admin",
+            http: req.method,
+        }).log(
             `Producent (${producent.nazwa}) usunięty i ${products.length} skojarzonych z nim`
         );
         return NextResponse.json({
@@ -57,7 +63,11 @@ export async function DELETE(req: NextRequest) {
             message: `Producent (${producent.nazwa}) usunięty i ${products.length} skojarzonych z nim`,
         });
     } catch (e) {
-        new LogService({ kind: "error", position: "admin", http: req.method }).error(`${e}`);
+        new LogService({
+            kind: "error",
+            position: "admin",
+            http: req.method,
+        }).error(`${e}`);
         return NextResponse.json(
             { status: 1, error: "Błąd podczas usuwania produktu" },
             { status: 500 }
@@ -70,15 +80,21 @@ export async function PUT(req: NextRequest) {
     console.log("Otrzymane dane produktu do aktualizacji:", prodData);
     try {
         const res = await updateProducent(prodData);
-        new LogService({ kind: "log", position: "admin", http: req.method }).log(
-            `Producent: ${res?._id} - (${res.nazwa}) został zedytowany`
-        );
+        new LogService({
+            kind: "log",
+            position: "admin",
+            http: req.method,
+        }).log(`Producent: ${res?._id} - (${res.nazwa}) został zedytowany`);
         return NextResponse.json({
             status: 200,
             message: `Producent (${res?.nazwa}) zaktualizowany`,
         });
     } catch (e) {
-        new LogService({ kind: "error", position: "admin", http: req.method }).error(`${e}`);
+        new LogService({
+            kind: "error",
+            position: "admin",
+            http: req.method,
+        }).error(`${e}`);
         return NextResponse.json(
             { status: 1, error: "Błąd podczas aktualizacji produktu" },
             { status: 500 }
@@ -90,15 +106,21 @@ export async function POST(req: NextRequest) {
     const prodData = await req.json();
     try {
         const res = await createProducent(prodData);
-        new LogService({ kind: "log", position: "admin", http: req.method }).log(
-            `Producent: ${res?._id} - (${res.nazwa}) został dodany`
-        );
+        new LogService({
+            kind: "log",
+            position: "admin",
+            http: req.method,
+        }).log(`Producent: ${res?._id} - (${res.nazwa}) został dodany`);
         return NextResponse.json(
             { status: 201, error: "Producent został dodany" },
             { status: 201 }
         );
     } catch (e) {
-        new LogService({ kind: "error", position: "admin", http: req.method }).error(`${e}`);
+        new LogService({
+            kind: "error",
+            position: "admin",
+            http: req.method,
+        }).error(`${e}`);
         return NextResponse.json(
             { status: 1, error: "Błąd podczas aktualizacji produktu" },
             { status: 500 }
