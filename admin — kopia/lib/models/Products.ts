@@ -94,7 +94,7 @@ const reviewProductSchema = new Schema<Opinie>(
         ocena: { type: Number, default: 0 },
         zweryfikowane: { type: Boolean },
     },
-    { timestamps: true }
+    { timestamps: true, optimisticConcurrency: true }
 );
 
 const mediaProductSchema = new Schema<Media>(
@@ -106,35 +106,49 @@ const mediaProductSchema = new Schema<Media>(
         path: { type: String, required: true, unique: true },
     },
     {
+        optimisticConcurrency: true,
         timestamps: true,
     }
 );
 
-const producentsSchema = new Schema<Producents>({
-    nazwa: { type: String, required: true, unique: true },
-    slug: String,
-    strona_internetowa: String,
-});
-
-const promosSchema = new Schema<Promos>({
-    nazwa: { type: String, required: true, unique: true },
-    procent: { type: Number, required: true, max: 100, min: 0, default: 0 },
-    rozpoczecie: { type: Date, required: true },
-    wygasa: { type: Date, required: true },
-    aktywna: Boolean,
-    stworzonie: Date,
-});
-
-const categoriesSchema = new Schema<Categories>({
-    nazwa: {
-        type: String,
-        required: true,
-        default: "Brak nazwy",
-        unique: true,
+const producentsSchema = new Schema<Producents>(
+    {
+        nazwa: { type: String, required: true, unique: true },
+        slug: String,
+        strona_internetowa: String,
     },
-    slug: { type: String, required: true },
-    image: { type: String, required: true },
-});
+    {
+        optimisticConcurrency: true,
+    }
+);
+
+const promosSchema = new Schema<Promos>(
+    {
+        nazwa: { type: String, required: true, unique: true },
+        procent: { type: Number, required: true, max: 100, min: 0, default: 0 },
+        rozpoczecie: { type: Date, required: true },
+        wygasa: { type: Date, required: true },
+        aktywna: Boolean,
+        stworzonie: Date,
+    },
+    { optimisticConcurrency: true }
+);
+
+const categoriesSchema = new Schema<Categories>(
+    {
+        nazwa: {
+            type: String,
+            required: true,
+            default: "Brak nazwy",
+            unique: true,
+        },
+        slug: { type: String, required: true },
+        image: { type: String, required: true },
+    },
+    {
+        optimisticConcurrency: true,
+    }
+);
 
 const wariantPropsSchema = new Schema<props>(
     {
@@ -142,19 +156,24 @@ const wariantPropsSchema = new Schema<props>(
         val: { type: String, required: true },
         hex: String,
     },
-    { _id: false }
+    { _id: false, optimisticConcurrency: true }
 );
 
-const wariantySchema = new Schema<Warianty>({
-    nazwa: { type: String, required: true },
-    slug: { type: String, required: true },
-    typ: { type: String, enum: ["kolor", "rozmiar", "objetosc"] },
-    kolory: { type: wariantPropsSchema },
-    rozmiary: { type: wariantPropsSchema },
-    objetosc: { type: Number },
-    nadpisuje_cene: { type: Boolean },
-    nowa_cena: Number,
-});
+const wariantySchema = new Schema<Warianty>(
+    {
+        nazwa: { type: String, required: true },
+        slug: { type: String, required: true },
+        typ: { type: String, enum: ["kolor", "rozmiar", "objetosc"] },
+        kolory: { type: wariantPropsSchema },
+        rozmiary: { type: wariantPropsSchema },
+        objetosc: { type: Number },
+        nadpisuje_cene: { type: Boolean },
+        nowa_cena: Number,
+    },
+    {
+        optimisticConcurrency: true,
+    }
+);
 
 export const productSchema = new Schema<Products>(
     {
@@ -182,7 +201,7 @@ export const productSchema = new Schema<Products>(
         sku: String,
         aktywne: Boolean,
     },
-    { timestamps: true, autoIndex: false }
+    { timestamps: true, autoIndex: false, optimisticConcurrency: true }
 );
 
 export const Promo: Model<Promos> =

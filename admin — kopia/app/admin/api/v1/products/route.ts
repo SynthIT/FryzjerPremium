@@ -3,7 +3,7 @@ import {
     createProduct,
     deleteProductBySlug,
     updateProduct,
-} from "@/lib/admin_utils";
+} from "@/lib/crud/products/product";
 import { NextRequest, NextResponse } from "next/server";
 import { checkRequestAuth } from "@/lib/admin_utils";
 import { LogService } from "@/lib/log_service";

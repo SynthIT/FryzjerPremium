@@ -79,13 +79,13 @@ export class LogService implements IFLogService {
             if (err) return;
             stat(file, (err, stats) => {
                 if (err) throw err;
-                if (stats.birthtimeMs < 24 * 60 * 60 * 1000) {
+                if (stats.birthtimeMs < Date.now() + 24 * 60 * 60 * 1000) {
                     copyFileSync(
                         this.file,
                         path.join(
                             process.cwd(),
                             "logs",
-                            `${stats.birthtimeMs}-log.log`
+                            `${Math.floor(stats.birthtimeMs / 1000)}-log.log`
                         )
                     );
                     rm(this.file, (err) => {
@@ -152,6 +152,9 @@ export class LogService implements IFLogService {
     async backup(content = this.backupContent) {
         await mkdir(path.join(process.cwd(), "logs", "backup"), {
             recursive: true,
+        });
+        appendFile(this.file, "", (err) => {
+            if (err) throw err;
         });
         writeFileSync(this.file, `${content}`);
     }

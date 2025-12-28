@@ -1,10 +1,10 @@
+import { checkRequestAuth } from "@/lib/admin_utils";
 import {
-    checkRequestAuth,
     collectCategories,
     createCategory,
     deleteCatBySlug,
     updateCategory,
-} from "@/lib/admin_utils";
+} from "@/lib/crud/categories/category";
 import { LogService } from "@/lib/log_service";
 import { NextRequest, NextResponse } from "next/server";
 

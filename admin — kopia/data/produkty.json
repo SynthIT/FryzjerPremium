@@ -3,7 +3,7 @@
     "_id": "6941ea321e807e3fbaaf4cab",
     "slug": "fotel-meski-do-strzyzenia",
     "nazwa": "Fotel męski do strzyżenia",
-    "cena": 3999.99,
+    "cena": 2499.99,
     "dostepnosc": "Ograniczona",
     "kategoria": [
       {
@@ -28,8 +28,8 @@
         "alt": "baner",
         "path": "/path/to/baner.jpg",
         "_id": "6941ea321e807e3fbaaf4cac",
-        "createdAt": "2025-12-26T01:03:20.771Z",
-        "updatedAt": "2025-12-26T01:03:20.771Z"
+        "createdAt": "2025-12-27T23:38:18.952Z",
+        "updatedAt": "2025-12-27T23:38:18.952Z"
       },
       {
         "nazwa": "fotel_jakistam",
@@ -38,8 +38,8 @@
         "alt": "fotel",
         "path": "/path/to/fotel.jpg",
         "_id": "6941ea321e807e3fbaaf4cad",
-        "createdAt": "2025-12-26T01:03:20.771Z",
-        "updatedAt": "2025-12-26T01:03:20.771Z"
+        "createdAt": "2025-12-27T23:38:18.952Z",
+        "updatedAt": "2025-12-27T23:38:18.952Z"
       }
     ],
     "promocje": {
@@ -61,16 +61,16 @@
         "tresc": "Idealnie wykończony. Każdy klient jest zadowolony z usługi, międzyinnymi przez ten wygodny fotel",
         "ocena": 5,
         "_id": "6941ea321e807e3fbaaf4cae",
-        "createdAt": "2025-12-26T01:03:20.771Z",
-        "updatedAt": "2025-12-26T01:03:20.771Z"
+        "createdAt": "2025-12-27T23:38:18.952Z",
+        "updatedAt": "2025-12-27T23:38:18.952Z"
       },
       {
         "uzytkownik": "Kapral Kaszmirov",
         "tresc": "Na zdjęciach wygląda lepiej niż jak w rzeczywistości",
         "ocena": 3,
         "_id": "6941ea321e807e3fbaaf4caf",
-        "createdAt": "2025-12-26T01:03:20.771Z",
-        "updatedAt": "2025-12-26T01:03:20.771Z"
+        "createdAt": "2025-12-27T23:38:18.952Z",
+        "updatedAt": "2025-12-27T23:38:18.952Z"
       }
     ],
     "wariant": [
@@ -91,7 +91,7 @@
     ],
     "aktywne": true,
     "createdAt": "2025-12-16T23:24:34.807Z",
-    "updatedAt": "2025-12-26T01:03:20.771Z",
+    "updatedAt": "2025-12-27T23:38:18.952Z",
     "__v": 0,
     "vat": 23
   },

@@ -9,11 +9,32 @@ export const PermissionTable = {
     "admin:users": 1 << 4,
 } as const;
 
-export type Permission = (typeof PermissionTable)[keyof typeof PermissionTable];
+const permissionKeys = Object.keys(PermissionTable) as Array<
+    keyof typeof PermissionTable
+>;
+
+export function permissionToNumber(
+    permission: Array<keyof typeof PermissionTable>
+): number {
+    let a: number = 0;
+    for (const key of permission) {
+        a |= PermissionTable[key];
+    }
+    return a;
+}
+
+export function numberToPermission(code: number) {
+    return permissionKeys.filter((key) => {
+        return code & PermissionTable[key];
+    });
+}
+
+export type PermissionNumber =
+    (typeof PermissionTable)[keyof typeof PermissionTable];
 
 export interface Role {
     nazwa: string;
-    permisje: number;
+    permisje: PermissionNumber | number;
 }
 
 export interface Users {
