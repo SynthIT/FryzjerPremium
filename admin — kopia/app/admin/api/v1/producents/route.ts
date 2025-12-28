@@ -9,19 +9,44 @@ import { LogService } from "@/lib/log_service";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
-    const { val, mess } = checkRequestAuth(req);
+    const { val, user, mess } = checkRequestAuth(req, [
+        "admin:products",
+        "admin:producent",
+    ]);
     if (!val) {
-        console.log(mess);
+        new LogService({
+            path: req.url,
+            kind: "error",
+            position: "admin",
+            http: req.method,
+        }).error(`${mess} dla użytkownika ${user?.email}`);
         return NextResponse.json(
-            { status: 1, error: "Brak autoryzacji" },
+            { status: 1, error: "Brak autoryzacji", details: mess },
             { status: 401 }
         );
     }
-    const cat = await collectProducents();
-    return NextResponse.json(JSON.parse(cat));
+    const producents = await collectProducents();
+    return NextResponse.json({ status: 0, producents: JSON.parse(producents) });
 }
 
 export async function DELETE(req: NextRequest) {
+    const { val, user, mess } = checkRequestAuth(req, [
+        "admin:products",
+        "admin:producent",
+    ]);
+    if (!val) {
+        new LogService({
+            path: req.url,
+            kind: "error",
+            position: "admin",
+            http: req.method,
+        }).error(`${mess} dla użytkownika ${user?.email}`);
+        return NextResponse.json(
+            { status: 1, error: "Brak autoryzacji", details: mess },
+            { status: 401 }
+        );
+    }
+
     const { searchParams } = new URL(req.url);
     const slug = searchParams.get("slug");
     if (!slug) {
@@ -34,24 +59,32 @@ export async function DELETE(req: NextRequest) {
         const { products, producent } = await deleteProducentBySlug(slug);
         for (const doc of products) {
             new LogService({
+                path: req.url,
                 kind: "log",
                 position: "admin",
                 http: req.method,
             }).log(`Produkt: ${doc._id} - (${doc.nazwa}) został usunięty`);
         }
         const backupinfo = new LogService({
+            path: req.url,
             http: req.method,
             kind: "backup",
             position: "api",
             payload: JSON.stringify(products),
             operation: "DELETION",
         });
-        new LogService({ kind: "warn", position: "api", http: req.method }).log(
+        new LogService({
+            path: req.url,
+            kind: "warn",
+            position: "api",
+            http: req.method,
+        }).log(
             `Uwaga, z powodu usuniecia produktów, został utworzony plik z backupem znajduje się w ${backupinfo.file}`
         );
         backupinfo.backup();
 
         new LogService({
+            path: req.url,
             kind: "log",
             position: "admin",
             http: req.method,
@@ -64,6 +97,7 @@ export async function DELETE(req: NextRequest) {
         });
     } catch (e) {
         new LogService({
+            path: req.url,
             kind: "error",
             position: "admin",
             http: req.method,
@@ -76,11 +110,29 @@ export async function DELETE(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
+    const { val, user, mess } = checkRequestAuth(req, [
+        "admin:products",
+        "admin:producent",
+    ]);
+    if (!val) {
+        new LogService({
+            path: req.url,
+            kind: "error",
+            position: "admin",
+            http: req.method,
+        }).error(`${mess} dla użytkownika ${user?.email}`);
+        return NextResponse.json(
+            { status: 1, error: "Brak autoryzacji", details: mess },
+            { status: 401 }
+        );
+    }
+
     const prodData = await req.json();
     console.log("Otrzymane dane produktu do aktualizacji:", prodData);
     try {
         const res = await updateProducent(prodData);
         new LogService({
+            path: req.url,
             kind: "log",
             position: "admin",
             http: req.method,
@@ -91,6 +143,7 @@ export async function PUT(req: NextRequest) {
         });
     } catch (e) {
         new LogService({
+            path: req.url,
             kind: "error",
             position: "admin",
             http: req.method,
@@ -103,10 +156,28 @@ export async function PUT(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+    const { val, user, mess } = checkRequestAuth(req, [
+        "admin:products",
+        "admin:producent",
+    ]);
+    if (!val) {
+        new LogService({
+            path: req.url,
+            kind: "error",
+            position: "admin",
+            http: req.method,
+        }).error(`${mess} dla użytkownika ${user?.email}`);
+        return NextResponse.json(
+            { status: 1, error: "Brak autoryzacji", details: mess },
+            { status: 401 }
+        );
+    }
+
     const prodData = await req.json();
     try {
         const res = await createProducent(prodData);
         new LogService({
+            path: req.url,
             kind: "log",
             position: "admin",
             http: req.method,
@@ -117,6 +188,7 @@ export async function POST(req: NextRequest) {
         );
     } catch (e) {
         new LogService({
+            path: req.url,
             kind: "error",
             position: "admin",
             http: req.method,

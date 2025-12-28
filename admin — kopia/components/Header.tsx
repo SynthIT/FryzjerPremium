@@ -708,9 +708,8 @@ export default function Header() {
                                                 addUser(response.user);
                                                 alert("Zostałeś zalogowany");
                                             } else {
-                                                alert(
-                                                    "Email albo hasło, są niepoprawne"
-                                                );
+                                                console.log(response.error)
+                                                alert(response.error);
                                             }
                                         }}>
                                         Zaloguj się

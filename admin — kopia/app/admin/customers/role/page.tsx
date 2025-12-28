@@ -8,19 +8,23 @@ export default function ProductsPage() {
     useEffect(() => {
         async function fetchProducts() {
             try {
-                const response = await fetch("/admin/api/v1/producents", {
+                const response = await fetch("/admin/api/v1/products", {
                     method: "GET",
                 });
-                const {
-                    status,
-                    producents,
-                }: { status: number; producents: Producents[] } =
-                    await response.json();
-                if (status == 0 && producents) {
-                    setProducent(producents);
-                } else {
-                    throw new Error();
-                }
+                const data: Products[] = await response.json();
+                console.log("Pobrane produkty:", data);
+
+                const producents = new Set<string>();
+                data.forEach((product) =>
+                    producents.add(
+                        JSON.stringify(product.producent as Producents)
+                    )
+                );
+                console.log("Unikalni producenci:", producents);
+                const producentsArray: Producents[] = Array.from(
+                    producents
+                ).map((prod) => JSON.parse(prod));
+                setProducent(producentsArray);
             } catch (error) {
                 console.error("Błąd podczas pobierania produktów:", error);
             }
@@ -32,14 +36,10 @@ export default function ProductsPage() {
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
-                        Producenci
+                        Produkty
                     </h1>
                     <p className="text-sm text-muted-foreground sm:text-base">
-                        Dodawaj, edytuj i organizuj producentów.{" "}
-                        <span style={{ color: "red" }}>Uwaga:</span> Usunięcie
-                        producenta spowoduje usunięcie wszystkich skojarzonych z
-                        nim produktów. Po wykonaniu tej operacji zsotanie
-                        ustworzony plik backupowy.
+                        Dodawaj, edytuj i organizuj produkty.
                     </p>
                 </div>
                 <a

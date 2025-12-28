@@ -15,6 +15,7 @@ export interface IFLogServiceConf {
     kind: "log" | "error" | "warn" | "backup";
     position: "api" | "admin" | "front";
     http: string;
+    path: string;
     force?: boolean;
     operation?: string;
     payload?: string;
@@ -41,6 +42,7 @@ export interface IFLogService {
     file: string;
     prefix: string;
     http: string;
+    path: string;
     backupContent?: string;
     log(mesage: string): void;
     error(message: string): void;
@@ -60,6 +62,7 @@ export class LogService implements IFLogService {
     file: string;
     prefix: string;
     http: string;
+    path: string;
     backupContent?: string;
     constructor(conf: IFLogServiceConf) {
         if (conf.kind === "backup" && conf.operation) {
@@ -69,23 +72,25 @@ export class LogService implements IFLogService {
         } else {
             this.file = config[conf.kind];
         }
+        this.path = conf.path;
         this.http = conf.http;
         this.prefix = conf.position;
         return this;
     }
 
     private changeExistingLog(file = this.file) {
+        const DAY = 24 * 60 * 60 * 1000;
         access(file, constants.F_OK, (err) => {
             if (err) return;
             stat(file, (err, stats) => {
                 if (err) throw err;
-                if (stats.birthtimeMs < Date.now() + 24 * 60 * 60 * 1000) {
+                if (Date.now() - stats.birthtimeMs >= DAY) {
                     copyFileSync(
                         this.file,
                         path.join(
                             process.cwd(),
                             "logs",
-                            `${Math.floor(stats.birthtimeMs / 1000)}-log.log`
+                            `${new Date(stats.birthtimeMs).toISOString().slice(0, 10)}-log.log`
                         )
                     );
                     rm(this.file, (err) => {
@@ -108,14 +113,16 @@ export class LogService implements IFLogService {
                     if (err) throw err;
                 });
 
-                const info = `${this.http} | ${this.prefix} | ${new Date(
-                    Date.now()
-                ).toISOString()} ${message}`;
+                const info = `${this.http} | ${this.prefix} | ${
+                    this.path
+                } | ${new Date(Date.now()).toISOString()} ${message}`;
                 writeFileSync(this.file, info);
             } else {
                 const info = `${readFileSync(this.file)}\n${this.http} | ${
                     this.prefix
-                } | ${new Date(Date.now()).toISOString()} ${message}`;
+                } | ${this.path} | ${new Date(
+                    Date.now()
+                ).toISOString()} ${message}`;
                 writeFileSync(this.file, info);
             }
         });
@@ -131,14 +138,16 @@ export class LogService implements IFLogService {
                     if (err) throw err;
                 });
 
-                const info = `${this.http} | ${this.prefix} | ${new Date(
-                    Date.now()
-                ).toISOString()} ${message}`;
+                const info = `${this.http} | ${this.prefix} | ${
+                    this.path
+                } | ${new Date(Date.now()).toISOString()} ${message}`;
                 writeFileSync(this.file, info);
             } else {
-                const info = `${readFileSync(this.file)}\n ${this.http} | ${
+                const info = `${readFileSync(this.file)}\n${this.http} | ${
                     this.prefix
-                } | ${new Date(Date.now()).toISOString()} ${message}`;
+                } | ${this.path} | ${new Date(
+                    Date.now()
+                ).toISOString()} ${message}`;
                 writeFileSync(this.file, info);
             }
         });

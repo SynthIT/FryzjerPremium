@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Products, } from "@/lib/models/Products";
+import { Products } from "@/lib/models/Products";
 import AdminProductCard from "@/components/admin/AdminProductCard";
 import ProductEditModal from "@/components/admin/ProductEditModal";
 import Link from "next/link";
@@ -24,6 +24,7 @@ export default function ProductPage() {
                 const data = await fetch("/admin/api/v1/products").then((res) =>
                     res.json()
                 );
+                console.log(data);  
                 // Pobierz produkty z API - to samo API co w sklepie
                 setProducts(data || []);
             } catch (error) {
@@ -38,6 +39,7 @@ export default function ProductPage() {
 
     // Filtrowanie i paginacja
     const filteredProducts = useMemo(() => {
+        console.log(products);
         if (!searchQuery) return products;
         const query = searchQuery.toLowerCase();
         return products.filter((product) => {
@@ -68,7 +70,8 @@ export default function ProductPage() {
             const data = await fetch("/admin/api/v1/products").then((res) =>
                 res.json()
             );
-            setProducts(data.products || []);
+            console.log(data);
+            setProducts(data || []);
         } catch (error) {
             console.error("Błąd podczas odświeżania produktów:", error);
             // Fallback - lokalna aktualizacja
@@ -88,7 +91,7 @@ export default function ProductPage() {
             const data = await fetch("/admin/api/v1/products").then((res) =>
                 res.json()
             );
-            setProducts(data.products || []);
+            setProducts(data || []);
         } catch (error) {
             console.error("Błąd podczas odświeżania produktów:", error);
             // Fallback - lokalne usunięcie

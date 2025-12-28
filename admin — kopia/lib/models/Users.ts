@@ -2,14 +2,17 @@ import { Model, model, models, Schema, Types } from "mongoose";
 import { OrderList, schemaOrderList } from "./Orders";
 
 export const PermissionTable = {
-    "admin:products": 1 << 0,
-    "admin:categories": 1 << 1,
-    "admin:blog": 1 << 2,
-    "admin:roles": 1 << 3,
-    "admin:users": 1 << 4,
+    "admin:orders": 1 << 0,
+    "admin:products": 1 << 1,
+    "admin:promo": 1 << 2,
+    "admin:producent": 1 << 3,
+    "admin:categories": 1 << 4,
+    "admin:blog": 1 << 5,
+    "admin:roles": 1 << 6,
+    "admin:users": 1 << 7,
 } as const;
 
-const permissionKeys = Object.keys(PermissionTable) as Array<
+export const permissionKeys = Object.keys(PermissionTable) as Array<
     keyof typeof PermissionTable
 >;
 
@@ -27,6 +30,10 @@ export function numberToPermission(code: number) {
     return permissionKeys.filter((key) => {
         return code & PermissionTable[key];
     });
+}
+
+export function hasPermission(code: number, scope: number) {
+    return (code & scope) !== 0;
 }
 
 export type PermissionNumber =
@@ -58,7 +65,7 @@ export interface Users {
 
 const roleSchema = new Schema<Role>(
     {
-        nazwa: { type: String, required: true },
+        nazwa: { type: String, required: true, unique: true },
         permisje: { type: Number, required: true, default: 0 },
     },
     {

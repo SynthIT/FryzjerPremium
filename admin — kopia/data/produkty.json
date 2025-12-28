@@ -3,7 +3,7 @@
     "_id": "6941ea321e807e3fbaaf4cab",
     "slug": "fotel-meski-do-strzyzenia",
     "nazwa": "Fotel męski do strzyżenia",
-    "cena": 2499.99,
+    "cena": 2999.99,
     "dostepnosc": "Ograniczona",
     "kategoria": [
       {
@@ -28,8 +28,8 @@
         "alt": "baner",
         "path": "/path/to/baner.jpg",
         "_id": "6941ea321e807e3fbaaf4cac",
-        "createdAt": "2025-12-27T23:38:18.952Z",
-        "updatedAt": "2025-12-27T23:38:18.952Z"
+        "createdAt": "2025-12-28T16:48:41.145Z",
+        "updatedAt": "2025-12-28T16:48:41.145Z"
       },
       {
         "nazwa": "fotel_jakistam",
@@ -38,8 +38,8 @@
         "alt": "fotel",
         "path": "/path/to/fotel.jpg",
         "_id": "6941ea321e807e3fbaaf4cad",
-        "createdAt": "2025-12-27T23:38:18.952Z",
-        "updatedAt": "2025-12-27T23:38:18.952Z"
+        "createdAt": "2025-12-28T16:48:41.145Z",
+        "updatedAt": "2025-12-28T16:48:41.145Z"
       }
     ],
     "promocje": {
@@ -61,16 +61,16 @@
         "tresc": "Idealnie wykończony. Każdy klient jest zadowolony z usługi, międzyinnymi przez ten wygodny fotel",
         "ocena": 5,
         "_id": "6941ea321e807e3fbaaf4cae",
-        "createdAt": "2025-12-27T23:38:18.952Z",
-        "updatedAt": "2025-12-27T23:38:18.952Z"
+        "createdAt": "2025-12-28T16:48:41.145Z",
+        "updatedAt": "2025-12-28T16:48:41.145Z"
       },
       {
         "uzytkownik": "Kapral Kaszmirov",
         "tresc": "Na zdjęciach wygląda lepiej niż jak w rzeczywistości",
         "ocena": 3,
         "_id": "6941ea321e807e3fbaaf4caf",
-        "createdAt": "2025-12-27T23:38:18.952Z",
-        "updatedAt": "2025-12-27T23:38:18.952Z"
+        "createdAt": "2025-12-28T16:48:41.145Z",
+        "updatedAt": "2025-12-28T16:48:41.145Z"
       }
     ],
     "wariant": [
@@ -91,7 +91,7 @@
     ],
     "aktywne": true,
     "createdAt": "2025-12-16T23:24:34.807Z",
-    "updatedAt": "2025-12-27T23:38:18.952Z",
+    "updatedAt": "2025-12-28T16:48:41.145Z",
     "__v": 0,
     "vat": 23
   },
@@ -99,8 +99,8 @@
     "_id": "6941ea321e807e3fbaaf4cb7",
     "slug": "piornik-dla-narzedzi-techniki-rzemieslniczej",
     "nazwa": "Piórnik dla narzędzi techniki rzemieślniczej",
-    "cena": 129.99,
-    "dostepnosc": "na zamówienie",
+    "cena": 199.99,
+    "dostepnosc": "Duża",
     "kategoria": [
       {
         "_id": "6941b5a9b05aec2a8d57d16d",
@@ -124,8 +124,8 @@
         "alt": "fotel",
         "path": "/path/to/fotel.jpg",
         "_id": "6941ea321e807e3fbaaf4cb8",
-        "createdAt": "2025-12-16T23:24:34.914Z",
-        "updatedAt": "2025-12-16T23:24:34.914Z"
+        "createdAt": "2025-12-28T16:43:22.447Z",
+        "updatedAt": "2025-12-28T16:43:22.447Z"
       },
       {
         "nazwa": "jakiswykresczycos",
@@ -134,8 +134,8 @@
         "alt": "wykres",
         "path": "/path/to/photo.xxx",
         "_id": "6941ea321e807e3fbaaf4cb9",
-        "createdAt": "2025-12-16T23:24:34.914Z",
-        "updatedAt": "2025-12-16T23:24:34.914Z"
+        "createdAt": "2025-12-28T16:43:22.447Z",
+        "updatedAt": "2025-12-28T16:43:22.447Z"
       }
     ],
     "promocje": {
@@ -146,10 +146,10 @@
       "wygasa": "2025-12-19T19:40:25.896Z",
       "__v": 0
     },
-    "opis": "Piórnik przeznaczony do przechowywania i przemieszczania swoich narzędzi do techniki obróbki włosów. Ma atest, więc nie mogą cię pozwać za zniszczenie włosów. A jak to zrobią, to ty im dajesz pozew za niesławienie dobrego imienia firmy.",
+    "opis": "Piórnik idealny do przechowywania swoich narzędzi",
     "ilosc": 100,
-    "czas_wysylki": 7,
-    "kod_produkcyjny": "PDN-0031",
+    "czas_wysylki": 2,
+    "kod_produkcyjny": "ABC-1234",
     "ocena": 4.9,
     "opinie": [
       {
@@ -157,23 +157,24 @@
         "tresc": "Idealnie dopasowany pod każdy możliwy typ narzędzia. Polecam!!",
         "ocena": 5,
         "_id": "6941ea321e807e3fbaaf4cba",
-        "createdAt": "2025-12-16T23:24:34.914Z",
-        "updatedAt": "2025-12-16T23:24:34.914Z"
+        "createdAt": "2025-12-28T16:43:22.447Z",
+        "updatedAt": "2025-12-28T16:43:22.447Z"
       },
       {
         "uzytkownik": "Mariusz D.",
         "tresc": "Gówno!!",
         "ocena": 1,
         "_id": "6941ea321e807e3fbaaf4cbb",
-        "createdAt": "2025-12-16T23:24:34.914Z",
-        "updatedAt": "2025-12-16T23:24:34.914Z"
+        "createdAt": "2025-12-28T16:43:22.447Z",
+        "updatedAt": "2025-12-28T16:43:22.447Z"
       }
     ],
     "aktywne": true,
     "createdAt": "2025-12-16T23:24:34.807Z",
     "wariant": [],
-    "updatedAt": "2025-12-16T23:24:34.807Z",
-    "__v": 0
+    "updatedAt": "2025-12-28T16:43:22.447Z",
+    "__v": 0,
+    "vat": 23
   },
   {
     "_id": "6941ea321e807e3fbaaf4cc1",

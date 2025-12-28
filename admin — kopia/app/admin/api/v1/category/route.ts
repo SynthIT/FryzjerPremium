@@ -9,19 +9,44 @@ import { LogService } from "@/lib/log_service";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
-    const { val, mess } = checkRequestAuth(req);
+    const { val, user, mess } = checkRequestAuth(req, [
+        "admin:products",
+        "admin:categories",
+    ]);
     if (!val) {
-        console.log(mess);
+        new LogService({
+            path: req.url,
+            kind: "error",
+            position: "admin",
+            http: req.method,
+        }).error(`${mess} dla użytkownika ${user?.email}`);
         return NextResponse.json(
-            { status: 1, error: "Brak autoryzacji" },
+            { status: 1, error: "Brak autoryzacji", details: mess },
             { status: 401 }
         );
     }
+
     const cat = await collectCategories();
-    return NextResponse.json(JSON.parse(cat));
+    return NextResponse.json({ status: 0, categories: JSON.parse(cat) });
 }
 
 export async function DELETE(req: NextRequest) {
+    const { val, user, mess } = checkRequestAuth(req, [
+        "admin:products",
+        "admin:categories",
+    ]);
+    if (!val) {
+        new LogService({
+            path: req.url,
+            kind: "error",
+            position: "admin",
+            http: req.method,
+        }).error(`${mess} dla użytkownika ${user?.email}`);
+        return NextResponse.json(
+            { status: 1, error: "Brak autoryzacji", details: mess },
+            { status: 401 }
+        );
+    }
     const { searchParams } = new URL(req.url);
     const slug = searchParams.get("slug");
     if (!slug) {
@@ -33,6 +58,7 @@ export async function DELETE(req: NextRequest) {
     try {
         const p = await deleteCatBySlug(slug);
         new LogService({
+            path: req.url,
             kind: "log",
             position: "admin",
             http: req.method,
@@ -40,6 +66,7 @@ export async function DELETE(req: NextRequest) {
         return NextResponse.json({ status: 0, message: "Produkt usunięty" });
     } catch (e) {
         new LogService({
+            path: req.url,
             kind: "error",
             position: "admin",
             http: req.method,
@@ -52,11 +79,28 @@ export async function DELETE(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
+    const { val, user, mess } = checkRequestAuth(req, [
+        "admin:products",
+        "admin:categories",
+    ]);
+    if (!val) {
+        new LogService({
+            path: req.url,
+            kind: "error",
+            position: "admin",
+            http: req.method,
+        }).error(`${mess} dla użytkownika ${user?.email}`);
+        return NextResponse.json(
+            { status: 1, error: "Brak autoryzacji", details: mess },
+            { status: 401 }
+        );
+    }
     const catData = await req.json();
     console.log("Otrzymane dane produktu do aktualizacji:", catData);
     try {
         const res = await updateCategory(catData);
         new LogService({
+            path: req.url,
             kind: "log",
             position: "admin",
             http: req.method,
@@ -67,6 +111,7 @@ export async function PUT(req: NextRequest) {
         });
     } catch (e) {
         new LogService({
+            path: req.url,
             kind: "error",
             position: "admin",
             http: req.method,
@@ -79,10 +124,27 @@ export async function PUT(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+    const { val, user, mess } = checkRequestAuth(req, [
+        "admin:products",
+        "admin:categories",
+    ]);
+    if (!val) {
+        new LogService({
+            path: req.url,
+            kind: "error",
+            position: "admin",
+            http: req.method,
+        }).error(`${mess} dla użytkownika ${user?.email}`);
+        return NextResponse.json(
+            { status: 1, error: "Brak autoryzacji", details: mess },
+            { status: 401 }
+        );
+    }
     const catData = await req.json();
     try {
         const res = await createCategory(catData);
         new LogService({
+            path: req.url,
             kind: "log",
             position: "admin",
             http: req.method,
@@ -93,6 +155,7 @@ export async function POST(req: NextRequest) {
         );
     } catch (e) {
         new LogService({
+            path: req.url,
             kind: "error",
             position: "admin",
             http: req.method,

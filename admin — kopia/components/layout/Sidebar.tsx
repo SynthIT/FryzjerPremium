@@ -33,6 +33,7 @@ import {
     Shield,
     Factory,
     FolderKanban,
+    Percent,
 } from "lucide-react";
 
 type NavItem = {
@@ -56,6 +57,11 @@ const navItems: NavItem[] = [
             {
                 href: "/admin/customers/uzytkownicy",
                 label: "Użytkownicy",
+                icon: <User className="h-4 w-4" />,
+            },
+            {
+                href: "/admin/customers/role",
+                label: "Role",
                 icon: <User className="h-4 w-4" />,
             },
             {
@@ -89,6 +95,11 @@ const navItems: NavItem[] = [
                 href: "/admin/manage/categories",
                 label: "Kategorie",
                 icon: <Boxes className="h-4 w-4" />,
+            },
+            {
+                href: "/admin/manage/promocje",
+                label: "Promocje",
+                icon: <Percent className="h-4 w-4" />,
             },
         ],
     },

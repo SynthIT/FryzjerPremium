@@ -1,4 +1,12 @@
-import { Role, User, Users } from "./models/Users";
+import {
+    hasPermission,
+    permissionKeys,
+    PermissionTable,
+    permissionToNumber,
+    Role,
+    User,
+    Users,
+} from "./models/Users";
 import {
     createPrivateKey,
     createPublicKey,
@@ -9,7 +17,6 @@ import { JwtPayload, sign, verify } from "jsonwebtoken";
 import mongoose from "mongoose";
 import { NextRequest } from "next/server";
 import { hash, verify as passverify } from "argon2";
-
 import { writeFileSync } from "node:fs";
 import path from "node:path";
 
@@ -21,32 +28,61 @@ import path from "node:path";
 /**
  * @name checkRequestAuth
  * @description Zwraca val true jeżeli użytkownik może odtworzyć adminpanel
- * @param req
+ * @param req nextrequest
+ * @param scope musi byc array wymaganych permisji
  * @returns {val: true|false, user: Users }
  */
-export function checkRequestAuth(req: NextRequest): {
+export function checkRequestAuth(
+    req: NextRequest,
+    scope?: typeof permissionKeys
+): {
     val: boolean;
     user?: Users;
     mess?: string;
 } {
-    const { val, mess } = verifyJWT(req);
-    return { val, mess };
+    const { val, user, mess } = verifyJWT(req);
+    if (scope) {
+        if (!user) return { val: false, mess: mess };
+        if (!user.role) return { val: false, mess: mess };
+        let bits = 0;
+        for (const role of user.role as Role[]) {
+            bits |= role.permisje;
+        }
+        let mask = 0;
+        for (const bit of scope!) {
+            mask |= PermissionTable[bit];
+        }
+        const val = hasPermission(bits, mask);
+        return {
+            val,
+            mess: val
+                ? ""
+                : "Nie wystarczające uprawienienia do wykonania operacji",
+        };
+    } else {
+        return {
+            val,
+            mess,
+        };
+    }
 }
 
 export async function checkExistingUser(email: string, haslo: string) {
-    await db();
-
-    const existingUser: Users = await User.findOne({ email: email })
-        .populate("role")
-        .populate("zamowienia")
-        .orFail();
-    await dbclose();
-    if (existingUser) {
-        if (!(await passverify(existingUser.haslo.trim(), haslo.trim())))
-            return "Hasła nie są takie same";
-        return existingUser;
+    try {
+        await db();
+        const existingUser: Users = await User.findOne({ email: email })
+            .populate("role")
+            .populate("zamowienia")
+            .orFail();
+        await dbclose();
+        if (existingUser) {
+            if (!(await passverify(existingUser.haslo.trim(), haslo.trim())))
+                return "Hasła nie są takie same";
+            return existingUser;
+        }
+    } catch (e) {
+        return "Użytkownik nie istnieje";
     }
-    return "Użytkownik nie istnieje";
 }
 
 export function createJWT(
@@ -149,33 +185,70 @@ export function verifyJWT(req: NextRequest): {
 
 export async function addNewUser(payload: Users) {
     await db();
-    const rola = await Role.create({ nazwa: "admin", permisje: 1 });
     const existingUser = await User.findOne({ email: payload.email });
     if (existingUser && existingUser.email === payload.email) {
         await dbclose();
         return "Użytkownik o podanym emailu już istnieje.";
     } else {
-        const hashedPassword = await hash(payload.haslo, { type: 2 });
-        const upayload: Users = {
-            imie: payload.imie,
-            nazwisko: payload.nazwisko,
-            email: payload.email,
-            haslo: hashedPassword,
-            nr_domu: payload.nr_domu,
-            nr_lokalu: payload.nr_lokalu || "",
-            ulica: payload.ulica,
-            miasto: payload.miasto,
-            kraj: payload.kraj,
-            kod_pocztowy: payload.kod_pocztowy,
-            telefon: payload.telefon,
-            osoba_prywatna: true,
-            zamowienia: [],
-            faktura: false,
-            role: [rola._id],
-        };
-        const u = await User.create(upayload);
-        await dbclose();
-        return u;
+        const jest = await Role.findOne({ nazwa: "admin" });
+        if (!jest) {
+            const rola = await Role.create({
+                nazwa: "admin",
+                permisje: permissionToNumber([
+                    "admin:blog",
+                    "admin:categories",
+                    "admin:orders",
+                    "admin:producent",
+                    "admin:products",
+                    "admin:promo",
+                    "admin:roles",
+                    "admin:users",
+                ]),
+            });
+            const hashedPassword = await hash(payload.haslo, { type: 2 });
+            const upayload: Users = {
+                imie: payload.imie,
+                nazwisko: payload.nazwisko,
+                email: payload.email,
+                haslo: hashedPassword,
+                nr_domu: payload.nr_domu,
+                nr_lokalu: payload.nr_lokalu || "",
+                ulica: payload.ulica,
+                miasto: payload.miasto,
+                kraj: payload.kraj,
+                kod_pocztowy: payload.kod_pocztowy,
+                telefon: payload.telefon,
+                osoba_prywatna: true,
+                zamowienia: [],
+                faktura: false,
+                role: [rola._id],
+            };
+            const u = await User.create(upayload);
+            await dbclose();
+            return u;
+        } else {
+            const hashedPassword = await hash(payload.haslo, { type: 2 });
+            const upayload: Users = {
+                imie: payload.imie,
+                nazwisko: payload.nazwisko,
+                email: payload.email,
+                haslo: hashedPassword,
+                nr_domu: payload.nr_domu,
+                nr_lokalu: payload.nr_lokalu || "",
+                ulica: payload.ulica,
+                miasto: payload.miasto,
+                kraj: payload.kraj,
+                kod_pocztowy: payload.kod_pocztowy,
+                telefon: payload.telefon,
+                osoba_prywatna: true,
+                zamowienia: [],
+                faktura: false,
+                role: [jest._id],
+            };
+            const u = await User.create(upayload);
+            await dbclose();
+            return u;
+        }
     }
 }
 
@@ -248,7 +321,6 @@ export async function deleteUser(
         return { mess: `${err}` };
     }
 }
-
 
 async function db() {
     await mongoose.connect("mongodb://localhost:27017/fryzjerpremium");

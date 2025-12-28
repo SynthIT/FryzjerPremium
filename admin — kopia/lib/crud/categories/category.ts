@@ -4,8 +4,15 @@ import mongoose from "mongoose";
 export async function collectCategories() {
     await db();
     const categories = await Category.find({}).orFail();
+    const cats: Record<string, Categories[]> = {};
+    for (const docs of categories) {
+        if (!cats[docs.slug]) {
+            cats[docs.slug] = [];
+        }
+        cats[docs.slug].push(docs);
+    }
     await dbclose();
-    return JSON.stringify(categories);
+    return JSON.stringify(cats);
 }
 
 export async function createCategory(catData: Categories) {

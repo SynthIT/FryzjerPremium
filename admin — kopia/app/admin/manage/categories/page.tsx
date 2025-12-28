@@ -1,29 +1,34 @@
 "use client";
 
-import { Categories, Products } from "@/lib/models/Products";
+import { makeSlugKeys, parseSlugName } from "@/lib/utils_admin";
+import { Categories } from "@/lib/models/Products";
 import { useEffect, useState } from "react";
 
 export default function CategoriesPage() {
-    const [categories, setCategories] = useState<Categories[]>([]);
+    const [categories, setCategories] =
+        useState<Record<string, Categories[]>>();
+
+    const [categoriesSlug, setCategoriesSlug] = useState<string[]>();
     useEffect(() => {
         async function fetchProducts() {
             try {
-                const response = await fetch("/admin/api/v1/products", {
+                const response = await fetch("/admin/api/v1/category", {
                     method: "GET",
                 });
-                const data: Products[] = await response.json();
-                console.log("Pobrane produkty:", data);
-                const categoriesSet = new Set<string>();
-                data.forEach((product) =>
-                    (product.kategoria as Categories[]).forEach((category) =>
-                        categoriesSet.add(JSON.stringify(category))
-                    )
-                );
-                console.log("Unikalne kategorie:", categoriesSet);
-                const categoriesArray: Categories[] = Array.from(
-                    categoriesSet
-                ).map((cat) => JSON.parse(cat));
-                setCategories(categoriesArray);
+                const {
+                    status,
+                    categories,
+                }: {
+                    status: number;
+                    categories: Record<string, Categories[]>;
+                } = await response.json();
+                console.log(categories);
+                if (status === 0 && categories) {
+                    setCategories(categories);
+                    setCategoriesSlug(makeSlugKeys(categories));
+                } else {
+                    throw new Error();
+                }
             } catch (error) {
                 console.error("Błąd podczas pobierania produktów:", error);
             }
@@ -48,15 +53,18 @@ export default function CategoriesPage() {
                 </a>
             </div>
             {categories ? (
-                categories.map((val, index) => {
-                    return (
-                        <div key={index} className="rounded-lg border">
-                            <div className="p-4 text-sm text-muted-foreground">
-                                Nazwa kategorii: {val.nazwa}
+                categoriesSlug?.map((val) => (
+                    <>
+                        <p key={val}>{parseSlugName(val)}</p>
+                        {categories[val].map((val, index) => (
+                            <div key={index} className="rounded-lg border">
+                                <div className="p-4 text-sm text-muted-foreground">
+                                    {val.nazwa}
+                                </div>
                             </div>
-                        </div>
-                    );
-                })
+                        ))}
+                    </>
+                ))
             ) : (
                 <div className="rounded-lg border">
                     <div className="p-4 text-sm text-muted-foreground">
