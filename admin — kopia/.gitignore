@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+
+#na chuj te jebane logi na githubie
+/logs
+/logs/*

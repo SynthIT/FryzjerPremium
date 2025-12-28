@@ -259,14 +259,6 @@ export async function deleteUser(
     }
 }
 
-/*
-    ADMIN CZESC, CZYLI JAKIES TAM DODATKO
-    WYCIAGANIE, WKLADANIE I TAK DALEJ
-*/
-
-// crud produktowy
-
-
 
 async function db() {
     await mongoose.connect("mongodb://localhost:27017/fryzjerpremium");
