@@ -133,19 +133,17 @@ export async function POST(req: NextRequest) {
         const res = await createPromo(productData);
         new LogService({
             path: req.url,
-
             kind: "log",
             position: "admin",
             http: req.method,
         }).log(`Promocja: ${res?._id} została dodana`);
         return NextResponse.json(
-            { status: 201, error: "Promocja została dodana" },
+            { status: 0, message: "Promocja została dodana" },
             { status: 201 }
         );
     } catch (e) {
         new LogService({
             path: req.url,
-
             kind: "error",
             position: "admin",
             http: req.method,

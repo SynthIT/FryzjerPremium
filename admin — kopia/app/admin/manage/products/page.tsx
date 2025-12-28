@@ -24,7 +24,6 @@ export default function ProductPage() {
                 const data = await fetch("/admin/api/v1/products").then((res) =>
                     res.json()
                 );
-                console.log(data);  
                 // Pobierz produkty z API - to samo API co w sklepie
                 setProducts(data || []);
             } catch (error) {
@@ -39,7 +38,6 @@ export default function ProductPage() {
 
     // Filtrowanie i paginacja
     const filteredProducts = useMemo(() => {
-        console.log(products);
         if (!searchQuery) return products;
         const query = searchQuery.toLowerCase();
         return products.filter((product) => {
@@ -70,7 +68,6 @@ export default function ProductPage() {
             const data = await fetch("/admin/api/v1/products").then((res) =>
                 res.json()
             );
-            console.log(data);
             setProducts(data || []);
         } catch (error) {
             console.error("Błąd podczas odświeżania produktów:", error);

@@ -1,21 +1,32 @@
 "use client";
 
 import Image from "next/image";
-import { Products, Categories, Producents } from "@/lib/models/Products";
+import {
+    Products,
+    Categories,
+    Producents,
+    Promos,
+} from "@/lib/models/Products";
 
 interface AdminProductCardProps {
     product: Products;
     onClick: () => void;
 }
 
-export default function AdminProductCard({ product, onClick }: AdminProductCardProps) {
+export default function AdminProductCard({
+    product,
+    onClick,
+}: AdminProductCardProps) {
     // Obsługa kategorii - może być arrayem
     const getCategories = (): Categories[] => {
         if (!product.kategoria) return [];
         if (Array.isArray(product.kategoria)) {
             return product.kategoria.filter(
                 (cat): cat is Categories =>
-                    typeof cat === "object" && cat !== null && "nazwa" in cat && "slug" in cat
+                    typeof cat === "object" &&
+                    cat !== null &&
+                    "nazwa" in cat &&
+                    "slug" in cat
             ) as Categories[];
         }
         return [];
@@ -28,7 +39,10 @@ export default function AdminProductCard({ product, onClick }: AdminProductCardP
     const getProducentName = (): string => {
         if (!product.producent) return "Brak producenta";
         if (typeof product.producent === "string") return product.producent;
-        if (typeof product.producent === "object" && "nazwa" in product.producent) {
+        if (
+            typeof product.producent === "object" &&
+            "nazwa" in product.producent
+        ) {
             return (product.producent as Producents).nazwa || "Brak producenta";
         }
         return "Brak producenta";
@@ -38,7 +52,11 @@ export default function AdminProductCard({ product, onClick }: AdminProductCardP
 
     // Obsługa zdjęcia
     const getImageSrc = (): string | null => {
-        if (product.media && Array.isArray(product.media) && product.media.length > 0) {
+        if (
+            product.media &&
+            Array.isArray(product.media) &&
+            product.media.length > 0
+        ) {
             return product.media[0].path || null;
         }
         return null;
@@ -56,8 +74,7 @@ export default function AdminProductCard({ product, onClick }: AdminProductCardP
     return (
         <div
             onClick={onClick}
-            className="border rounded-lg p-4 hover:shadow-lg transition-all cursor-pointer bg-card hover:bg-accent/50 group"
-        >
+            className="border rounded-lg p-4 hover:shadow-lg transition-all cursor-pointer bg-card hover:bg-accent/50 group">
             {/* Image */}
             <div className="relative w-full h-48 mb-4 bg-muted rounded-lg overflow-hidden">
                 {imageSrc ? (
@@ -96,17 +113,29 @@ export default function AdminProductCard({ product, onClick }: AdminProductCardP
                 <div className="flex items-center justify-between pt-2 border-t">
                     <div>
                         <div className="font-bold text-lg">
-                            {product.cena ? `${product.cena.toFixed(2)} zł` : "Brak ceny"}
+                            {product.cena
+                                ? `${product.cena.toFixed(2)} zł`
+                                : "Brak ceny"}
                         </div>
-                        {product.promocje && typeof product.promocje === "object" && "procent" in product.promocje && (
-                            <div className="text-xs text-green-600">
-                                Promocja: -{(product.promocje as any).procent}%
-                            </div>
-                        )}
+                        {product.promocje &&
+                            typeof product.promocje === "object" &&
+                            "procent" in product.promocje && (
+                                <div className="text-xs text-green-600">
+                                    Promocja: -
+                                    {(product.promocje as Promos).procent}%
+                                </div>
+                            )}
                     </div>
                     <div className="text-right">
-                        <div className="text-sm text-muted-foreground">Ilość:</div>
-                        <div className={`font-semibold ${(product.ilosc || 0) === 0 ? "text-red-600" : "text-green-600"}`}>
+                        <div className="text-sm text-muted-foreground">
+                            Ilość:
+                        </div>
+                        <div
+                            className={`font-semibold ${
+                                (product.ilosc || 0) === 0
+                                    ? "text-red-600"
+                                    : "text-green-600"
+                            }`}>
                             {product.ilosc ?? 0}
                         </div>
                     </div>
@@ -117,10 +146,14 @@ export default function AdminProductCard({ product, onClick }: AdminProductCardP
                     <div className="flex flex-wrap gap-1">
                         {firstCategory ? (
                             <span className="px-2 py-1 bg-muted rounded">
-                                {firstCategory.nazwa || firstCategory.slug || "Brak kategorii"}
+                                {firstCategory.nazwa ||
+                                    firstCategory.slug ||
+                                    "Brak kategorii"}
                             </span>
                         ) : (
-                            <span className="px-2 py-1 bg-muted rounded">Brak kategorii</span>
+                            <span className="px-2 py-1 bg-muted rounded">
+                                Brak kategorii
+                            </span>
                         )}
                         {categories.length > 1 && (
                             <span className="px-2 py-1 bg-muted rounded">
@@ -128,7 +161,9 @@ export default function AdminProductCard({ product, onClick }: AdminProductCardP
                             </span>
                         )}
                     </div>
-                    <div className="truncate max-w-[120px]" title={producentName}>
+                    <div
+                        className="truncate max-w-[120px]"
+                        title={producentName}>
                         {producentName}
                     </div>
                 </div>
@@ -150,5 +185,3 @@ export default function AdminProductCard({ product, onClick }: AdminProductCardP
         </div>
     );
 }
-
-
