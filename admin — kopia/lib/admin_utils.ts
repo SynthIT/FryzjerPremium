@@ -7,16 +7,6 @@ import {
 } from "node:crypto";
 import { JwtPayload, sign, verify } from "jsonwebtoken";
 import mongoose from "mongoose";
-import {
-    Categories,
-    Category,
-    Producent,
-    Producents,
-    Product,
-    Products,
-    Promo,
-    Promos,
-} from "./models/Products";
 import { NextRequest } from "next/server";
 import { hash, verify as passverify } from "argon2";
 
