@@ -68,6 +68,8 @@ export interface Categories {
 
 export interface Producents {
     nazwa: string;
+    logo: Media;
+    opis?: string;
     slug?: string | null;
     strona_internetowa?: string | null;
 }

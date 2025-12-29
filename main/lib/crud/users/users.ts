@@ -3,17 +3,7 @@ import mongoose from "mongoose";
 
 export async function collectUsers() {
     await db();
-    const uzytkownicy = await User.find({})
-        .populate("role")
-        .orFail()
-        .then((docs) => {
-            for (const doc of docs) {
-                if (!doc.role) return doc;
-                if (doc.role.length > 0) {
-                    if ((doc.role as Role[])[0].nazwa !== "admin") return doc;
-                }
-            }
-        });
+    const uzytkownicy = await User.find({}).populate("role");
     await dbclose();
     return JSON.stringify(uzytkownicy);
 }
@@ -22,7 +12,6 @@ export async function collectAdmins() {
     await db();
     const uzytkownicy = await User.find({})
         .populate("role")
-        .orFail()
         .then((docs) =>
             docs.filter(
                 (doc): doc is typeof doc & { role: Role[] } =>
@@ -40,8 +29,8 @@ export async function addAdmin(user: Users) {
     const uzytkownik = await User.findOne({ email: user.email })
         .populate("role")
         .orFail();
-    if((uzytkownik.role as Role[]).length > 0) {
-        uzytkownik.role?.unshift()
+    if ((uzytkownik.role as Role[]).length > 0) {
+        uzytkownik.role?.unshift();
     }
 }
 

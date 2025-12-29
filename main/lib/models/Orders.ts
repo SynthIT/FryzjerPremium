@@ -33,6 +33,6 @@ export const schemaOrderList = new Schema<OrderList>(
         suma: { type: Number },
         data_wykonania: { type: Date, default: new Date() },
     },
-    { timestamps: true }
+    { timestamps: true, autoIndex: false }
 );
 
