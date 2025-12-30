@@ -3,6 +3,7 @@ import {
     Producents,
     Product,
     Categories,
+    zodProducents,
 } from "@/lib/models/Products";
 import mongoose from "mongoose";
 
@@ -14,6 +15,7 @@ export async function collectProducents() {
 }
 
 export async function createProducent(prodData: Producents) {
+    zodProducents.parse(prodData);
     await db();
     const cat = await Producent.create(prodData);
     await dbclose();
@@ -35,7 +37,8 @@ export async function deleteProducentBySlug(slug: string) {
     return { products: cb, producent: producent };
 }
 
-export async function updateProducent(newProducent: Categories) {
+export async function updateProducent(newProducent: Producents) {
+    zodProducents.parse(newProducent);
     const producent = await Producent.findOneAndUpdate(
         {
             slug: newProducent.slug,

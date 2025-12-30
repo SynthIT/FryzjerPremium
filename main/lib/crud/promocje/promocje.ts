@@ -1,4 +1,4 @@
-import { Promo, Promos, Product } from "@/lib/models/Products";
+import { Promo, Promos, Product, PromocjeSchema } from "@/lib/models/Products";
 import mongoose from "mongoose";
 
 export async function collectPromo() {
@@ -9,6 +9,7 @@ export async function collectPromo() {
 }
 
 export async function createPromo(promocja: Promos) {
+    PromocjeSchema.parse(promocja);
     await db();
     const promo = await Promo.create(promocja);
     await dbclose();
@@ -29,7 +30,8 @@ export async function deletePromoBySlug(slug: string) {
     return promo;
 }
 
-export async function updatePromo(promocje: Promos) {
+expoPromocjeSchema.parse(promocje);
+    rt async function updatePromo(promocje: Promos) {
     const promocja = await Promo.findOneAndUpdate(
         {
             slug: promocje.nazwa,

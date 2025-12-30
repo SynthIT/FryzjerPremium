@@ -3,6 +3,7 @@
 import { makeSlugKeys, parseSlugName } from "@/lib/utils_admin";
 import { Categories } from "@/lib/models/Products";
 import { useEffect, useState } from "react";
+import AdminCategoryCard from "@/components/admin/AdminCategoryCard";
 
 export default function CategoriesPage() {
     const [categories, setCategories] =
@@ -57,11 +58,10 @@ export default function CategoriesPage() {
                     <>
                         <p key={val}>{parseSlugName(val)}</p>
                         {categories[val].map((val, index) => (
-                            <div key={index} className="rounded-lg border">
-                                <div className="p-4 text-sm text-muted-foreground">
-                                    {val.nazwa}
-                                </div>
-                            </div>
+                            <AdminCategoryCard
+                                key={index}
+                                category={val}
+                                onClick={() => {}}></AdminCategoryCard>
                         ))}
                     </>
                 ))

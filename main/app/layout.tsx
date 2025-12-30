@@ -3,6 +3,7 @@ import { DM_Sans } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/contexts/CartContext";
 import { UserProvider } from "@/contexts/UserContext";
+import { NotificationProvider } from "@/contexts/NotificationContext";
 
 const dmSans = DM_Sans({
     weight: ["400", "500", "600", "700"],
@@ -24,9 +25,11 @@ export default function RootLayout({
     return (
         <html lang="pl">
             <body className={`${dmSans.variable} antialiased`}>
-                <CartProvider>
-                    <UserProvider>{children}</UserProvider>
-                </CartProvider>
+                <NotificationProvider>
+                    <CartProvider>
+                        <UserProvider>{children}</UserProvider>
+                    </CartProvider>
+                </NotificationProvider>
             </body>
         </html>
     );

@@ -1,5 +1,5 @@
 import { useUser } from "@/contexts/UserContext";
-import { Users } from "@/lib/models/Users";
+import { Users } from "@/lib/types/userTypes";
 import { useState, useCallback, ChangeEvent } from "react";
 
 export default function RegisterPage() {
@@ -94,6 +94,8 @@ export default function RegisterPage() {
                 telefon: numerTel,
                 osoba_prywatna: false,
                 zamowienia: [],
+                nip: undefined,
+                faktura: undefined,
             };
             fetch("/api/v1/auth/register", {
                 method: "POST",

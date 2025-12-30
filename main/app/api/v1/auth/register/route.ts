@@ -1,11 +1,31 @@
 import { UsersReponse } from "@/lib/interfaces/ax";
 import { User } from "@/lib/models/Users";
+import { Users, userSchema } from "@/lib/types/userTypes";
 import { addNewUser, createJWT } from "@/lib/admin_utils";
 import { NextRequest, NextResponse } from "next/server";
+import { treeifyError } from "zod";
 
 export async function POST(req: NextRequest) {
     const reqBody = await req.json();
-    const result = await addNewUser(reqBody);
+    const ok = userSchema.safeParse(reqBody);
+    console.log(ok);
+    if (ok.error) {
+        const tree = treeifyError(ok.error);
+        const errorKeys = Object.keys(
+            tree.properties!
+        ) as (keyof typeof tree.properties)[];
+
+        for (const key of errorKeys) {
+            console.log({
+                key: key,
+                err: (
+                    (tree.properties![key] as any).errors as Array<string>
+                ).toString(),
+            });
+        }
+        console.log(tree);
+    }
+    const result = await addNewUser(ok.data as Users);
     if (result instanceof User) {
         const response: UsersReponse = {
             status: 201,

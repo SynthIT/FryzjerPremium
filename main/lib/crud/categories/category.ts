@@ -1,4 +1,4 @@
-import { Category, Categories, Product } from "@/lib/models/Products";
+import { Category, Categories, Product, zodCategories } from "@/lib/models/Products";
 import mongoose from "mongoose";
 
 export async function collectCategories() {
@@ -16,6 +16,7 @@ export async function collectCategories() {
 }
 
 export async function createCategory(catData: Categories) {
+    zodCategories.parse(catData);
     await db();
     const cat = await Category.create(catData);
     await dbclose();
@@ -41,6 +42,7 @@ export async function deleteCatBySlug(slug: string) {
 }
 
 export async function updateCategory(newCat: Categories) {
+    zodCategories.parse(newCat);
     const category = await Category.findOneAndUpdate(
         {
             slug: newCat.slug,

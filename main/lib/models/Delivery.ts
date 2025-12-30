@@ -1,19 +1,7 @@
 import { model, models, Schema } from "mongoose";
+import { z } from 'zod';
 
-export interface DeliveryMethodsSizes {
-    cena: number;
-    wielkosci: string;
-}
-
-export interface DeliveryMethods {
-    nazwa: string;
-    slug: string;
-    ceny: Array<DeliveryMethods>;
-    firma: string;
-    strona_internetowa: string;
-}
-
-const schemaDeliverySize = new Schema<DeliveryMethodsSizes>(
+export const schemaDeliverySize = new Schema<DeliveryMethodsSizes>(
     {
         cena: { type: Number, required: true },
         wielkosci: { type: String, required: true },
@@ -33,3 +21,20 @@ export const schemaDelivery = new Schema<DeliveryMethods>(
 );
 
 export const Delivery = models.Delivery ?? model("Delivery", schemaDelivery);
+
+export const zodDeliveryMethodsSizes = z.object({
+    cena: z.number(),
+    wielkosci: z.string(),
+});
+
+export type DeliveryMethodsSizes = z.infer<typeof zodDeliveryMethodsSizes>;
+
+export const zodDeliveryMethods = z.object({
+    nazwa: z.string(),
+    slug: z.string(),
+    ceny: z.array(zodDeliveryMethodsSizes),
+    firma: z.string(),
+    strona_internetowa: z.string(),
+});
+
+export type DeliveryMethods = z.infer<typeof zodDeliveryMethods>;

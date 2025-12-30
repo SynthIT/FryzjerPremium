@@ -1,7 +1,8 @@
 "use client";
 
+import { hasAnyAdminPermission } from "@/lib/auth/permissions";
 import { OrderList } from "@/lib/models/Orders";
-import { Role, Users } from "@/lib/models/Users";
+import { Role, Users, userSchema } from "@/lib/types/userTypes";
 import {
     createContext,
     ReactNode,
@@ -42,7 +43,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
     useEffect(() => {
         const loggedUser = localStorage.getItem("user");
-        if (loggedUser) {
+        const validateUser = userSchema.safeParse(loggedUser);
+        if (validateUser.success) {
             try {
                 async function u(c: Users) {
                     fetch("/api/v1/auth/check", {
@@ -60,10 +62,9 @@ export function UserProvider({ children }: { children: ReactNode }) {
                         }
                     });
                 }
-                const parsedUser: Users | undefined = JSON.parse(loggedUser);
-                console.log(parsedUser);
-                if (parsedUser) {
-                    u(parsedUser);
+                console.log(validateUser.data);
+                if (validateUser.data) {
+                    u(validateUser.data);
                 }
             } catch (err) {
                 console.log("Błąd podczas ładowania użytkownika: ", err);
@@ -72,6 +73,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     }, []);
 
     const addUser = useCallback((user: Users) => {
+        userSchema.parse(user);
         const orders = user.zamowienia as OrderList[];
         if (orders.length > 0) {
             setOrders(orders);
@@ -187,7 +189,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
     const isAdmin = useCallback(() => {
         if (!user) return false;
         if (!user.role) return false;
-        return user.role.length > 0 && (user.role[0] as Role).nazwa === "admin";
+        console.log(hasAnyAdminPermission(user.role as Role[]));
+        return hasAnyAdminPermission(user.role as Role[]);
     }, [user]);
 
     return (

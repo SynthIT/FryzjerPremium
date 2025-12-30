@@ -1,12 +1,11 @@
+import { Users } from "@/lib/types/userTypes";
+import { Roles, Role, User } from "@/lib/models/Users";
 import {
     hasPermission,
     permissionKeys,
     PermissionTable,
     permissionToNumber,
-    Role,
-    User,
-    Users,
-} from "./models/Users";
+} from "@/lib/auth/permissions";
 import {
     createPrivateKey,
     createPublicKey,
@@ -45,8 +44,9 @@ export function checkRequestAuth(
         if (!user) return { val: false, mess: mess };
         if (!user.role) return { val: false, mess: mess };
         let bits = 0;
-        for (const role of user.role as Role[]) {
-            bits |= role.permisje;
+        for (const role of user.role as Roles[]) {
+            if (!role.admin) continue;
+            bits |= role.admin;
         }
         let mask = 0;
         for (const bit of scope!) {
@@ -81,6 +81,7 @@ export async function checkExistingUser(email: string, haslo: string) {
             return existingUser;
         }
     } catch (e) {
+        console.log(e);
         return "Użytkownik nie istnieje";
     }
 }
@@ -194,7 +195,7 @@ export async function addNewUser(payload: Users) {
         if (!jest) {
             const rola = await Role.create({
                 nazwa: "admin",
-                permisje: permissionToNumber([
+                admin: permissionToNumber([
                     "admin:blog",
                     "admin:categories",
                     "admin:orders",
@@ -221,7 +222,7 @@ export async function addNewUser(payload: Users) {
                 osoba_prywatna: true,
                 zamowienia: [],
                 faktura: false,
-                role: [rola._id],
+                role: [rola._id!],
             };
             const u = await User.create(upayload);
             await dbclose();
@@ -243,7 +244,7 @@ export async function addNewUser(payload: Users) {
                 osoba_prywatna: true,
                 zamowienia: [],
                 faktura: false,
-                role: [jest._id],
+                role: [jest._id!],
             };
             const u = await User.create(upayload);
             await dbclose();

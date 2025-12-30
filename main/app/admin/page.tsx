@@ -8,22 +8,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import "@/app/globals2.css";
-import { useEffect } from "react";
 
 export default function AdminPage() {
-    useEffect(() => {
-        async function checkAuth() {
-            const resposne = await fetch("/admin/api/v1/auth", {
-                method: "GET",
-                credentials: "include",
-            });
-            if (resposne.status !== 200) {
-                window.location.href = "/";
-            }
-        }
-        checkAuth();
-    }, []);
-
     return (
         <div className="space-y-4 sm:space-y-6">
             <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">

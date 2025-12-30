@@ -1,5 +1,10 @@
-import { Product, Products } from "@/lib/models/Products";
-import mongoose from "mongoose";
+import {
+    Product,
+    Products,
+    Categories,
+    zodProducts,
+} from "@/lib/models/Products";
+import mongoose, { Types } from "mongoose";
 
 export async function collectProducts() {
     await db();
@@ -13,6 +18,7 @@ export async function collectProducts() {
 }
 
 export async function createProduct(productData: Products) {
+    zodProducts.parse(productData);
     await db();
     const prod = await Product.create(productData);
     await dbclose();
@@ -27,6 +33,16 @@ export async function deleteProductBySlug(slug: string) {
 }
 
 export async function updateProduct(productData: Products) {
+    const produkt = zodProducts.safeParse(productData);
+    if (produkt.error) return;
+    const kategorie = produkt.data.kategoria;
+    produkt.data.kategoria = [];
+    for (const kategoria of kategorie) {
+        produkt.data.kategoria.push(
+            new Types.ObjectId((kategoria as Categories)._id)
+        );
+    }
+    
     await db();
     const prod = await Product.findOneAndUpdate(
         { slug: productData.slug },

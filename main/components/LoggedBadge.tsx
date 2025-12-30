@@ -1,4 +1,4 @@
-import { Users } from "@/lib/models/Users";
+import { Users } from "@/lib/types/userTypes";
 import { User } from "lucide-react";
 
 interface LoggedBadgeProps {

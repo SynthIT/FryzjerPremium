@@ -10,6 +10,7 @@ import { loginUser } from "@/lib/utils";
 import LoggedBadge from "./LoggedBadge";
 import { User } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
+import { useNotification } from "@/contexts/NotificationContext";
 
 export default function Header() {
     const [searchQuery, setSearchQuery] = useState("");
@@ -31,6 +32,7 @@ export default function Header() {
 
     const { getTotalItems, lastAddedItem, clearLastAddedItem } = useCart();
     const { addUser, user, isAdmin, logout } = useUser();
+    const { notify } = useNotification();
 
     const cartItemsCount = getTotalItems();
 
@@ -706,10 +708,10 @@ export default function Header() {
                                             });
                                             if (response.status == 201) {
                                                 addUser(response.user);
-                                                alert("Zostałeś zalogowany");
+                                                notify("Zostałeś zalogowany", "log");
                                             } else {
                                                 console.log(response.error)
-                                                alert(response.error);
+                                                notify(response.error, "error");
                                             }
                                         }}>
                                         Zaloguj się

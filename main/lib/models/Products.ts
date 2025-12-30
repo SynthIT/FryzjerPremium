@@ -1,93 +1,110 @@
-import { Document, Model, model, models, Schema, Types } from "mongoose";
+import { Model, model, models, Schema, Types } from "mongoose";
+import z from "zod";
 
-export type WariantyTyp = "kolor" | "rozmiar" | "objetosc";
-export type MediaTyp = "video" | "image" | "pdf" | "other";
+export const zodWariantyProps = z.object({
+    name: z.string(),
+    val: z.string(),
+    hex: z.string().nullable(),
+});
+export type props = z.infer<typeof zodWariantyProps>;
 
-export interface Products {
-    slug: string;
-    nazwa: string;
-    cena: number;
-    /* select pomiedzy 3-4 opcjami*/
-    dostepnosc: string;
-    /* [0].slug = kategoria produktu [0].nazwa podkategoria */
-    kategoria: Categories[] | Types.ObjectId[] | string[];
-    producent: Producents | Types.ObjectId | string;
-    /* [0] baner (zdjecie) produktu*/
-    media: Media[];
-    promocje: Promos | Types.ObjectId | string | null;
-    opis: string;
-    ilosc: number;
-    czas_wysylki: number;
-    kod_produkcyjny: string;
-    ocena: number;
-    opinie: Opinie[] | null;
-    createdAt: Date;
-    /* [0] bazowy wyglad produktu - wymagany, niech automatycznie sie pojawia okno z kontruktorem na to
-musze naprawic przez to cala logike w froncie, ale bedo jaja*/
-    vat: number;
-    wariant?: Warianty[];
-    kod_ean?: string | null;
-    sku?: string | null;
-    aktywne?: boolean | null;
-}
+export const zodWarianty = z.object({
+    nazwa: z.string(),
+    slug: z.string(),
+    typ: z.enum(["kolor", "rozmiar", "objetosc", "specjalna", "hurt"]),
+    kolory: z.union([zodWariantyProps, z.null()]),
+    rozmiary: z.union([zodWariantyProps, z.null()]),
+    objetosc: z.number().nullable(),
+    nadpisuje_cene: z.boolean().default(false),
+    nowa_cena: z.number().nullable(),
+});
+export type Warianty = z.infer<typeof zodWarianty>;
 
-export interface Opinie {
-    uzytkownik: string;
-    tresc: string;
-    ocena: number;
-    zweryfikowane?: boolean;
-    createdAt?: Date;
-    editedAt?: Date;
-}
+export const PromocjeSchema = z.object({
+    _id: z.string(),
+    nazwa: z.string(),
+    procent: z.number(),
+    rozpoczecie: z.date(),
+    wygasa: z.date(),
+    aktywna: z.boolean().nullable(),
+    __v: z.number(),
+});
+export type Promos = z.infer<typeof PromocjeSchema>;
 
-export interface Warianty {
-    nazwa: string;
-    slug: string;
-    typ: WariantyTyp;
-    kolory?: props;
-    rozmiary?: props;
-    objetosc?: number;
-    nadpisuje_cene?: boolean | null;
-    nowa_cena?: number | null;
-}
+export const zodOpinie = z.object({
+    uzytkownik: z.string(),
+    tresc: z.string(),
+    ocena: z.number(),
+    zweryfikowane: z.boolean().optional(),
+    createdAt: z.date().optional(),
+    editedAt: z.date().optional(),
+});
 
-export interface Promos {
-    nazwa: string;
-    procent: number;
-    rozpoczecie: Date;
-    wygasa: Date;
-    aktywna?: boolean | null;
-    stworzonie?: Date | null;
-}
+export type Opinie = z.infer<typeof zodOpinie>;
 
-export interface Categories {
-    nazwa: string;
-    slug: string;
-    image: string;
-}
+export const zodMedia = z.object({
+    nazwa: z.string(),
+    slug: z.string(),
+    typ: z.enum(["video", "image", "pdf", "other"]),
+    alt: z.string(),
+    path: z.string(),
+});
 
-export interface Producents {
-    nazwa: string;
-    logo: Media;
-    opis?: string;
-    slug?: string | null;
-    strona_internetowa?: string | null;
-}
+export type Media = z.infer<typeof zodMedia>;
 
-export interface Media {
-    nazwa: string;
-    slug: string;
-    typ: MediaTyp;
-    alt: string;
-    path: string;
-}
+export const zodCategories = z.object({
+    _id: z.string().optional(),
+    nazwa: z.string(),
+    slug: z.string(),
+    image: z.string().optional(),
+    __v: z.number().optional(),
+});
 
-/*wartosci w przypadku kolor/objetosc/rozmiar dla wariantu*/
-export interface props {
-    name: string;
-    val: string;
-    hex?: string;
-}
+export type Categories = z.infer<typeof zodCategories>;
+
+export const zodProducents = z.object({
+    _id: z.string().optional(),
+    nazwa: z.string(),
+    logo: zodMedia,
+    opis: z.string().optional(),
+    slug: z.string().nullable(),
+    strona_internetowa: z.string().nullable(),
+});
+
+export type Producents = z.infer<typeof zodProducents>;
+
+export const zodProducts = z.object({
+    slug: z.string(),
+    nazwa: z.string(),
+    cena: z.number(),
+    dostepnosc: z.string(),
+    kategoria: z.array(
+        z.union([z.instanceof(Types.ObjectId), zodCategories, z.string()])
+    ),
+    producent: z.union([
+        z.instanceof(Types.ObjectId),
+        zodProducents,
+        z.string(),
+    ]),
+    media: z.array(zodMedia),
+    promocje: z
+        .union([z.instanceof(Types.ObjectId), PromocjeSchema, z.string()])
+        .nullable(),
+    opis: z.string(),
+    ilosc: z.number(),
+    czas_wysylki: z.number(),
+    kod_produkcyjny: z.string(),
+    ocena: z.number(),
+    opinie: z.array(zodOpinie).nullable(),
+    createdAt: z.date(),
+    vat: z.number(),
+    wariant: z.array(zodWarianty).optional(),
+    kod_ean: z.string().nullable(),
+    sku: z.string().nullable(),
+    aktywne: z.boolean().nullable(),
+});
+
+export type Products = z.infer<typeof zodProducts>;
 
 const reviewProductSchema = new Schema<Opinie>(
     {
@@ -131,7 +148,6 @@ const promosSchema = new Schema<Promos>(
         rozpoczecie: { type: Date, required: true },
         wygasa: { type: Date, required: true },
         aktywna: Boolean,
-        stworzonie: Date,
     },
     { optimisticConcurrency: true }
 );
@@ -165,7 +181,10 @@ const wariantySchema = new Schema<Warianty>(
     {
         nazwa: { type: String, required: true },
         slug: { type: String, required: true },
-        typ: { type: String, enum: ["kolor", "rozmiar", "objetosc"] },
+        typ: {
+            type: String,
+            enum: ["kolor", "rozmiar", "objetosc", "specjalna", "hurt"],
+        },
         kolory: { type: wariantPropsSchema },
         rozmiary: { type: wariantPropsSchema },
         objetosc: { type: Number },

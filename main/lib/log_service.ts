@@ -9,7 +9,7 @@ import {
     stat,
     writeFileSync,
 } from "fs";
-import path from "path";
+import pathing from "path";
 
 export interface IFLogServiceConf {
     kind: "log" | "error" | "warn" | "backup";
@@ -22,15 +22,15 @@ export interface IFLogServiceConf {
 }
 
 const config = {
-    log: path.join(process.cwd(), "logs", "log.log"),
-    error: path.join(process.cwd(), "logs", "error.log"),
-    warn: path.join(process.cwd(), "logs", "warn.log"),
+    log: pathing.join(process.cwd(), "logs", "log.log"),
+    error: pathing.join(process.cwd(), "logs", "error.log"),
+    warn: pathing.join(process.cwd(), "logs", "warn.log"),
     backup: "",
 } as const;
 
 const configExtra = {
     backup: (operation: string) =>
-        path.join(
+        pathing.join(
             process.cwd(),
             "logs",
             "backup",
@@ -87,10 +87,12 @@ export class LogService implements IFLogService {
                 if (Date.now() - stats.birthtimeMs >= DAY) {
                     copyFileSync(
                         this.file,
-                        path.join(
+                        pathing.join(
                             process.cwd(),
                             "logs",
-                            `${new Date(stats.birthtimeMs).toISOString().slice(0, 10)}-log.log`
+                            `${new Date(stats.birthtimeMs)
+                                .toISOString()
+                                .slice(0, 10)}-log.log`
                         )
                     );
                     rm(this.file, (err) => {
@@ -105,8 +107,11 @@ export class LogService implements IFLogService {
     }
 
     async log(message: string) {
-        await mkdir(path.join(process.cwd(), "logs"), { recursive: true });
+        await mkdir(pathing.join(process.cwd(), "logs"), { recursive: true });
+        console.log("ok");
         this.changeExistingLog();
+        console.log("ok");
+
         access(this.file, (err) => {
             if (err) {
                 appendFile(this.file, "", (err) => {
@@ -129,7 +134,7 @@ export class LogService implements IFLogService {
     }
 
     async error(message: string) {
-        await mkdir(path.join(process.cwd(), "logs"), { recursive: true });
+        await mkdir(pathing.join(process.cwd(), "logs"), { recursive: true });
 
         this.changeExistingLog();
         access(this.file, (err) => {
@@ -159,7 +164,7 @@ export class LogService implements IFLogService {
      */
 
     async backup(content = this.backupContent) {
-        await mkdir(path.join(process.cwd(), "logs", "backup"), {
+        await mkdir(pathing.join(process.cwd(), "logs", "backup"), {
             recursive: true,
         });
         appendFile(this.file, "", (err) => {
