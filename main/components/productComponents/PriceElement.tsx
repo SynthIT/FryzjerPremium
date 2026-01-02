@@ -1,17 +1,21 @@
-import { Promos, Warianty } from "@/lib/models/Products";
-import { finalPrice } from "@/lib/utils";
+import { Products, Promos, Warianty } from "@/lib/models/Products";
+import { cenabezvat, finalPrice } from "@/lib/utils";
 
 export default function PriceElement({
-    cena,
+    product,
     selectedWariant,
     promocje,
 }: {
-    cena: number;
+    product: Products;
     selectedWariant?: Warianty;
     promocje?: Promos;
 }) {
+    const price = finalPrice(product.cena, selectedWariant, promocje)
+        .toString()
+        .replace(".", ",");
     return (
-        <div className="product-price-section">
+        <div className="product-price-section flex flex-col">
+            <p>{cenabezvat(product.cena, product.vat, selectedWariant)} zł</p>
             {promocje && (
                 <div className="product-original-price">
                     <span>
@@ -19,13 +23,13 @@ export default function PriceElement({
                             ? selectedWariant.nowa_cena
                                   ?.toString()
                                   .replace(".", ",")
-                            : cena.toString().replace(".", ",")}{" "}
+                            : product.cena.toString().replace(".", ",")}{" "}
                         zł
                     </span>
                 </div>
             )}
             <div className="product-current-price">
-                {finalPrice(cena, selectedWariant, promocje)} zł
+                {price} zł <sub>Z VAT</sub>
             </div>
         </div>
     );

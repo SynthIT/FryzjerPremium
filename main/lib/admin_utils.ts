@@ -1,5 +1,5 @@
-import { Users } from "@/lib/types/userTypes";
-import { Roles, Role, User } from "@/lib/models/Users";
+import { Users, Roles } from "@/lib/types/userTypes";
+import { Role, User } from "@/lib/models/Users";
 import {
     hasPermission,
     permissionKeys,
@@ -18,6 +18,7 @@ import { NextRequest } from "next/server";
 import { hash, verify as passverify } from "argon2";
 import { writeFileSync } from "node:fs";
 import path from "node:path";
+import { Products, Warianty } from "./models/Products";
 
 /*
     FUNKCJE ODNOŚCIE UŻYTKOWNIKÓW WYCHODZĄCE Z 
@@ -184,6 +185,34 @@ export function verifyJWT(req: NextRequest): {
     return { val: false };
 }
 
+export function returnAvailableWariant(
+    req: NextRequest,
+    product: Products
+): { res: boolean; product: Products } {
+    if (!product.wariant) return { res: true, product: product };
+    const { val, user, mess } = verifyJWT(req);
+    if (val && user) {
+        if (!user.role) return { res: true, product: product };
+        product.wariant = (product.wariant as Warianty[]).filter((w) => {
+            if (!w.permisje) return true;
+            console.log(w);
+            return user.role!.some((role) => {
+                console.log(role);
+                const rol = role as Roles;
+                if (!rol.uzytkownik) return false;
+
+                return hasPermission(w.permisje!, rol.uzytkownik);
+            });
+        });
+        return { res: true, product: product };
+    } else {
+        product.wariant = (product.wariant as Warianty[]).filter(
+            (w) => !w.permisje
+        );
+        return { res: true, product: product };
+    }
+}
+
 export async function addNewUser(payload: Users) {
     await db();
     const existingUser = await User.findOne({ email: payload.email });
@@ -303,7 +332,7 @@ export async function deleteUser(
     if (!val || typeof user === "undefined") return { mess: mess! };
     try {
         await db();
-        if (user.zamowienia.length > 0) {
+        if (user.zamowienia && user.zamowienia.length > 0) {
             writeFileSync(
                 path.join(
                     process.cwd(),

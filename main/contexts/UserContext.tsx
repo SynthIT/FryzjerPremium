@@ -1,8 +1,7 @@
 "use client";
 
 import { hasAnyAdminPermission } from "@/lib/auth/permissions";
-import { OrderList } from "@/lib/models/Orders";
-import { Role, Users, userSchema } from "@/lib/types/userTypes";
+import { Roles, Users, userSchema, OrderList } from "@/lib/types/userTypes";
 import {
     createContext,
     ReactNode,
@@ -42,33 +41,48 @@ export function UserProvider({ children }: { children: ReactNode }) {
     }, [user, orders]);
 
     useEffect(() => {
-        const loggedUser = localStorage.getItem("user");
-        const validateUser = userSchema.safeParse(loggedUser);
-        if (validateUser.success) {
-            try {
-                async function u(c: Users) {
-                    fetch("/api/v1/auth/check", {
-                        method: "POST",
-                        credentials: "include",
-                    }).then((res) => {
-                        if (res.status === 200) {
-                            setUser(c);
-                            if (c.zamowienia.length > 0) {
-                                setOrders(c.zamowienia as OrderList[]);
-                            }
-                        } else {
-                            setUser(undefined);
-                            localStorage.setItem("user", "");
+        async function u(c?: Users) {
+            fetch("/api/v1/auth/check", {
+                method: "POST",
+                credentials: "include",
+            })
+                .then((res) => {
+                    console.log(res);
+                    if (res.status != 200) return false;
+                    return res.json();
+                })
+                .then((data) => {
+                    console.log(data);
+                    if (!data) return;
+                    if (c) {
+                        setUser(c);
+                        if (c.zamowienia && c.zamowienia.length > 0) {
+                            setOrders(c.zamowienia as OrderList[]);
                         }
-                    });
-                }
-                console.log(validateUser.data);
-                if (validateUser.data) {
-                    u(validateUser.data);
-                }
-            } catch (err) {
-                console.log("Błąd podczas ładowania użytkownika: ", err);
+                    } else {
+                        setUser(data.user);
+                        if (
+                            data.user.zamowienia &&
+                            data.user.zamowienia.length > 0
+                        ) {
+                            setOrders(data.user.zamowienia as OrderList[]);
+                        }
+                    }
+                });
+        }
+        try {
+            const loggedUser = localStorage.getItem("user");
+            const validateUser = userSchema.safeParse(loggedUser);
+            console.log(loggedUser);
+            console.log(validateUser);
+            if (!validateUser.success) {
+                u();
             }
+            if (validateUser.data) {
+                u(validateUser.data);
+            }
+        } catch (err) {
+            console.log("Błąd podczas ładowania użytkownika: ", err);
         }
     }, []);
 
@@ -189,8 +203,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
     const isAdmin = useCallback(() => {
         if (!user) return false;
         if (!user.role) return false;
-        console.log(hasAnyAdminPermission(user.role as Role[]));
-        return hasAnyAdminPermission(user.role as Role[]);
+        console.log(hasAnyAdminPermission(user.role as Roles[]));
+        return hasAnyAdminPermission(user.role as Roles[]);
     }, [user]);
 
     return (

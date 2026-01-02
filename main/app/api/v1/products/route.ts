@@ -3,6 +3,7 @@ import { Products } from "@/lib/models/Products";
 import path from "path";
 import { readFileSync, writeFileSync } from "fs";
 import { NextRequest, NextResponse } from "next/server";
+import { returnAvailableWariant } from "@/lib/admin_utils";
 
 export async function GET(req: NextRequest) {
     const url = req.url.split("/");
@@ -17,12 +18,13 @@ export async function GET(req: NextRequest) {
     );
     if (querystring) {
         const products: Products[] = JSON.parse(file);
-        const product: Products | undefined = products.find((p) => {
+        const productf: Products | undefined = products.find((p) => {
             return p.slug == querystring.split("=")[1];
         });
+        const { product } = returnAvailableWariant(req, productf!);
         const response: ProductsResponse = {
             status: 0,
-            product: product!,
+            product: product,
         };
         return NextResponse.json(response);
     }
@@ -40,15 +42,18 @@ export async function PUT(req: NextRequest) {
         const filePath = path.join(process.cwd(), "data", "produkty.json");
         const file = readFileSync(filePath, "utf8");
         const products: Products[] = JSON.parse(file);
-        
+
         const index = products.findIndex((p) => p.slug === product.slug);
         if (index === -1) {
-            return NextResponse.json({ status: 1, error: "Produkt nie znaleziony" }, { status: 404 });
+            return NextResponse.json(
+                { status: 1, error: "Produkt nie znaleziony" },
+                { status: 404 }
+            );
         }
-        
+
         products[index] = product;
         writeFileSync(filePath, JSON.stringify(products, null, 2), "utf8");
-        
+
         return NextResponse.json({ status: 0, product });
     } catch (error) {
         console.error("Błąd podczas aktualizacji produktu:", error);
@@ -63,22 +68,32 @@ export async function DELETE(req: NextRequest) {
     try {
         const { searchParams } = new URL(req.url);
         const slug = searchParams.get("slug");
-        
+
         if (!slug) {
-            return NextResponse.json({ status: 1, error: "Brak slug produktu" }, { status: 400 });
+            return NextResponse.json(
+                { status: 1, error: "Brak slug produktu" },
+                { status: 400 }
+            );
         }
 
         const filePath = path.join(process.cwd(), "data", "produkty.json");
         const file = readFileSync(filePath, "utf8");
         const products: Products[] = JSON.parse(file);
-        
+
         const filteredProducts = products.filter((p) => p.slug !== slug);
         if (filteredProducts.length === products.length) {
-            return NextResponse.json({ status: 1, error: "Produkt nie znaleziony" }, { status: 404 });
+            return NextResponse.json(
+                { status: 1, error: "Produkt nie znaleziony" },
+                { status: 404 }
+            );
         }
-        
-        writeFileSync(filePath, JSON.stringify(filteredProducts, null, 2), "utf8");
-        
+
+        writeFileSync(
+            filePath,
+            JSON.stringify(filteredProducts, null, 2),
+            "utf8"
+        );
+
         return NextResponse.json({ status: 0, message: "Produkt usunięty" });
     } catch (error) {
         console.error("Błąd podczas usuwania produktu:", error);

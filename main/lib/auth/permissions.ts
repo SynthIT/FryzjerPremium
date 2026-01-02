@@ -1,5 +1,5 @@
 import z from "zod";
-import { Role } from "../models/Users";
+import { Roles } from "../types/userTypes";
 
 export const DiscountsTable = {
     "user:discount": 1 << 0,
@@ -38,7 +38,7 @@ export function numberToPermission(code: number) {
     });
 }
 
-export function hasAnyAdminPermission(roles: Role[]): boolean {
+export function hasAnyAdminPermission(roles: Roles[]): boolean {
     let ok: boolean = false;
     for (const role of roles) {
         if (role.admin) ok = true;
@@ -49,6 +49,7 @@ export function hasAnyAdminPermission(roles: Role[]): boolean {
 export function hasPermission(code: number, scope: number) {
     return (code & scope) !== 0;
 }
+
 
 export const userPermission = z.number().refine((val) => {
     return (

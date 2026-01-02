@@ -10,7 +10,6 @@ import { getProducts } from "@/lib/utils";
 export default async function Home() {
     const retrivetProducts = await getProducts();
 
-
     return (
         <>
             <Header />

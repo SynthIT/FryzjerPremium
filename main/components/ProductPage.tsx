@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import "@/app/globals.css";
-import { getProducts, renderStars } from "@/lib/utils";
+import { finalPrice, getProducts, renderStars } from "@/lib/utils";
 import { useCart } from "@/contexts/CartContext";
 import {
     Categories,
@@ -16,6 +16,7 @@ import {
 import RelatedProduct from "./productComponents/RelatedProduct";
 import ReviewTabs from "./productComponents/ReviewTabs";
 import PriceElement from "./productComponents/PriceElement";
+import WariantySelector from "./productComponents/wariantySelector";
 
 interface ProductPageProps {
     productSlug?: string;
@@ -42,6 +43,8 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                     nazwa: "Podstawowy",
                     slug: "pdostw",
                     typ: "kolor",
+                    nadpisuje_cene: false,
+                    inna_cena_skupu: false,
                 };
                 setSelectedWariant(wariant);
             }
@@ -117,31 +120,34 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
         setSelectedImage(index);
     }, []);
 
-    const handleWariantSelect = useCallback(
-        (w: Warianty) => {
-            let basePrice = product!.cena;
-            if (w.nadpisuje_cene && w.nowa_cena) {
-                basePrice = w.nowa_cena;
-            }
-            if (product!.promocje) {
-                basePrice =
-                    basePrice *
-                    ((100 - (product!.promocje as Promos).procent) / 100);
-            }
-            setSelectedPrice(basePrice);
-            setSelectedWariant(w);
-        },
-        [product]
-    );
-
     const { addToCart } = useCart();
 
     const handleAddToCart = useCallback(() => {
         if (product?.aktywne && product.ilosc > 0) {
+            console.log(product);
+            console.log(selectedPrice);
+            console.log(selectedWariant);
             addToCart(product, quantity, selectedPrice, selectedWariant);
             // Można dodać powiadomienie o dodaniu do koszyka
         }
     }, [product, quantity, selectedPrice, selectedWariant, addToCart]);
+
+    const handleWariantChange = (w: Warianty) => {
+        if (!product) return;
+        if (!product.promocje) {
+            const cena = finalPrice(product.cena, w);
+            console.log(cena);
+            setSelectedPrice(Number(cena));
+        } else {
+            const cena = finalPrice(
+                product.cena,
+                w,
+                product.promocje as Promos
+            );
+            console.log(cena);
+            setSelectedPrice(Number(cena));
+        }
+    };
 
     if (!product) {
         return (
@@ -269,49 +275,26 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                         {renderStars(product.ocena, 20)}
 
                         <PriceElement
-                            cena={product.cena}
+                            product={product}
                             promocje={product.promocje as Promos}
                             selectedWariant={selectedWariant}></PriceElement>
 
                         {/* wariant Selection */}
-                        {product.wariant && product.wariant.length > 0 && (
+                        {product.wariant && (
                             <div className="product-option-section">
                                 <label className="product-option-label">
                                     Wybierz wariant
                                 </label>
-                                <div className="product-colors">
-                                    {product.wariant.map((w, index) => (
-                                        <button
-                                            key={index}
-                                            className={`color-swatch ${
-                                                selectedWariant?.nazwa ===
-                                                w.nazwa
-                                                    ? "selected"
-                                                    : ""
-                                            }`}
-                                            onClick={() =>
-                                                handleWariantSelect(w)
-                                            }
-                                            title={w.nazwa}
-                                            aria-label={w.nazwa}>
-                                            {selectedWariant === w && (
-                                                <>
-                                                    <svg
-                                                        className="color-checkmark"
-                                                        viewBox="0 0 24 24"
-                                                        fill="none"
-                                                        stroke="currentColor">
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            strokeWidth={2}
-                                                            d="M5 13l4 4L19 7"
-                                                        />
-                                                    </svg>
-                                                    {w.nazwa}
-                                                </>
-                                            )}
-                                        </button>
+                                <div className="product-sizes">
+                                    {product.wariant.map((w, i) => (
+                                        <WariantySelector
+                                            key={i}
+                                            warianty={w}
+                                            selectedWariant={selectedWariant!}
+                                            handleWariantSelect={(w) => {
+                                                handleWariantChange(w);
+                                                setSelectedWariant(w);
+                                            }}></WariantySelector>
                                     ))}
                                 </div>
                             </div>

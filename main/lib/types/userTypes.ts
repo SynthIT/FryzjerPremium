@@ -1,10 +1,11 @@
 import zod from "zod";
+import { adminPermission, userPermission } from "../auth/permissions";
 
 export const roleSchema = zod.object({
     _id: zod.string().nullable(),
     nazwa: zod.string(),
-    admin: zod.number().nullable(),
-    uzytkownik: zod.number().nullable(),
+    admin: adminPermission.optional(),
+    uzytkownik: userPermission.optional(),
 });
 
 export const deliveryMethodsSchema = zod.object({

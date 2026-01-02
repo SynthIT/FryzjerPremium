@@ -30,15 +30,19 @@ export async function deletePromoBySlug(slug: string) {
     return promo;
 }
 
-expoPromocjeSchema.parse(promocje);
-    rt async function updatePromo(promocje: Promos) {
-    const promocja = await Promo.findOneAndUpdate(
-        {
-            slug: promocje.nazwa,
-        },
-        { $set: promocje }
-    ).orFail();
-    return promocja;
+export async function updatePromo(promocje: Promos) {
+    const ok = PromocjeSchema.safeParse(promocje);
+    if (ok.success) {
+        const promocja = await Promo.findOneAndUpdate(
+            {
+                slug: promocje.nazwa,
+            },
+            { $set: promocje }
+        ).orFail();
+        return promocja;
+    } else {
+        console.error(ok.error);
+    }
 }
 
 async function db() {

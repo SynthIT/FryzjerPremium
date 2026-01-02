@@ -1,6 +1,18 @@
 import { Model, model, models, Schema, Types } from "mongoose";
 import z from "zod";
-import { userPermission } from "../auth/permissions";
+
+export const DiscountsTable = {
+    "user:discount": 1 << 0,
+    "user:premium": 1 << 1,
+    "user:special": 1 << 2,
+} as const;
+
+export const userPermission = z.number().refine((val) => {
+    return (
+        val >= 0 &&
+        val <= Object.values(DiscountsTable).reduce((a, b) => a | b, 0)
+    );
+});
 
 export const zodWariantyProps = z.object({
     name: z.string(),
@@ -13,9 +25,9 @@ export const zodWarianty = z.object({
     nazwa: z.string(),
     slug: z.string(),
     typ: z.enum(["kolor", "rozmiar", "objetosc", "specjalna", "hurt"]),
-    kolory: zodWariantyProps.optional(),
-    rozmiary: zodWariantyProps.optional(),
-    objetosc: z.number().optional(),
+    kolory: z.union([zodWariantyProps, z.null()]),
+    rozmiary: z.union([zodWariantyProps, z.null()]),
+    objetosc: z.number().nullable(),
     nadpisuje_cene: z.boolean().default(false),
     inna_cena_skupu: z.boolean().default(false),
     cena_skupu: z.number().optional(),
@@ -25,13 +37,13 @@ export const zodWarianty = z.object({
 export type Warianty = z.infer<typeof zodWarianty>;
 
 export const PromocjeSchema = z.object({
-    _id: z.instanceof(Types.ObjectId).optional(),
+    _id: z.string().optional(),
     nazwa: z.string(),
     procent: z.number(),
     rozpoczecie: z.date(),
     wygasa: z.date(),
     aktywna: z.boolean().nullable(),
-    __v: z.number(),
+    __v: z.number().optional(),
 });
 export type Promos = z.infer<typeof PromocjeSchema>;
 
@@ -57,7 +69,7 @@ export const zodMedia = z.object({
 export type Media = z.infer<typeof zodMedia>;
 
 export const zodCategories = z.object({
-    _id: z.instanceof(Types.ObjectId).optional(),
+    _id: z.string().optional(),
     nazwa: z.string(),
     slug: z.string(),
     image: z.string().optional(),
@@ -67,7 +79,7 @@ export const zodCategories = z.object({
 export type Categories = z.infer<typeof zodCategories>;
 
 export const zodProducents = z.object({
-    _id: z.instanceof(Types.ObjectId).optional(),
+    _id: z.string().optional(),
     nazwa: z.string(),
     logo: zodMedia,
     opis: z.string().optional(),
@@ -101,7 +113,7 @@ export const zodProducts = z.object({
     kod_produkcyjny: z.string(),
     ocena: z.number(),
     opinie: z.array(zodOpinie).nullable(),
-    createdAt: z.date(),
+    createdAt: z.date().optional(),
     vat: z.number().default(23),
     wariant: z.array(zodWarianty).optional(),
     kod_ean: z.string().nullable(),

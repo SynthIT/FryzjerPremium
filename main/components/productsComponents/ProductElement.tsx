@@ -42,18 +42,26 @@ export default function ProductElement({
                 <h3 className="product-name-listing">{product.nazwa}</h3>
                 {renderStars(product.ocena)}
                 <div className="product-price-listing">
-                    {product.promocje && (
-                        <span className="product-original-price">
+                    {product.promocje ? (
+                        <>
+                            <span className="product-original-price">
+                                {product.cena} zł
+                            </span>
+                            <span className="product-current-price">
+                                {(
+                                    product.cena *
+                                    ((100 -
+                                        (product.promocje as Promos).procent) /
+                                        100)
+                                ).toFixed(2)}{" "}
+                                zł
+                            </span>
+                        </>
+                    ) : (
+                        <span className="product-current-price">
                             {product.cena} zł
                         </span>
                     )}
-                    <span className="product-current-price">
-                        {(
-                            product.cena *
-                            ((100 - (product.promocje as Promos).procent) / 100)
-                        ).toFixed(2)}{" "}
-                        zł
-                    </span>
                 </div>
             </div>
         </Link>

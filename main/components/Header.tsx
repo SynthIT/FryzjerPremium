@@ -36,20 +36,6 @@ export default function Header() {
 
     const cartItemsCount = getTotalItems();
 
-    useEffect(() => {
-        async function setuser() {
-            const request = await fetch("/api/v1/auth/check", {
-                method: "POST",
-                credentials: "include",
-                cache: "force-cache",
-            }).then((res) => res.json());
-            if (request.user) {
-                addUser(request.user);
-            }
-        }
-        setuser();
-    }, [addUser]);
-
     // Upewnij się, że komponent jest zamontowany (dla Portal)
     useEffect(() => {
         function a() {
@@ -708,9 +694,12 @@ export default function Header() {
                                             });
                                             if (response.status == 201) {
                                                 addUser(response.user);
-                                                notify("Zostałeś zalogowany", "log");
+                                                notify(
+                                                    "Zostałeś zalogowany",
+                                                    "log"
+                                                );
                                             } else {
-                                                console.log(response.error)
+                                                console.log(response.error);
                                                 notify(response.error, "error");
                                             }
                                         }}>

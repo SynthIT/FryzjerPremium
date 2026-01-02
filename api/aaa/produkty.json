@@ -55,8 +55,8 @@
                 "_id": "6956d39b4bd2901e7aefad40"
             },
             {
-                "nazwa": "180ml - hurt",
-                "slug": "180ml - hurt",
+                "nazwa": "180ml",
+                "slug": "180ml",
                 "typ": "objetosc",
                 "kolory": null,
                 "rozmiary": null,
@@ -81,8 +81,8 @@
                 "_id": "6956d39b4bd2901e7aefad42"
             },
             {
-                "nazwa": "280ml - hurt",
-                "slug": "280ml - hurt",
+                "nazwa": "280ml",
+                "slug": "280ml",
                 "typ": "objetosc",
                 "kolory": null,
                 "rozmiary": null,
@@ -171,8 +171,8 @@
                 "_id": "6956d39b4bd2901e7aefad4b"
             },
             {
-                "nazwa": "180ml - hurt",
-                "slug": "180ml - hurt",
+                "nazwa": "180ml",
+                "slug": "180ml",
                 "typ": "objetosc",
                 "kolory": null,
                 "rozmiary": null,
@@ -197,8 +197,8 @@
                 "_id": "6956d39b4bd2901e7aefad4d"
             },
             {
-                "nazwa": "520ml - hurt",
-                "slug": "520ml - hurt",
+                "nazwa": "520ml",
+                "slug": "520ml",
                 "typ": "objetosc",
                 "kolory": null,
                 "rozmiary": null,
@@ -466,7 +466,7 @@
                 "_id": "6956d39b4bd2901e7aefad69"
             },
             {
-                "nazwa": "L - hurt",
+                "nazwa": "L",
                 "slug": "large",
                 "typ": "rozmiar",
                 "kolory": null,

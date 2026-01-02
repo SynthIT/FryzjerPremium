@@ -45,18 +45,24 @@ export default function RelatedProduct({
                         {renderStars(relatedProduct.ocena, 16)}
                     </div>
                     <div className="related-product-price">
-                        {relatedProduct.promocje && (
-                            <span className="related-product-original-price">
+                        {relatedProduct.promocje ? (
+                            <>
+                                <span className="related-product-original-price">
+                                    {relatedProduct.cena} zł
+                                </span>
+                                <span className="related-product-current-price">
+                                    {relatedProduct.cena -
+                                        relatedProduct.cena *
+                                            (relatedProduct.promocje as Promos)
+                                                .procent}{" "}
+                                    zł
+                                </span>
+                            </>
+                        ) : (
+                            <span className="related-product-current-price">
                                 {relatedProduct.cena} zł
                             </span>
                         )}
-                        <span className="related-product-current-price">
-                            {relatedProduct.cena -
-                                relatedProduct.cena *
-                                    (relatedProduct.promocje as Promos)
-                                        .procent}{" "}
-                            zł
-                        </span>
                     </div>
                 </div>
             </div>

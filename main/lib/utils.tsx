@@ -8,6 +8,7 @@ export const getProducts = async (slug?: string) => {
     }
     const data = await fetch(url, {
         cache: "default",
+        credentials: "include",
     });
     return data.json();
 };
@@ -100,7 +101,17 @@ export const finalPrice = (
     if (promocje) {
         basePrice = basePrice * ((100 - promocje.procent) / 100);
     }
-    return basePrice.toFixed(2).toString().replace(".", ",");
+    return basePrice.toFixed(2);
+};
+
+export const cenabezvat = (cena: number, vat: number, wariant?: Warianty) => {
+    let basePrice = cena;
+    if (wariant?.nadpisuje_cene && wariant.nowa_cena) {
+        basePrice = wariant.nowa_cena - (wariant.nowa_cena * vat) / 100;
+    } else {
+        basePrice = basePrice - (basePrice * vat) / 100;
+    }
+    return basePrice.toFixed(3).toString().replace(".", ",");
 };
 
 /**
