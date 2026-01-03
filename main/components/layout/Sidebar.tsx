@@ -34,6 +34,9 @@ import {
     Factory,
     FolderKanban,
     Percent,
+    Truck,
+    PlusCircle,
+    TruckIcon,
 } from "lucide-react";
 
 type NavItem = {
@@ -68,6 +71,23 @@ const navItems: NavItem[] = [
                 href: "/admin/customers/administratorzy",
                 label: "Administratorzy",
                 icon: <Shield className="h-4 w-4" />,
+            },
+        ],
+    },
+    {
+        href: "/admin/delivery",
+        label: "Sposoby wysyłki",
+        icon: <Truck className="h-5 w-5" />,
+        children: [
+            {
+                href: "/admin/delivery/add",
+                label: "Dodaj nowy sposób wysyłki",
+                icon: <PlusCircle className="h-4 w-4" />,
+            },
+            {
+                href: "/admin/delivery",
+                label: "Przeglądaj",
+                icon: <TruckIcon className="h-4 w-4" />,
             },
         ],
     },

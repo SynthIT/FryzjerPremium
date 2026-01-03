@@ -3,6 +3,7 @@ import { promocje } from "./promocje";
 import {
     Categories,
     Category,
+    Delivery,
     Producent,
     Producents,
     Product,
@@ -16,6 +17,7 @@ import { products } from "./product";
 import { sys } from "typescript";
 import * as fs from "fs";
 import * as path from "path";
+import { deliver } from "./delivery";
 
 const polishMap: Record<string, string> = {
     "ą": "a",
@@ -116,6 +118,14 @@ async function find() {
             const existing = await Product.findOne({ nazwa: val.nazwa });
             if (existing === null) {
                 const p = await createProduct(val);
+                console.log(p);
+            }
+        }
+
+        for (const val of deliver) {
+            const existing = await Delivery.findOne({ nazwa: val.nazwa });
+            if (existing === null) {
+                const p = await Delivery.create(val);
                 console.log(p);
             }
         }

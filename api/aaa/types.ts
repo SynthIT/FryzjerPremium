@@ -260,3 +260,60 @@ export const Producent: Model<Producents> =
 export const Product: Model<Products> =
     (models.Products as Model<Products>) ??
     model<Products>("Products", productSchema);
+
+
+export const zodDeliveryMethodsSizes = z.object({
+    cena: z.number(),
+    wielkosci: z.string(),
+});
+
+export const zodDeliveryMethods = z.object({
+    nazwa: z.string(),
+    slug: z.string(),
+    ceny: z.array(zodDeliveryMethodsSizes),
+    czas_dostawy: z.string(),
+    darmowa_dostawa: z.boolean().default(false),
+    kwota_darmowa: z.number(),
+    firma: z.string(),
+    strona_internetowa: z.string(),
+});
+
+export const orderListSchema = z.object({
+    numer_zamowienia: z.string(),
+    sposob_dostawy: z.union([
+        z.string(),
+        z.lazy(() => zodDeliveryMethods),
+        z.string(),
+    ]),
+    produkty: z.array(z.union([z.string(), z.string()])),
+    suma: z.number(),
+    data_wykonania: z.date(),
+});
+
+export type DeliveryMethods = z.infer<typeof zodDeliveryMethods>;
+export type DeliveryMethodsSizes = z.infer<typeof zodDeliveryMethodsSizes>;
+
+
+export const schemaDeliverySize = new Schema<DeliveryMethodsSizes>(
+    {
+        cena: { type: Number, required: true },
+        wielkosci: { type: String, required: true },
+    },
+    { autoIndex: false }
+);
+
+export const schemaDelivery = new Schema<DeliveryMethods>(
+    {
+        nazwa: { type: String, required: true, default: "" },
+        slug: { type: String },
+        ceny: { type: [schemaDeliverySize], required: true },
+        czas_dostawy: { type: String, required: true },
+        darmowa_dostawa: { type: Boolean, required: true, default: false },
+        kwota_darmowa: { type: Number },
+        firma: { type: String, required: true },
+        strona_internetowa: { type: String, required: true },
+    },
+    { autoIndex: false }
+);
+
+export const Delivery = models.Delivery ?? model("Delivery", schemaDelivery);
