@@ -22,7 +22,7 @@ export const userSchema = zod.object({
     kraj: zod.string(),
     kod_pocztowy: zod.string(),
     telefon: zod.string(),
-    osoba_prywatna: zod.boolean().default(true),
+    osoba_prywatna: zod.boolean().default(true).optional(),
     zamowienia: zod
         .array(zod.union([zod.string(), zod.lazy(() => orderListSchema)]))
         .optional(),

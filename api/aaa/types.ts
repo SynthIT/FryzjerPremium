@@ -25,9 +25,9 @@ export const zodWarianty = z.object({
     nazwa: z.string(),
     slug: z.string(),
     typ: z.enum(["kolor", "rozmiar", "objetosc", "specjalna", "hurt"]),
-    kolory: z.union([zodWariantyProps, z.null()]),
-    rozmiary: z.union([zodWariantyProps, z.null()]),
-    objetosc: z.number().nullable(),
+    kolory: zodWariantyProps.optional(),
+    rozmiary: zodWariantyProps.optional(),
+    objetosc: z.number().optional(),
     nadpisuje_cene: z.boolean().default(false),
     inna_cena_skupu: z.boolean().default(false),
     cena_skupu: z.number().optional(),
@@ -36,10 +36,21 @@ export const zodWarianty = z.object({
 });
 export type Warianty = z.infer<typeof zodWarianty>;
 
-export const PromocjeSchema = z.object({
-    _id: z.string().optional(),
+export const SpecialnaPromocjaSchema = z.object({
     nazwa: z.string(),
-    procent: z.number(),
+    warunek: z.number(),
+    obniza_cene: z.boolean().default(false),
+    obnizka: z.number().optional(),
+    zmienia_cene: z.boolean().default(false),
+    nowa_cena: z.number().optional(),
+});
+export type SpecjalnaPromocja = z.infer<typeof SpecialnaPromocjaSchema>;
+
+export const PromocjeSchema = z.object({
+    _id: z.instanceof(Types.ObjectId).optional(),
+    nazwa: z.string(),
+    procent: z.number().optional(),
+    special: SpecialnaPromocjaSchema.optional(),
     rozpoczecie: z.date(),
     wygasa: z.date(),
     aktywna: z.boolean().nullable(),
@@ -69,7 +80,7 @@ export const zodMedia = z.object({
 export type Media = z.infer<typeof zodMedia>;
 
 export const zodCategories = z.object({
-    _id: z.string().optional(),
+    _id: z.instanceof(Types.ObjectId).optional(),
     nazwa: z.string(),
     slug: z.string(),
     image: z.string().optional(),
@@ -79,7 +90,7 @@ export const zodCategories = z.object({
 export type Categories = z.infer<typeof zodCategories>;
 
 export const zodProducents = z.object({
-    _id: z.string().optional(),
+    _id: z.instanceof(Types.ObjectId).optional(),
     nazwa: z.string(),
     logo: zodMedia,
     opis: z.string().optional(),
@@ -158,10 +169,20 @@ const producentsSchema = new Schema<Producents>(
     }
 );
 
+const specialPromoSchema = new Schema<SpecjalnaPromocja>({
+    nazwa: { type: String, required: true, unique: true },
+    warunek: { type: Number, required: true },
+    obniza_cene: { type: Boolean },
+    obnizka: { type: Number },
+    zmienia_cene: { type: Boolean },
+    nowa_cena: { type: Number },
+});
+
 const promosSchema = new Schema<Promos>(
     {
         nazwa: { type: String, required: true, unique: true },
-        procent: { type: Number, required: true, max: 100, min: 0, default: 0 },
+        procent: { type: Number, max: 100, min: 0, default: 0 },
+        special: { type: specialPromoSchema },
         rozpoczecie: { type: Date, required: true },
         wygasa: { type: Date, required: true },
         aktywna: Boolean,
@@ -261,7 +282,6 @@ export const Product: Model<Products> =
     (models.Products as Model<Products>) ??
     model<Products>("Products", productSchema);
 
-
 export const zodDeliveryMethodsSizes = z.object({
     cena: z.number(),
     wielkosci: z.string(),
@@ -293,7 +313,6 @@ export const orderListSchema = z.object({
 export type DeliveryMethods = z.infer<typeof zodDeliveryMethods>;
 export type DeliveryMethodsSizes = z.infer<typeof zodDeliveryMethodsSizes>;
 
-
 export const schemaDeliverySize = new Schema<DeliveryMethodsSizes>(
     {
         cena: { type: Number, required: true },
@@ -316,4 +335,4 @@ export const schemaDelivery = new Schema<DeliveryMethods>(
     { autoIndex: false }
 );
 
-export const Delivery = models.Delivery ?? model("Delivery", schemaDelivery);
+export const Delivery = models.Delivery ?? model("Deliveries", schemaDelivery);

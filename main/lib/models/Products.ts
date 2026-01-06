@@ -24,14 +24,25 @@ export const zodWarianty = z.object({
 });
 export type Warianty = z.infer<typeof zodWarianty>;
 
+export const SpecialnaPromocjaSchema = z.object({
+    nazwa: z.string(),
+    warunek: z.number(),
+    obniza_cene: z.boolean().default(false),
+    obnizka: z.number().optional(),
+    zmienia_cene: z.boolean().default(false),
+    nowa_cena: z.number().optional(),
+});
+export type SpecjalnaPromocja = z.infer<typeof SpecialnaPromocjaSchema>;
+
 export const PromocjeSchema = z.object({
     _id: z.instanceof(Types.ObjectId).optional(),
     nazwa: z.string(),
-    procent: z.number(),
+    procent: z.number().optional(),
+    special: SpecialnaPromocjaSchema.optional(),
     rozpoczecie: z.date(),
     wygasa: z.date(),
     aktywna: z.boolean().nullable(),
-    __v: z.number(),
+    __v: z.number().optional(),
 });
 export type Promos = z.infer<typeof PromocjeSchema>;
 
@@ -77,6 +88,11 @@ export const zodProducents = z.object({
 
 export type Producents = z.infer<typeof zodProducents>;
 
+export const zodSpecyfikacja = z.object({
+    key: z.string(),
+    value: z.string(),
+});
+
 export const zodProducts = z.object({
     slug: z.string(),
     nazwa: z.string(),
@@ -95,13 +111,14 @@ export const zodProducts = z.object({
     promocje: z
         .union([z.instanceof(Types.ObjectId), PromocjeSchema, z.string()])
         .nullable(),
+    specyfikacja: z.array(zodSpecyfikacja).optional(),
     opis: z.string(),
     ilosc: z.number(),
     czas_wysylki: z.number(),
     kod_produkcyjny: z.string(),
     ocena: z.number(),
     opinie: z.array(zodOpinie).nullable(),
-    createdAt: z.date(),
+    createdAt: z.date().optional(),
     vat: z.number().default(23),
     wariant: z.array(zodWarianty).optional(),
     kod_ean: z.string().nullable(),
@@ -146,10 +163,20 @@ const producentsSchema = new Schema<Producents>(
     }
 );
 
+const specialPromoSchema = new Schema<SpecjalnaPromocja>({
+    nazwa: { type: String, required: true, unique: true },
+    warunek: { type: Number, required: true },
+    obniza_cene: { type: Boolean },
+    obnizka: { type: Number },
+    zmienia_cene: { type: Boolean },
+    nowa_cena: { type: Number },
+});
+
 const promosSchema = new Schema<Promos>(
     {
         nazwa: { type: String, required: true, unique: true },
-        procent: { type: Number, required: true, max: 100, min: 0, default: 0 },
+        procent: { type: Number, max: 100, min: 0, default: 0 },
+        special: { type: specialPromoSchema },
         rozpoczecie: { type: Date, required: true },
         wygasa: { type: Date, required: true },
         aktywna: Boolean,

@@ -24,5 +24,5 @@ export const schemaDelivery = new Schema<DeliveryMethods>(
 );
 
 export const Delivery: Model<DeliveryMethods> =
-    (models.Delivery as Model<DeliveryMethods>) ??
-    model<DeliveryMethods>("Delivery", schemaDelivery);
+    (models.Deliveries as Model<DeliveryMethods>) ??
+    model<DeliveryMethods>("Deliveries", schemaDelivery);

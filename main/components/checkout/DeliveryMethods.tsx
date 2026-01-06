@@ -1,27 +1,29 @@
+"use client";
+
 import { DeliveryMethods as Delivery } from "@/lib/types/deliveryTypes";
 
 interface DeliveryMethodsProps {
     deliver: Delivery;
-    deliverMethod: string;
+    selectedWariant: Delivery;
     price: number;
     onSelect: (d: Delivery) => void;
 }
 export default function DeliveryMethod({
     deliver,
-    deliverMethod,
+    selectedWariant,
     price,
     onSelect,
 }: DeliveryMethodsProps) {
     return (
         <label
             className={`checkout-delivery-option ${
-                deliverMethod === "dpd" ? "active" : ""
+                selectedWariant?.nazwa === deliver.nazwa ? "active" : ""
             }`}>
             <input
                 type="radio"
                 name="deliveryMethod"
-                value="dpd"
-                checked={deliverMethod === "dpd"}
+                value={deliver.nazwa}
+                checked={selectedWariant?.nazwa === deliver.nazwa}
                 onChange={() => onSelect(deliver)}
             />
             <div className="checkout-delivery-info">

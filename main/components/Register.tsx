@@ -1,108 +1,78 @@
 import { useUser } from "@/contexts/UserContext";
 import { Users } from "@/lib/types/userTypes";
-import { useState, useCallback, ChangeEvent } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 
 export default function RegisterPage() {
-    const [email, setEmail] = useState<string>("");
-    const [password, setPassword] = useState<string>("");
-    const [imie, setImie] = useState<string>("");
-    const [nazwisko, setNazwisko] = useState<string>("");
-    const [nrDomu, setnrDomu] = useState<string>("");
-    const [nrMieszkania, setnrMieszkania] = useState<string | undefined>();
-    const [ulica, setUlica] = useState<string>("");
-    const [miasto, setMiasto] = useState<string>("");
-    const [kodPocztowy, setKodPocztowy] = useState<string>("");
-    const [kraj, setKraj] = useState<string>("");
-    const [numerTel, setNumerTel] = useState<string>("");
-    const [confirmPassword, setConfirmPassword] = useState<string>("");
+    const [formData, setFromData] = useState<Users>({
+        email: "",
+        haslo: "",
+        imie: "",
+        nazwisko: "",
+        nr_domu: "",
+        nr_lokalu: "",
+        ulica: "",
+        miasto: "",
+        kod_pocztowy: "",
+        kraj: "",
+        telefon: "",
+    });
+    const [rePassword, setRePassword] = useState<string>("");
+
     const [showAlert, setShowAlert] = useState<boolean>(false);
     const [alertInfo, setAlertInfo] = useState<string[]>([]);
     const { addUser } = useUser();
 
-    const validatePost = (e: ChangeEvent<HTMLInputElement>) => {
-        e.target.checkValidity();
-        if (e.target.value.length > 6) return;
-        if ((e.nativeEvent as InputEvent).inputType == "insertText") {
-            if (kodPocztowy.length > 1 && kodPocztowy.length <= 2) {
-                return setKodPocztowy((prev) => {
-                    return prev + "-" + (e.nativeEvent as InputEvent).data;
-                });
-            }
-            setKodPocztowy((prev) => {
-                return prev + (e.nativeEvent as InputEvent).data;
-            });
+    const handleChangeInput = useCallback(
+        (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+            const { name, value } = e.target;
+            setFromData((prev) => ({ ...prev, [name]: value }));
+        },
+        []
+    );
+
+    const validatePassword = useCallback(() => {
+        if (formData.haslo.length <= 8) {
+            setAlertInfo(["Hasło powinno mieć conajmniej 8 znaków"]);
+            setShowAlert(true);
         } else {
-            setKodPocztowy(e.target.value);
+            setAlertInfo([]);
+            setShowAlert(false);
         }
-    };
-    const validatePhone = (e: ChangeEvent<HTMLInputElement>) => {
-        e.target.checkValidity();
-        if (e.target.value.length > 9) return;
-
-        setNumerTel(e.target.value);
-    };
-
-    const checkPassword = useCallback(() => {
-        function validatePasswords() {
-            if (password.length < 8) {
-                setAlertInfo(["Hasło musi mieć co najmniej 8 znaków."]);
-                setShowAlert(true);
-                return true;
-            }
-            password.split("").forEach((char) => {
-                if (
-                    !/^(?=.*[a-zA-Z])(?=.*\d)(?=.*[^a-zA-Z0-9\s])[^\s]{9,}$/.test(
-                        char
-                    )
-                ) {
-                    setAlertInfo(["Hasło może zawierać tylko litery i cyfry."]);
-                    setShowAlert(true);
-                    return true;
-                }
-            });
-            if (password == "" || confirmPassword == "") {
-                setShowAlert(false);
-                return false;
-            } else {
-                if (password !== confirmPassword) {
-                    setShowAlert(true);
-                    return true;
-                } else {
-                    setShowAlert(false);
-                    return false;
-                }
-            }
+        if (
+            /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[^a-zA-Z0-9\s])(?!.*[()\[\]{};])[^\s]{8,}$/.test(
+                formData.haslo
+            )
+        ) {
+            setAlertInfo([]);
+            setShowAlert(false);
+        } else {
+            setAlertInfo((prev) => [
+                ...prev,
+                "Hasło powinno zawierać: przynajmniej 1 cyfre, litere oraz znak specjalny",
+            ]);
+            setShowAlert(true);
         }
-        return validatePasswords();
-        // Handle any side effects here
-    }, [password, confirmPassword]);
+    }, [formData]);
+
+    const validateRePassword = useCallback(() => {
+        if (formData.haslo !== rePassword && rePassword !== "") {
+            setAlertInfo((prev) => [...prev, "Hasła nie są takie same"]);
+            setShowAlert(true);
+        } else {
+            setAlertInfo([])
+            setShowAlert(false);
+        }
+    }, [formData, rePassword]);
 
     const handleSubmit = async (e: React.FormEvent<HTMLButtonElement>) => {
         e.preventDefault();
-        if (!checkPassword()) {
-            const User: Users = {
-                imie: imie,
-                nazwisko: nazwisko,
-                email: email,
-                haslo: password,
-                nr_domu: nrDomu,
-                nr_lokalu: nrMieszkania,
-                ulica: ulica,
-                miasto: miasto,
-                kraj: kraj,
-                kod_pocztowy: kodPocztowy,
-                telefon: numerTel,
-                osoba_prywatna: false,
-                zamowienia: [],
-                nip: undefined,
-                faktura: undefined,
-            };
+        if (true) {
             fetch("/api/v1/auth/register", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify(User),
+                body: JSON.stringify(formData),
             })
                 .then((response) => {
                     return response.json();
@@ -137,16 +107,9 @@ export default function RegisterPage() {
                             </span>
                         </div>
                     </div>
-                    {showAlert && (
-                        <div className="rounded-lg border bg-red-100 p-4 text-sm text-red-700">
-                            {alertInfo.map((info, index) => (
-                                <p key={index}>{info}</p>
-                            ))}
-                        </div>
-                    )}
                     <form className="w-auto m-5">
                         <div className="flex flex-wrap sm:justify-center">
-                            <div className="p-2 m-2 max-w-[50%] min-w-xs flex justify-center flex-col gap-1">
+                            <div className="p-2 m-2 max-w-md min-w-xs flex justify-center flex-col gap-1">
                                 <p className="text-xl text-zinc-900">
                                     Podstawowe informacje
                                 </p>
@@ -157,22 +120,25 @@ export default function RegisterPage() {
                                     type={"email"}
                                     autoComplete="email"
                                     placeholder="Email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
+                                    value={formData.email}
+                                    onChange={(e) => handleChangeInput(e)}
                                     className="w-full text-zinc-900 rounded-md border px-3 py-2 text-sm transition-colors hover:bg-accent sm:w-auto mb-2"
                                 />
-                                <label htmlFor="password">Podaj hasło:</label>
+                                <label htmlFor="haslo">Podaj hasło:</label>
+                                {showAlert && (
+                                    <p className="text-red-900 ">
+                                        {alertInfo.join("\n")}
+                                    </p>
+                                )}
                                 <input
-                                    id="password"
-                                    name="password"
+                                    id="haslo"
+                                    name="haslo"
                                     autoComplete="new-password"
                                     type={"password"}
                                     placeholder="Hasło"
-                                    value={password}
-                                    onChange={(e) => [
-                                        setPassword(e.target.value),
-                                        checkPassword(),
-                                    ]}
+                                    value={formData.haslo}
+                                    onChange={(e) => handleChangeInput(e)}
+                                    onBlur={validatePassword}
                                     className="w-full text-zinc-900 rounded-md border px-3 py-2 text-sm transition-colors hover:bg-accent sm:w-auto mb-2"
                                 />
                                 <label htmlFor="repassword">
@@ -184,14 +150,15 @@ export default function RegisterPage() {
                                     autoComplete="new-password"
                                     type={"password"}
                                     placeholder="Potwierdź hasło"
-                                    value={confirmPassword}
+                                    value={rePassword}
                                     onChange={(e) =>
-                                        setConfirmPassword(e.target.value)
+                                        setRePassword(e.target.value)
                                     }
+                                    onBlur={validateRePassword}
                                     className="w-full text-zinc-900 rounded-md border px-3 py-2 text-sm transition-colors hover:bg-accent sm:w-auto mb-2"
                                 />
                             </div>
-                            <div className="p-2 m-2 max-w-[50%] min-w-xs flex flex-col gap-1">
+                            <div className="p-2 m-2 max-w-md min-w-xs flex flex-col gap-1">
                                 <p className="text-xl text-zinc-900">
                                     Podstawowe do wysyłki
                                 </p>
@@ -202,8 +169,8 @@ export default function RegisterPage() {
                                     type={"text"}
                                     autoComplete="given-name"
                                     placeholder="Imie"
-                                    value={imie}
-                                    onChange={(e) => setImie(e.target.value)}
+                                    value={formData.imie}
+                                    onChange={(e) => handleChangeInput(e)}
                                     className="w-full text-zinc-900 rounded-md border px-3 py-2 text-sm transition-colors hover:bg-accent sm:w-auto mb-2"
                                 />
                                 <label htmlFor="nazwisko">Nazwisko:</label>
@@ -213,39 +180,39 @@ export default function RegisterPage() {
                                     type={"text"}
                                     autoComplete="family-name"
                                     placeholder="Nazwisko"
-                                    value={nazwisko}
-                                    onChange={(e) =>
-                                        setNazwisko(e.target.value)
-                                    }
+                                    value={formData.nazwisko}
+                                    onChange={(e) => handleChangeInput(e)}
                                     className="w-full text-zinc-900 rounded-md border px-3 py-2 text-sm transition-colors hover:bg-accent sm:w-auto mb-2"
                                 />
                                 <div className="flex gap-1">
                                     <div className="flex flex-col">
-                                        <label htmlFor="nrdomu">Nr domu:</label>
+                                        <label htmlFor="nr_domu">
+                                            Nr domu:
+                                        </label>
                                         <input
-                                            id="nrdomu"
-                                            name="nrdomu"
+                                            id="nr_domu"
+                                            name="nr_domu"
                                             type={"text"}
                                             placeholder="Nr domu"
-                                            value={nrDomu}
+                                            value={formData.nr_domu}
                                             onChange={(e) =>
-                                                setnrDomu(e.target.value)
+                                                handleChangeInput(e)
                                             }
                                             className="w-full text-zinc-900 rounded-md border px-3 py-2 text-sm transition-colors hover:bg-accent sm:w-auto mb-2"
                                         />
                                     </div>
                                     <div className="flex flex-col">
-                                        <label htmlFor="nrmieszkania">
-                                            Nr mieszkania
+                                        <label htmlFor="nr_lokalu">
+                                            Nr lokalu
                                         </label>
                                         <input
-                                            name="nrmieszkania"
-                                            id="nrmieszkania"
+                                            name="nr_lokalu"
+                                            id="nr_lokalu"
                                             type={"text"}
                                             placeholder="Nr mieszkania"
-                                            value={nrMieszkania}
+                                            value={formData.nr_lokalu}
                                             onChange={(e) =>
-                                                setnrMieszkania(e.target.value)
+                                                handleChangeInput(e)
                                             }
                                             className="w-full text-zinc-900 rounded-md border px-3 py-2 text-sm transition-colors hover:bg-accent mb-2"
                                         />
@@ -257,8 +224,8 @@ export default function RegisterPage() {
                                     name="ulica"
                                     type={"text"}
                                     placeholder="Ulica"
-                                    value={ulica}
-                                    onChange={(e) => setUlica(e.target.value)}
+                                    value={formData.ulica}
+                                    onChange={(e) => handleChangeInput(e)}
                                     className="w-full text-zinc-900 rounded-md border px-3 py-2 text-sm transition-colors sm:w-auto hover:bg-accent mb-2"
                                 />
                                 <div className="flex gap-1">
@@ -270,27 +237,29 @@ export default function RegisterPage() {
                                             name="miasto"
                                             type={"text"}
                                             placeholder="Miasto"
-                                            value={miasto}
+                                            value={formData.miasto}
                                             onChange={(e) =>
-                                                setMiasto(e.target.value)
+                                                handleChangeInput(e)
                                             }
                                             className="w-full text-zinc-900 rounded-md border px-3 py-2 text-sm transition-colors hover:bg-accent sm:w-auto mb-2"
                                         />
                                     </div>
                                     <div className="flex flex-col">
-                                        <label htmlFor="miasto">
+                                        <label htmlFor="kod_pocztowy">
                                             Kod pocztowy
                                         </label>
                                         <input
-                                            id="kodpoc"
-                                            name="kodpoc"
+                                            id="kod_pocztowy"
+                                            name="kod_pocztowy"
                                             type={"text"}
                                             autoComplete="postal-code"
                                             placeholder="Kod pocztowy"
-                                            value={kodPocztowy}
+                                            value={formData.kod_pocztowy}
                                             pattern="/[0-9]{2}-[0-9]{3}$"
                                             title="Poprawny format adresu to xx-xxx"
-                                            onChange={validatePost}
+                                            onChange={(e) =>
+                                                handleChangeInput(e)
+                                            }
                                             className="w-full text-zinc-900 rounded-md border px-3 py-2 text-sm transition-colors hover:bg-accent mb-2"
                                         />
                                     </div>
@@ -300,21 +269,21 @@ export default function RegisterPage() {
                                     id="kraj"
                                     name="kraj"
                                     type="text"
-                                    value={kraj}
+                                    value={formData.kraj}
                                     placeholder="Kraj"
                                     autoComplete="country-name"
-                                    onChange={(e) => setKraj(e.target.value)}
+                                    onChange={(e) => handleChangeInput(e)}
                                     className="w-full text-zinc-900 rounded-md border px-3 py-2 text-sm transition-colors hover:bg-accent sm:w-auto mb-2"></input>
-                                <label htmlFor="numertel">Numer telefonu</label>
+                                <label htmlFor="telefon">Numer telefonu</label>
                                 <input
                                     type="text"
-                                    name="numertel"
-                                    id="numertel"
-                                    value={numerTel}
+                                    name="telefon"
+                                    id="telefon"
+                                    value={formData.telefon}
                                     autoComplete="tel-national"
                                     placeholder="Numer telefonu"
                                     pattern="\[0-9]{9}\"
-                                    onChange={validatePhone}
+                                    onChange={(e) => handleChangeInput(e)}
                                     className="w-full text-zinc-900 rounded-md border px-3 py-2 text-sm transition-colors hover:bg-accent sm:w-auto mb-2"
                                 />
                                 <br></br>
@@ -322,6 +291,7 @@ export default function RegisterPage() {
                         </div>
                         <div className="flex justify-center">
                             <button
+                                disabled={showAlert}
                                 type="submit"
                                 className="w-full text-zinc-900 rounded-md border px-3 py-2 text-sm transition-colors hover:bg-accent sm:w-auto"
                                 onClick={handleSubmit}>

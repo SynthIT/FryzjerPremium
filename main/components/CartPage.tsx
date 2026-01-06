@@ -33,14 +33,12 @@ export default function CartPage() {
         [removeFromCart]
     );
 
-
     const subtotal = getTotalPrice();
     const deliveryFee = subtotal > 200 ? 0 : 15; // Gratis powyżej 200 zł
     const total = subtotal + deliveryFee;
 
     const formattedSubtotal = subtotal.toFixed(2).replace(".", ",");
-    const formattedDeliveryFee = deliveryFee.toFixed(2).replace(".", ",");
-    const formattedTotal = total.toFixed(2).replace(".", ",");
+
 
     if (cartItems.length === 0) {
         return (
@@ -226,13 +224,19 @@ export default function CartPage() {
                                 </span>
                             </div>
                             <div className="cart-summary-row">
-                                <span className="cart-summary-label">
-                                    Koszt dostawy
-                                </span>
+                                <div className="flex flex-col">
+                                    <span className="cart-summary-label">
+                                        Koszt dostawy*
+                                    </span>
+                                    <span className="w-xs">
+                                        <sub>
+                                            * - koszt dostawy zostanie
+                                            przeliczony w następnym etapie
+                                        </sub>
+                                    </span>
+                                </div>
                                 <span className="cart-summary-value">
-                                    {deliveryFee > 0
-                                        ? `${formattedDeliveryFee} zł`
-                                        : "Gratis"}
+                                    0,00 zł
                                 </span>
                             </div>
 
@@ -243,7 +247,7 @@ export default function CartPage() {
                                     Razem
                                 </span>
                                 <span className="cart-summary-value">
-                                    {formattedTotal} zł
+                                    {formattedSubtotal} zł
                                 </span>
                             </div>
                             <Link href="/kasa" className="cart-checkout-button">

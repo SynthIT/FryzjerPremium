@@ -5,7 +5,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Info, LockKeyhole, MapPin, Settings, User } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
-import { Users } from "@/lib/models/Users";
+import { Users } from "@/lib/types/userTypes";
 
 export default function AccountSettingsPage() {
     const [activeSection, setActiveSection] = useState("personal");

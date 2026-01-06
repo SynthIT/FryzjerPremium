@@ -16,6 +16,9 @@ export default function CheckoutPage() {
     const [selectedDeliveryMethod, setSelectDeliveryMethod] =
         useState<DeliveryMethods>();
     const [paymentMethod, setPaymentMethod] = useState("card");
+    const [total, setTotal] = useState<number>(0);
+    const [subtotal, setSubtotal] = useState<number>(0);
+    const [deliverFee, setDeliverFee] = useState<number>(0);
     const [formData, setFormData] = useState({
         firstName: "",
         lastName: "",
@@ -31,12 +34,26 @@ export default function CheckoutPage() {
         async function delivery() {
             const response = await fetch("/api/v1/products/delivery", {
                 method: "GET",
+                cache: "force-cache",
             }).then((res) => res.json());
-            setDeliveryMethod(response);
-            setSelectDeliveryMethod(deliveryMethod![0]);
+            setDeliveryMethod(response.delivery);
+            setSelectDeliveryMethod(response.delivery[0]);
         }
         delivery();
-    }, [deliveryMethod]);
+    }, []);
+
+    useEffect(() => {
+        function a() {
+            if (!selectedDeliveryMethod) return;
+            console.log(selectedDeliveryMethod);
+            const total = getTotalPrice();
+            const deliverFee = selectedDeliveryMethod.ceny[0].cena;
+            setSubtotal(total);
+            setTotal(total + deliverFee);
+            setDeliverFee(deliverFee);
+        }
+        a();
+    }, [selectedDeliveryMethod, getTotalPrice]);
 
     const handleInputChange = useCallback(
         (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -52,14 +69,6 @@ export default function CheckoutPage() {
         alert("Zamówienie zostało złożone!");
     }, []);
 
-    const subtotal = getTotalPrice();
-    const deliveryFee = selectedDeliveryMethod?.ceny[0].cena;
-    const total = subtotal + 123;
-
-    const formattedSubtotal = subtotal.toFixed(2).replace(".", ",");
-    const formattedDeliveryFee = (deliveryFee || 1230.11)
-        .toFixed(2)
-        .replace(".", ",");
     const formattedTotal = total.toFixed(2).replace(".", ",");
 
     if (cartItems.length === 0) {
@@ -255,14 +264,17 @@ export default function CheckoutPage() {
                                                 (delivery, i) => (
                                                     <DeliveryMethod
                                                         key={i}
-                                                        deliverMethod=""
                                                         deliver={delivery}
-                                                        price={123}
-                                                        onSelect={(w) =>
+                                                        selectedWariant={
+                                                            selectedDeliveryMethod!
+                                                        }
+                                                        price={total}
+                                                        onSelect={(w) => {
+                                                            console.log(w);
                                                             setSelectDeliveryMethod(
                                                                 w
-                                                            )
-                                                        }></DeliveryMethod>
+                                                            );
+                                                        }}></DeliveryMethod>
                                                 )
                                             )}
                                     </div>
@@ -412,16 +424,15 @@ export default function CheckoutPage() {
 
                                 <div className="checkout-summary-row">
                                     <span>Suma częściowa</span>
-                                    <span>{formattedSubtotal} zł</span>
+                                    <span>
+                                        {subtotal.toFixed(2).replace(".", ",")}{" "}
+                                        zł
+                                    </span>
                                 </div>
 
                                 <div className="checkout-summary-row">
                                     <span>Koszt dostawy</span>
-                                    <span>
-                                        {deliveryFee > 0
-                                            ? `${formattedDeliveryFee} zł`
-                                            : "Gratis"}
-                                    </span>
+                                    <span>{deliverFee}</span>
                                 </div>
 
                                 <div className="checkout-summary-divider"></div>
