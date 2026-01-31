@@ -42,7 +42,7 @@ const polishMap: Record<string, string> = {
 
 async function createProduct(prod: Products) {
     prod.kategoria = await Promise.all(
-        prod.kategoria.map(async (obj) => {
+        prod.kategoria.map(async (obj: unknown) => {
             const k = await Category.findOne({
                 nazwa: (obj as Categories).nazwa,
             }).orFail();
@@ -112,7 +112,10 @@ async function find() {
                           .toLowerCase()
                           .split(" ")
                           .join("-")
-                          .replace(/[ąćęłńóśźż]/g, (m) => polishMap[m] ?? m)
+                          .replace(
+                              /[ąćęłńóśźż]/g,
+                              (m: string) => polishMap[m] ?? m
+                          )
                     : val.slug;
             val.slug = slug;
             const existing = await Product.findOne({ nazwa: val.nazwa });
