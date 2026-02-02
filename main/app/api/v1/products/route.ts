@@ -1,5 +1,4 @@
-import { ProductsResponse } from "@/lib/interfaces/ax";
-import { Products } from "@/lib/models/Products";
+import { Products } from "@/lib/types/productTypes";
 import path from "path";
 import { readFileSync, writeFileSync } from "fs";
 import { NextRequest, NextResponse } from "next/server";
@@ -14,7 +13,7 @@ export async function GET(req: NextRequest) {
 
     const file = readFileSync(
         path.join(process.cwd(), "data", "produkty.json"),
-        "utf8"
+        "utf8",
     );
     if (querystring) {
         const products: Products[] = JSON.parse(file);
@@ -22,14 +21,14 @@ export async function GET(req: NextRequest) {
             return p.slug == querystring.split("=")[1];
         });
         const { product } = returnAvailableWariant(req, productf!);
-        const response: ProductsResponse = {
+        const response = {
             status: 0,
             product: product,
         };
         return NextResponse.json(response);
     }
     const products: Products[] = JSON.parse(file);
-    const response: ProductsResponse = {
+    const response = {
         status: 200,
         products: products,
     };
@@ -47,7 +46,7 @@ export async function PUT(req: NextRequest) {
         if (index === -1) {
             return NextResponse.json(
                 { status: 1, error: "Produkt nie znaleziony" },
-                { status: 404 }
+                { status: 404 },
             );
         }
 
@@ -59,7 +58,7 @@ export async function PUT(req: NextRequest) {
         console.error("Błąd podczas aktualizacji produktu:", error);
         return NextResponse.json(
             { status: 1, error: "Błąd podczas aktualizacji produktu" },
-            { status: 500 }
+            { status: 500 },
         );
     }
 }
@@ -72,7 +71,7 @@ export async function DELETE(req: NextRequest) {
         if (!slug) {
             return NextResponse.json(
                 { status: 1, error: "Brak slug produktu" },
-                { status: 400 }
+                { status: 400 },
             );
         }
 
@@ -84,14 +83,14 @@ export async function DELETE(req: NextRequest) {
         if (filteredProducts.length === products.length) {
             return NextResponse.json(
                 { status: 1, error: "Produkt nie znaleziony" },
-                { status: 404 }
+                { status: 404 },
             );
         }
 
         writeFileSync(
             filePath,
             JSON.stringify(filteredProducts, null, 2),
-            "utf8"
+            "utf8",
         );
 
         return NextResponse.json({ status: 0, message: "Produkt usunięty" });
@@ -99,7 +98,7 @@ export async function DELETE(req: NextRequest) {
         console.error("Błąd podczas usuwania produktu:", error);
         return NextResponse.json(
             { status: 1, error: "Błąd podczas usuwania produktu" },
-            { status: 500 }
+            { status: 500 },
         );
     }
 }

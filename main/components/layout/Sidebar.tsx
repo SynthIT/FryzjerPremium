@@ -112,12 +112,29 @@ const navItems: NavItem[] = [
                 label: "Kategorie",
                 icon: <Boxes className="h-4 w-4" />,
             },
+        ],
+    },
+    {
+        href: "/admin/courses",
+        label: "Kursy",
+        icon: <Receipt className="h-5 w-5" />,
+        children: [
             {
-                href: "/admin/manage/promocje",
-                label: "Promocje",
-                icon: <Percent className="h-4 w-4" />,
+                href: "/admin/courses/new",
+                label: "Dodaj nowy kurs",
+                icon: <PlusCircle className="h-4 w-4" />,
+            },
+            {
+                href: "/admin/companies",
+                label: "Firmy",
+                icon: <Factory className="h-4 w-4" />,
             },
         ],
+    },
+    {
+        href: "/admin/discounts",
+        label: "Promocje",
+        icon: <Percent className="h-4 w-4" />,
     },
     {
         href: "/admin/fast/new",
@@ -138,7 +155,7 @@ export function Sidebar({
     const pathname = usePathname();
     const [collapsed, setCollapsed] = React.useState<boolean>(false);
     const [expandedItems, setExpandedItems] = React.useState<Set<string>>(
-        new Set()
+        new Set(),
     );
     const [todos, setTodos] = React.useState<
         Array<{ id: string; text: string; done: boolean }>
@@ -180,7 +197,7 @@ export function Sidebar({
         if (typeof window !== "undefined") {
             window.localStorage.setItem(
                 "admin_sidebar_todos",
-                JSON.stringify(todos)
+                JSON.stringify(todos),
             );
         }
     }, [todos]);
@@ -191,7 +208,7 @@ export function Sidebar({
         if (typeof window !== "undefined")
             window.localStorage.setItem(
                 "admin_sidebar_collapsed",
-                next ? "1" : "0"
+                next ? "1" : "0",
             );
     };
 
@@ -207,7 +224,7 @@ export function Sidebar({
 
     const toggleTodo = (id: string) => {
         setTodos((prev) =>
-            prev.map((t) => (t.id === id ? { ...t, done: !t.done } : t))
+            prev.map((t) => (t.id === id ? { ...t, done: !t.done } : t)),
         );
     };
 
@@ -232,7 +249,7 @@ export function Sidebar({
         navItems.forEach((item) => {
             if (item.children) {
                 const hasActiveChild = item.children.some((child) =>
-                    pathname.startsWith(child.href)
+                    pathname.startsWith(child.href),
                 );
                 if (hasActiveChild) {
                     setExpandedItems((prev) => {
@@ -286,7 +303,7 @@ export function Sidebar({
                         const hasActiveChild =
                             hasChildren &&
                             item.children?.some((child) =>
-                                pathname.startsWith(child.href)
+                                pathname.startsWith(child.href),
                             );
 
                         return (
@@ -323,7 +340,7 @@ export function Sidebar({
                                                     onClick={(e) => {
                                                         e.preventDefault();
                                                         toggleExpanded(
-                                                            item.href
+                                                            item.href,
                                                         );
                                                     }}
                                                     className="p-1 rounded hover:bg-accent transition-colors"
