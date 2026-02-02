@@ -1,9 +1,6 @@
-import {
-    Product,
-    Products,
-    Categories,
-    zodProducts,
-} from "@/lib/models/Products";
+import { Product } from "@/lib/models/Products";
+import { zodProducts, Products } from "@/lib/types/productTypes";
+import { Categories } from "@/lib/types/shared";
 import mongoose, { Types } from "mongoose";
 
 export async function collectProducts() {
@@ -39,17 +36,17 @@ export async function updateProduct(productData: Products) {
     produkt.data.kategoria = [];
     for (const kategoria of kategorie) {
         produkt.data.kategoria.push(
-            new Types.ObjectId((kategoria as Categories)._id)
+            new Types.ObjectId((kategoria as Categories)._id),
         );
     }
-    
+
     await db();
     const prod = await Product.findOneAndUpdate(
         { slug: productData.slug },
         { $set: productData },
         {
             new: true,
-        }
+        },
     );
     await dbclose();
     return prod;

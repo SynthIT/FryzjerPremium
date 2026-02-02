@@ -1,4 +1,6 @@
-import { Category, Categories, Product, zodCategories } from "@/lib/models/Products";
+import { Product } from "@/lib/models/Products";
+import { Category } from "@/lib/models/shared";
+import { Categories, zodCategories } from "@/lib/types/shared";
 import mongoose from "mongoose";
 
 export async function collectCategories() {
@@ -32,7 +34,7 @@ export async function deleteCatBySlug(slug: string) {
     for (const doc of productsWithCat) {
         const newArray = doc.kategoria.filter(
             (elem): elem is mongoose.Types.ObjectId =>
-                !(elem as mongoose.Types.ObjectId)._id.equals(category._id)
+                !(elem as mongoose.Types.ObjectId)._id.equals(category._id),
         );
         doc.kategoria = newArray;
         await doc.save();
@@ -47,7 +49,7 @@ export async function updateCategory(newCat: Categories) {
         {
             slug: newCat.slug,
         },
-        { $set: newCat }
+        { $set: newCat },
     ).orFail();
     return category;
 }

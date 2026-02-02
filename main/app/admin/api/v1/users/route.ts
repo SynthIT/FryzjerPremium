@@ -8,9 +8,9 @@ export async function GET(req: NextRequest) {
     if (!val) {
         return NextResponse.json(
             { status: 1, error: "Brak autoryzacji" },
-            { status: 401 }
+            { status: 401 },
         );
     }
-    const promos = await collectUsers();
-    return NextResponse.json({ status: 0, promos: JSON.parse(promos) });
+    const uzytkownik = await collectUsers();
+    return NextResponse.json({ status: 0, promos: JSON.stringify(uzytkownik) });
 }

@@ -6,13 +6,8 @@ import Link from "next/link";
 import "@/app/globals.css";
 import { finalPrice, getProducts, renderStars } from "@/lib/utils";
 import { useCart } from "@/contexts/CartContext";
-import {
-    Categories,
-    Opinie,
-    Products,
-    Promos,
-    Warianty,
-} from "@/lib/models/Products";
+import { Products, Warianty } from "@/lib/types/productTypes";
+import { Categories, Promos, Opinie } from "@/lib/types/shared";
 import RelatedProduct from "./productComponents/RelatedProduct";
 import ReviewTabs from "./productComponents/ReviewTabs";
 import PriceElement from "./productComponents/PriceElement";
@@ -34,6 +29,7 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
         async function getProduct(p: string) {
             const data = await getProducts(p);
             console.log(data);
+<<<<<<< HEAD
             
             // Sprawdź czy odpowiedź jest poprawna i zawiera produkt
             if (data.status !== 0 || !data.product) {
@@ -81,6 +77,43 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                         basePrice *
                         ((100 - (data.product.promocje as Promos).procent) /
                             100);
+=======
+            if (data.product) {
+                setProduct(data.product);
+                // Oblicz nową cenę, jeśli produkt ma promocję
+                let basePrice = data.product.cena;
+                if (data.product.wariant) {
+                    setSelectedWariant(data.product.wariant[0]);
+                    if (
+                        selectedWariant?.nadpisuje_cene &&
+                        selectedWariant.nowa_cena
+                    ) {
+                        basePrice = selectedWariant.nowa_cena;
+                    }
+                    if (data.product.promocje) {
+                        basePrice =
+                            basePrice *
+                            ((100 -
+                                (data.product.promocje as Promos).procent!) /
+                                100);
+                    }
+                } else {
+                    const wariant: Warianty = {
+                        nazwa: "Podstawowy",
+                        slug: "pdostw",
+                        typ: "kolor",
+                        nadpisuje_cene: false,
+                        inna_cena_skupu: false,
+                    };
+                    setSelectedWariant(wariant);
+                    if (data.product!.promocje) {
+                        basePrice =
+                            basePrice *
+                            ((100 -
+                                (data.product!.promocje as Promos).procent!) /
+                                100);
+                    }
+>>>>>>> f5c5e177f3e24daa6eb13c70fb30d654b5b372ee
                 }
                 setSelectedPrice(basePrice);
             }
@@ -88,7 +121,7 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
         if (productSlug) {
             getProduct(productSlug);
         }
-    }, [productSlug]);
+    }, [productSlug, selectedWariant]);
     useEffect(() => {
         async function getAllProducts() {
             const data = await getProducts();
@@ -103,7 +136,7 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
 
     const [quantity, setQuantity] = useState(1);
     const [activeTab, setActiveTab] = useState<"details" | "reviews" | "faqs">(
-        "reviews"
+        "reviews",
     );
     const [showReviewModal, setShowReviewModal] = useState(false);
     const [reviewForm, setReviewForm] = useState<Opinie>({
@@ -154,7 +187,7 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
             const cena = finalPrice(
                 product.cena,
                 w,
-                product.promocje as Promos
+                product.promocje as Promos,
             );
             console.log(cena);
             setSelectedPrice(Number(cena));
@@ -196,7 +229,7 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                             product.kategoria as Categories[]
                         )[0].slug[0].toUpperCase() +
                             (product.kategoria as Categories[])[0].slug.slice(
-                                1
+                                1,
                             )}
                     </Link>
                     {(product.kategoria as Categories[])[0].nazwa && (
@@ -356,8 +389,8 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                             {product.ilosc != 0
                                 ? "Dodaj do koszyka"
                                 : product.aktywne
-                                ? "Produkt niedostępny"
-                                : "Produkt niedostępny"}
+                                  ? "Produkt niedostępny"
+                                  : "Produkt niedostępny"}
                         </button>
                     </div>
                 </div>
