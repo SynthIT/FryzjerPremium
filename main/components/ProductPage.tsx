@@ -29,55 +29,6 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
         async function getProduct(p: string) {
             const data = await getProducts(p);
             console.log(data);
-<<<<<<< HEAD
-            
-            // Sprawdź czy odpowiedź jest poprawna i zawiera produkt
-            if (data.status !== 0 || !data.product) {
-                console.error("Błąd pobierania produktu:", data);
-                return;
-            }
-
-            if (!data.product.cena) {
-                console.error("Produkt nie ma pola cena:", data.product);
-                return;
-            }
-
-            setProduct(data.product);
-            // Oblicz nową cenę, jeśli produkt ma promocję
-            if (data.product?.wariant && data.product.wariant.length > 0) {
-                setSelectedWariant(data.product.wariant[0]);
-            } else {
-                const wariant: Warianty = {
-                    nazwa: "Podstawowy",
-                    slug: "pdostw",
-                    typ: "kolor",
-                    nadpisuje_cene: false,
-                    inna_cena_skupu: false,
-                };
-                setSelectedWariant(wariant);
-            }
-            let basePrice = data.product.cena;
-            if (data.product?.wariant && data.product?.wariant.length > 0) {
-                if (
-                    data.product.wariant[0].nadpisuje_cene &&
-                    data.product.wariant[0].nowa_cena
-                ) {
-                    basePrice = data.product.wariant[0].nowa_cena;
-                }
-                if (data.product.promocje) {
-                    basePrice =
-                        basePrice *
-                        ((100 - (data.product.promocje as Promos).procent) /
-                            100);
-                }
-                setSelectedPrice(basePrice);
-            } else {
-                if (data.product.promocje) {
-                    basePrice =
-                        basePrice *
-                        ((100 - (data.product.promocje as Promos).procent) /
-                            100);
-=======
             if (data.product) {
                 setProduct(data.product);
                 // Oblicz nową cenę, jeśli produkt ma promocję
@@ -113,7 +64,6 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                                 (data.product!.promocje as Promos).procent!) /
                                 100);
                     }
->>>>>>> f5c5e177f3e24daa6eb13c70fb30d654b5b372ee
                 }
                 setSelectedPrice(basePrice);
             }

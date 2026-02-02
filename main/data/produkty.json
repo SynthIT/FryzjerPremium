@@ -42,31 +42,22 @@
     "ocena": 3,
     "opinie": [
       {
-        "uzytkownik": "jebadasd",
-        "tresc": "asdasdasd",
-        "ocena": 2,
+        "uzytkownik": "asdadd",
+        "tresc": "asdddd",
+        "ocena": 3,
         "zweryfikowane": false,
-        "_id": "697bb5dc07be5d5435bd8e9d",
-        "createdAt": "2026-01-29T19:32:44.598Z",
-        "updatedAt": "2026-01-29T19:32:44.598Z"
+        "_id": "69811cbea830ddd86fc1b98d",
+        "createdAt": "2026-02-02T21:53:02.196Z",
+        "updatedAt": "2026-02-02T21:53:02.196Z"
       },
       {
-        "uzytkownik": "asdasd",
-        "tresc": "asdads",
-        "ocena": 5,
+        "uzytkownik": "asdadd",
+        "tresc": "asdddd",
+        "ocena": 3,
         "zweryfikowane": false,
-        "_id": "697bb76d07be5d5435bd8f25",
-        "createdAt": "2026-01-29T19:39:25.612Z",
-        "updatedAt": "2026-01-29T19:39:25.612Z"
-      },
-      {
-        "uzytkownik": "adsfsdfsdf",
-        "tresc": "fasdfsdfsdf",
-        "ocena": 2,
-        "zweryfikowane": false,
-        "_id": "697be27fb6470426856bbfc1",
-        "createdAt": "2026-01-29T22:43:11.459Z",
-        "updatedAt": "2026-01-29T22:43:11.459Z"
+        "_id": "69811cbea830ddd86fc1b99b",
+        "createdAt": "2026-02-02T21:53:02.473Z",
+        "updatedAt": "2026-02-02T21:53:02.473Z"
       }
     ],
     "vat": 23,

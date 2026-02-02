@@ -25,7 +25,7 @@ export const schemaOrderList = new Schema<OrderList>(
         suma: { type: Number },
         data_wykonania: { type: Date, default: new Date() },
     },
-    { timestamps: true, autoIndex: false }
+    { timestamps: true, autoIndex: false },
 );
 
 const roleSchemat = new Schema<Roles>(
@@ -36,7 +36,7 @@ const roleSchemat = new Schema<Roles>(
     },
     {
         timestamps: true,
-    }
+    },
 );
 
 const userSchemat = new Schema<Users>(
@@ -59,8 +59,9 @@ const userSchemat = new Schema<Users>(
         role: { type: [Types.ObjectId], ref: "Roles", default: [] },
     },
     {
+        autoIndex: false,
         timestamps: true,
-    }
+    },
 );
 
 export const Role: Model<Roles> =

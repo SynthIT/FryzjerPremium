@@ -3,13 +3,12 @@ import { Products, Warianty } from "./types/productTypes";
 import { Promos } from "./types/shared";
 
 export const getProducts = async (slug?: string) => {
-
     const url = new URL("http://localhost:3000/api/v1/products");
     if (slug) {
         url.searchParams.append("slug", slug);
     }
     const data = await fetch(url, {
-        cache: "default",
+        cache: "force-cache",
         credentials: "include",
     });
     return data.json();
