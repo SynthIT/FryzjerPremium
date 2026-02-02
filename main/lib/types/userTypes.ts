@@ -24,12 +24,12 @@ export const userSchema = zod.object({
     telefon: zod.string(),
     osoba_prywatna: zod.boolean().default(true).optional(),
     zamowienia: zod
-        .array(zod.union([zod.string(), zod.lazy(() => orderListSchema)]))
+        .array(zod.union([zod.string(), orderListSchema]))
         .optional(),
     nip: zod.string().optional(),
     faktura: zod.boolean().optional(),
     role: zod
-        .union([zod.array(roleSchema), zod.array(zod.string())])
+        .array(zod.union([zod.array(roleSchema), zod.array(zod.string())]))
         .optional(),
 });
 

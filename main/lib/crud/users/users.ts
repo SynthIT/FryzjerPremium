@@ -1,11 +1,12 @@
-import { Role, User, Users } from "@/lib/models/Users";
+import { User } from "@/lib/models/Users";
+import { Users, Roles as Role } from "@/lib/types/userTypes";
 import mongoose from "mongoose";
 
 export async function collectUsers() {
     await db();
     const uzytkownicy = await User.find({}).populate("role");
     await dbclose();
-    return JSON.stringify(uzytkownicy);
+    return uzytkownicy;
 }
 
 export async function collectAdmins() {
@@ -17,8 +18,8 @@ export async function collectAdmins() {
                 (doc): doc is typeof doc & { role: Role[] } =>
                     Array.isArray(doc.role) &&
                     doc.role.length > 0 &&
-                    (doc.role[0] as Role).nazwa === "admin"
-            )
+                    (doc.role[0] as Role).nazwa === "admin",
+            ),
         );
     await dbclose();
     return JSON.stringify(uzytkownicy);

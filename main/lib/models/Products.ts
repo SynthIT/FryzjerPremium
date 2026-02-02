@@ -1,156 +1,8 @@
 import { Model, model, models, Schema, Types } from "mongoose";
-import z from "zod";
 import { userPermission } from "../auth/permissions";
+import { Producents, props, Warianty, Products } from "../types/productTypes";
+import { mediaProductSchema, reviewProductSchema } from "./shared";
 
-export const zodWariantyProps = z.object({
-    name: z.string(),
-    val: z.string(),
-    hex: z.string().nullable(),
-});
-export type props = z.infer<typeof zodWariantyProps>;
-
-export const zodWarianty = z.object({
-    nazwa: z.string(),
-    slug: z.string(),
-    typ: z.enum(["kolor", "rozmiar", "objetosc", "specjalna", "hurt"]),
-    kolory: zodWariantyProps.optional(),
-    rozmiary: zodWariantyProps.optional(),
-    objetosc: z.number().optional(),
-    nadpisuje_cene: z.boolean().default(false),
-    inna_cena_skupu: z.boolean().default(false),
-    cena_skupu: z.number().optional(),
-    permisje: userPermission.optional(),
-    nowa_cena: z.number().optional(),
-});
-export type Warianty = z.infer<typeof zodWarianty>;
-
-export const SpecialnaPromocjaSchema = z.object({
-    nazwa: z.string(),
-    warunek: z.number(),
-    obniza_cene: z.boolean().default(false),
-    obnizka: z.number().optional(),
-    zmienia_cene: z.boolean().default(false),
-    nowa_cena: z.number().optional(),
-});
-export type SpecjalnaPromocja = z.infer<typeof SpecialnaPromocjaSchema>;
-
-export const PromocjeSchema = z.object({
-    _id: z.instanceof(Types.ObjectId).optional(),
-    nazwa: z.string(),
-    procent: z.number().optional(),
-    special: SpecialnaPromocjaSchema.optional(),
-    rozpoczecie: z.date(),
-    wygasa: z.date(),
-    aktywna: z.boolean().nullable(),
-    __v: z.number().optional(),
-});
-export type Promos = z.infer<typeof PromocjeSchema>;
-
-export const zodOpinie = z.object({
-    uzytkownik: z.string(),
-    tresc: z.string(),
-    ocena: z.number(),
-    zweryfikowane: z.boolean().optional(),
-    createdAt: z.date().optional(),
-    editedAt: z.date().optional(),
-});
-
-export type Opinie = z.infer<typeof zodOpinie>;
-
-export const zodMedia = z.object({
-    nazwa: z.string(),
-    slug: z.string(),
-    typ: z.enum(["video", "image", "pdf", "other"]),
-    alt: z.string(),
-    path: z.string(),
-});
-
-export type Media = z.infer<typeof zodMedia>;
-
-export const zodCategories = z.object({
-    _id: z.instanceof(Types.ObjectId).optional(),
-    nazwa: z.string(),
-    slug: z.string(),
-    image: z.string().optional(),
-    __v: z.number().optional(),
-});
-
-export type Categories = z.infer<typeof zodCategories>;
-
-export const zodProducents = z.object({
-    _id: z.instanceof(Types.ObjectId).optional(),
-    nazwa: z.string(),
-    logo: zodMedia,
-    opis: z.string().optional(),
-    slug: z.string().nullable(),
-    strona_internetowa: z.string().nullable(),
-});
-
-export type Producents = z.infer<typeof zodProducents>;
-
-export const zodSpecyfikacja = z.object({
-    key: z.string(),
-    value: z.string(),
-});
-
-export const zodProducts = z.object({
-    slug: z.string(),
-    nazwa: z.string(),
-    cena_skupu: z.number(),
-    cena: z.number(),
-    dostepnosc: z.string(),
-    kategoria: z.array(
-        z.union([z.instanceof(Types.ObjectId), zodCategories, z.string()])
-    ),
-    producent: z.union([
-        z.instanceof(Types.ObjectId),
-        zodProducents,
-        z.string(),
-    ]),
-    media: z.array(zodMedia),
-    promocje: z
-        .union([z.instanceof(Types.ObjectId), PromocjeSchema, z.string()])
-        .nullable(),
-    specyfikacja: z.array(zodSpecyfikacja).optional(),
-    opis: z.string(),
-    ilosc: z.number(),
-    czas_wysylki: z.number(),
-    kod_produkcyjny: z.string(),
-    ocena: z.number(),
-    opinie: z.array(zodOpinie).nullable(),
-    createdAt: z.date().optional(),
-    vat: z.number().default(23),
-    wariant: z.array(zodWarianty).optional(),
-    kod_ean: z.string().nullable(),
-    sku: z.string().nullable(),
-    aktywne: z.boolean().nullable(),
-});
-
-export type Products = z.infer<typeof zodProducts>;
-
-const reviewProductSchema = new Schema<Opinie>(
-    {
-        uzytkownik: { type: String, required: true },
-        tresc: { type: String },
-        ocena: { type: Number, default: 0 },
-        zweryfikowane: { type: Boolean },
-    },
-    { timestamps: true, optimisticConcurrency: true }
-);
-
-const mediaProductSchema = new Schema<Media>(
-    {
-        nazwa: { type: String, required: true, min: 3, max: 25 },
-        slug: { type: String, required: true },
-        typ: { type: String, enum: ["video", "image", "pdf", "other"] },
-        alt: { type: String, required: true },
-        path: { type: String, required: true, unique: true },
-    },
-    {
-        optimisticConcurrency: true,
-        timestamps: true,
-    }
-);
 
 const producentsSchema = new Schema<Producents>(
     {
@@ -160,45 +12,9 @@ const producentsSchema = new Schema<Producents>(
     },
     {
         optimisticConcurrency: true,
-    }
-);
-
-const specialPromoSchema = new Schema<SpecjalnaPromocja>({
-    nazwa: { type: String, required: true, unique: true },
-    warunek: { type: Number, required: true },
-    obniza_cene: { type: Boolean },
-    obnizka: { type: Number },
-    zmienia_cene: { type: Boolean },
-    nowa_cena: { type: Number },
-});
-
-const promosSchema = new Schema<Promos>(
-    {
-        nazwa: { type: String, required: true, unique: true },
-        procent: { type: Number, max: 100, min: 0, default: 0 },
-        special: { type: specialPromoSchema },
-        rozpoczecie: { type: Date, required: true },
-        wygasa: { type: Date, required: true },
-        aktywna: Boolean,
     },
-    { optimisticConcurrency: true }
 );
 
-const categoriesSchema = new Schema<Categories>(
-    {
-        nazwa: {
-            type: String,
-            required: true,
-            default: "Brak nazwy",
-            unique: true,
-        },
-        slug: { type: String, required: true },
-        image: { type: String, required: true },
-    },
-    {
-        optimisticConcurrency: true,
-    }
-);
 
 const wariantPropsSchema = new Schema<props>(
     {
@@ -206,7 +22,7 @@ const wariantPropsSchema = new Schema<props>(
         val: { type: String, required: true },
         hex: String,
     },
-    { _id: false, optimisticConcurrency: true }
+    { _id: false, optimisticConcurrency: true },
 );
 
 const wariantySchema = new Schema<Warianty>(
@@ -228,7 +44,7 @@ const wariantySchema = new Schema<Warianty>(
     },
     {
         optimisticConcurrency: true,
-    }
+    },
 );
 
 export const productSchema = new Schema<Products>(
@@ -258,15 +74,10 @@ export const productSchema = new Schema<Products>(
         sku: String,
         aktywne: Boolean,
     },
-    { timestamps: true, autoIndex: false, optimisticConcurrency: true }
+    { timestamps: true, autoIndex: false, optimisticConcurrency: true },
 );
 
-export const Promo: Model<Promos> =
-    (models.Promos as Model<Promos>) ?? model<Promos>("Promos", promosSchema);
 
-export const Category: Model<Categories> =
-    (models.Categories as Model<Categories>) ??
-    model<Categories>("Categories", categoriesSchema);
 
 export const Producent: Model<Producents> =
     (models.Producents as Model<Producents>) ??

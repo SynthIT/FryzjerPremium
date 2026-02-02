@@ -1,10 +1,5 @@
-import {
-    Producent,
-    Producents,
-    Product,
-    Categories,
-    zodProducents,
-} from "@/lib/models/Products";
+import { Producent, Product } from "@/lib/models/Products";
+import { zodProducents, Producents } from "@/lib/types/productTypes";
 import mongoose from "mongoose";
 
 export async function collectProducents() {
@@ -17,9 +12,9 @@ export async function collectProducents() {
 export async function createProducent(prodData: Producents) {
     zodProducents.parse(prodData);
     await db();
-    const cat = await Producent.create(prodData);
+    const producent = await Producent.create(prodData);
     await dbclose();
-    return cat;
+    return producent;
 }
 
 export async function deleteProducentBySlug(slug: string) {
@@ -43,7 +38,7 @@ export async function updateProducent(newProducent: Producents) {
         {
             slug: newProducent.slug,
         },
-        newProducent
+        newProducent,
     ).orFail();
     return producent;
 }
