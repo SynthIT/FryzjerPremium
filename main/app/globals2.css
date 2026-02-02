@@ -145,3 +145,25 @@ body {
   transition: transform 0.25s cubic-bezier(0.4, 0, 1, 1);
 }
 
+/* Admin Panel Styles - Override main site styles */
+.admin-panel-wrapper {
+  background: var(--background) !important;
+  color: var(--foreground) !important;
+}
+
+/* Ensure body has white background when admin panel is active */
+body:has(.admin-panel-wrapper) {
+  background: var(--background) !important;
+  background-image: none !important;
+  background-size: auto !important;
+  animation: none !important;
+}
+
+/* Alternative approach if :has() is not supported */
+html:has(.admin-panel-wrapper) body,
+body.admin-panel-active {
+  background: var(--background) !important;
+  background-image: none !important;
+  background-size: auto !important;
+  animation: none !important;
+}

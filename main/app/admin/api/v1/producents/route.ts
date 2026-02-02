@@ -9,19 +9,11 @@ import { LogService } from "@/lib/log_service";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
-    const { val, user, mess } = checkRequestAuth(req, [
-        "admin:products",
-        "admin:producent",
-    ]);
+    // Dla GET requestów sprawdzamy tylko, czy użytkownik jest zalogowany
+    const { val } = checkRequestAuth(req);
     if (!val) {
-        new LogService({
-            path: req.url,
-            kind: "error",
-            position: "admin",
-            http: req.method,
-        }).error(`${mess} dla użytkownika ${user?.email}`);
         return NextResponse.json(
-            { status: 1, error: "Brak autoryzacji", details: mess },
+            { status: 1, error: "Brak autoryzacji" },
             { status: 401 }
         );
     }

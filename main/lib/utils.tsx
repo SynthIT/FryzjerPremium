@@ -2,6 +2,7 @@ import React from "react";
 import { Products, Promos, Warianty } from "./models/Products";
 
 export const getProducts = async (slug?: string) => {
+
     const url = new URL("http://localhost:3000/api/v1/products");
     if (slug) {
         url.searchParams.append("slug", slug);
@@ -58,7 +59,7 @@ export const deleteProduct = async (slug: string) => {
 };
 
 export const registerUser = async (email: string, password: string) => {
-    const url = new URL("http://localhost:3000/api/v1/auth/register");
+    const url = new URL("http://localhost:3001/api/v1/auth/register");
     const data = await fetch(url, {
         method: "POST",
         body: JSON.stringify({ email, password }),

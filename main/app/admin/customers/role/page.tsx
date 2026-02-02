@@ -10,6 +10,7 @@ export default function ProductsPage() {
             try {
                 const response = await fetch("/admin/api/v1/roles", {
                     method: "GET",
+                    credentials: "include",
                 });
                 const data: Roles[] = await response.json();
                 console.log("Pobrane produkty:", data);

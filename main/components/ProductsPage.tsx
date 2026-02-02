@@ -88,6 +88,9 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
 
     // Sortowanie produktów - memoized
     const sortedProducts = useMemo(() => {
+        if (!Array.isArray(allProducts)) {
+            return [];
+        }
         return [...allProducts].sort((a, b) => {
             switch (sortBy) {
                 case "Cena: od najniższej":
@@ -252,11 +255,11 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
     }, [filters]);
 
     // Paginacja - memoized
-    const totalProducts = filteredProducts.length;
+    const totalProducts = Array.isArray(filteredProducts) ? filteredProducts.length : 0;
     const startIndex = (currentPage - 1) * productsPerPage;
     const endIndex = startIndex + productsPerPage;
     const displayedProducts = useMemo(
-        () => filteredProducts.slice(startIndex, endIndex),
+        () => Array.isArray(filteredProducts) ? filteredProducts.slice(startIndex, endIndex) : [],
         [filteredProducts, startIndex, endIndex]
     );
     const totalPages = Math.ceil(totalProducts / productsPerPage);

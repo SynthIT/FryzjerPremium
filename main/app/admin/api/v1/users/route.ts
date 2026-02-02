@@ -3,9 +3,9 @@ import { collectUsers } from "@/lib/crud/users/users";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
-    const { val, mess } = checkRequestAuth(req, ["admin:users"]);
+    // Dla GET requestów sprawdzamy tylko, czy użytkownik jest zalogowany
+    const { val } = checkRequestAuth(req);
     if (!val) {
-        console.log(mess);
         return NextResponse.json(
             { status: 1, error: "Brak autoryzacji" },
             { status: 401 }

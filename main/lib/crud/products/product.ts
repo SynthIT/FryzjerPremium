@@ -12,9 +12,9 @@ export async function collectProducts() {
         .populate("kategoria")
         .populate("promocje")
         .populate("producent")
-        .orFail();
+        .lean();
     await dbclose();
-    return JSON.stringify(products);
+    return JSON.stringify(products || []);
 }
 
 export async function createProduct(productData: Products) {

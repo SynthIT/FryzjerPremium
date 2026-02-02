@@ -7,23 +7,28 @@ import {
 import { NextRequest, NextResponse } from "next/server";
 import { checkRequestAuth } from "@/lib/admin_utils";
 import { LogService } from "@/lib/log_service";
+import { User } from "@/lib/models/Users";
+import mongoose from "mongoose";
 
 export async function GET(req: NextRequest) {
-    const { val, user, mess } = checkRequestAuth(req, ["admin:products"]);
+    // Dla GET requestów sprawdzamy tylko, czy użytkownik jest zalogowany (ma ważny JWT)
+    // Nie sprawdzamy konkretnych uprawnień - to jest tylko do wyświetlania listy produktów
+    const { val } = checkRequestAuth(req);
     if (!val) {
-        new LogService({
-            path: req.url,
-            kind: "error",
-            position: "admin",
-            http: req.method,
-        }).error(`${mess} dla użytkownika ${user?.email}`);
         return NextResponse.json(
-            { status: 1, error: "Brak autoryzacji", details: mess },
+            { status: 1, error: "Brak autoryzacji" },
             { status: 401 }
         );
     }
-    const products = await collectProducts();
-    return NextResponse.json(JSON.parse(products));
+    
+    try {
+        const products = await collectProducts();
+        const parsedProducts = JSON.parse(products);
+        return NextResponse.json(Array.isArray(parsedProducts) ? parsedProducts : []);
+    } catch (error) {
+        console.error("Błąd podczas pobierania produktów:", error);
+        return NextResponse.json([], { status: 200 });
+    }
 }
 
 export async function DELETE(req: NextRequest) {

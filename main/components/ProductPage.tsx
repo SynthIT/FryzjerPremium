@@ -34,9 +34,21 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
         async function getProduct(p: string) {
             const data = await getProducts(p);
             console.log(data);
-            setProduct(data.product!);
+            
+            // Sprawdź czy odpowiedź jest poprawna i zawiera produkt
+            if (data.status !== 0 || !data.product) {
+                console.error("Błąd pobierania produktu:", data);
+                return;
+            }
+
+            if (!data.product.cena) {
+                console.error("Produkt nie ma pola cena:", data.product);
+                return;
+            }
+
+            setProduct(data.product);
             // Oblicz nową cenę, jeśli produkt ma promocję
-            if (data.product?.wariant) {
+            if (data.product?.wariant && data.product.wariant.length > 0) {
                 setSelectedWariant(data.product.wariant[0]);
             } else {
                 const wariant: Warianty = {
@@ -48,7 +60,7 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                 };
                 setSelectedWariant(wariant);
             }
-            let basePrice = data.product!.cena;
+            let basePrice = data.product.cena;
             if (data.product?.wariant && data.product?.wariant.length > 0) {
                 if (
                     data.product.wariant[0].nadpisuje_cene &&
@@ -56,18 +68,18 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                 ) {
                     basePrice = data.product.wariant[0].nowa_cena;
                 }
-                if (data.product!.promocje) {
+                if (data.product.promocje) {
                     basePrice =
                         basePrice *
-                        ((100 - (data.product!.promocje as Promos).procent) /
+                        ((100 - (data.product.promocje as Promos).procent) /
                             100);
                 }
                 setSelectedPrice(basePrice);
             } else {
-                if (data.product!.promocje) {
+                if (data.product.promocje) {
                     basePrice =
                         basePrice *
-                        ((100 - (data.product!.promocje as Promos).procent) /
+                        ((100 - (data.product.promocje as Promos).procent) /
                             100);
                 }
                 setSelectedPrice(basePrice);
@@ -80,7 +92,7 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
     useEffect(() => {
         async function getAllProducts() {
             const data = await getProducts();
-            setAllProduct(data.products!);
+            setAllProduct(Array.isArray(data.products) ? data.products : []);
         }
         getAllProducts();
     }, []);
@@ -101,7 +113,7 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
     });
 
     // Pobierz produkty z tej samej kategorii (wykluczając aktualny produkt)
-    const relatedProducts = allProducts
+    const relatedProducts = Array.isArray(allProducts) ? allProducts
         .filter((p) => {
             return product
                 ? (p.kategoria as Categories[])[0].nazwa ==
@@ -109,7 +121,7 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                       p.slug != product!.slug
                 : false;
         })
-        .slice(0, 4);
+        .slice(0, 4) : [];
 
     const handleQuantityChange = useCallback((delta: number) => {
         setQuantity((prev) => Math.max(1, prev + delta));
@@ -446,19 +458,43 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
 
                         <form
                             className="review-modal-form"
-                            onSubmit={(e) => {
+                            onSubmit={async (e) => {
                                 e.preventDefault();
-                                // Tutaj można dodać logikę zapisywania opinii
-                                console.log("Review submitted:", {
-                                    ...reviewForm,
-                                    productId: product.slug,
-                                });
-                                setShowReviewModal(false);
-                                setReviewForm({
-                                    ocena: 0,
-                                    uzytkownik: "",
-                                    tresc: "",
-                                });
+                                try {
+                                    const response = await fetch("/api/v1/products/review", {
+                                        method: "POST",
+                                        headers: {
+                                            "Content-Type": "application/json",
+                                        },
+                                        body: JSON.stringify({
+                                            productSlug: product.slug,
+                                            review: reviewForm,
+                                        }),
+                                    });
+
+                                    const data = await response.json();
+
+                                    if (data.status === 201) {
+                                        // Odśwież dane produktu
+                                        const updatedProduct = await getProducts(product.slug);
+                                        if (updatedProduct.product) {
+                                            setProduct(updatedProduct.product);
+                                        }
+                                        setShowReviewModal(false);
+                                        setReviewForm({
+                                            ocena: 0,
+                                            uzytkownik: "",
+                                            tresc: "",
+                                        });
+                                        // Można dodać powiadomienie o sukcesie
+                                        alert("Opinia została dodana!");
+                                    } else {
+                                        alert(data.error || "Wystąpił błąd podczas dodawania opinii");
+                                    }
+                                } catch (error) {
+                                    console.error("Error submitting review:", error);
+                                    alert("Wystąpił błąd podczas dodawania opinii");
+                                }
                             }}>
                             <div className="review-modal-field">
                                 <label className="review-modal-label">

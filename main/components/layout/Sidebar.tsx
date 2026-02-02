@@ -253,7 +253,7 @@ export function Sidebar({
             className={`group/sidebar ${
                 isMobile
                     ? "flex h-full w-full flex-col bg-background"
-                    : "border-r bg-background/60 backdrop-blur supports-backdrop-filter:bg-background/40"
+                    : "border-r bg-background h-[calc(100vh-4rem)] overflow-y-auto"
             } ${isCollapsed ? "w-16" : "w-64"} ${
                 isMobile ? "" : "hidden shrink-0 md:block"
             } transition-[width] duration-300`}>

@@ -6,17 +6,15 @@ interface LoggedBadgeProps {
     setModalMenu: () => void;
 }
 export default function LoggedBadge({ user, setModalMenu }: LoggedBadgeProps) {
-    // chuj ci w dupe krecik, tutaj już zaczyna się twoja robota
-    // ja w to nie umiem, i chuj ci w kokodżambo
     return (
-        <>
-            <button onClick={setModalMenu}>
-                <div className="container-md flex align-center hover:transform-[scale(1.05) rotate(-5deg)] cursor-pointer">
-                    <User className="text-zinc-900"></User>
-                    <span className="text-zinc-900">Witaj, {user.imie}</span>
-                </div>
-            </button>
-        </>
+        <button 
+            className="user-button" 
+            onClick={setModalMenu}
+            aria-label="Menu użytkownika"
+            aria-expanded={false}>
+            <User className="user-button-icon" />
+            <span className="user-button-text">Witaj, {user.imie}</span>
+        </button>
     );
 }
 

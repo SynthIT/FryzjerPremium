@@ -14,6 +14,7 @@ export default function ProductsPage() {
                 setLoading(true);
                 const response = await fetch("/admin/api/v1/promo", {
                     method: "GET",
+                    credentials: "include",
                 });
                 const {
                     status,

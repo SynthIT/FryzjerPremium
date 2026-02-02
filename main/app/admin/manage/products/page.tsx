@@ -21,11 +21,17 @@ export default function ProductPage() {
         async function fetchProducts() {
             try {
                 setLoading(true);
-                const data = await fetch("/admin/api/v1/products").then((res) =>
-                    res.json()
-                );
+                const res = await fetch("/admin/api/v1/products", {
+                    credentials: "include",
+                });
+                if (!res.ok) {
+                    console.error("Błąd autoryzacji:", res.status, res.statusText);
+                    setProducts([]);
+                    return;
+                }
+                const data = await res.json();
                 // Pobierz produkty z API - to samo API co w sklepie
-                setProducts(data || []);
+                setProducts(Array.isArray(data) ? data : []);
             } catch (error) {
                 console.error("Błąd podczas ładowania produktów:", error);
                 setProducts([]);
@@ -38,6 +44,7 @@ export default function ProductPage() {
 
     // Filtrowanie i paginacja
     const filteredProducts = useMemo(() => {
+        if (!Array.isArray(products)) return [];
         if (!searchQuery) return products;
         const query = searchQuery.toLowerCase();
         return products.filter((product) => {
@@ -52,10 +59,10 @@ export default function ProductPage() {
         });
     }, [products, searchQuery]);
 
-    const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
+    const totalPages = Math.ceil((Array.isArray(filteredProducts) ? filteredProducts.length : 0) / productsPerPage);
     const startIndex = (currentPage - 1) * productsPerPage;
     const endIndex = startIndex + productsPerPage;
-    const displayedProducts = filteredProducts.slice(startIndex, endIndex);
+    const displayedProducts = Array.isArray(filteredProducts) ? filteredProducts.slice(startIndex, endIndex) : [];
 
     const handleProductClick = (product: Products) => {
         setSelectedProduct(product);
@@ -65,10 +72,15 @@ export default function ProductPage() {
     const handleProductUpdate = async (updatedProduct: Products) => {
         // Odśwież listę produktów z API
         try {
-            const data = await fetch("/admin/api/v1/products").then((res) =>
-                res.json()
-            );
-            setProducts(data || []);
+            const res = await fetch("/admin/api/v1/products", {
+                credentials: "include",
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setProducts(Array.isArray(data) ? data : []);
+            } else {
+                throw new Error(`HTTP ${res.status}`);
+            }
         } catch (error) {
             console.error("Błąd podczas odświeżania produktów:", error);
             // Fallback - lokalna aktualizacja
@@ -85,10 +97,15 @@ export default function ProductPage() {
     const handleProductDelete = async (productSlug: string) => {
         // Odśwież listę produktów z API
         try {
-            const data = await fetch("/admin/api/v1/products").then((res) =>
-                res.json()
-            );
-            setProducts(data || []);
+            const res = await fetch("/admin/api/v1/products", {
+                credentials: "include",
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setProducts(Array.isArray(data) ? data : []);
+            } else {
+                throw new Error(`HTTP ${res.status}`);
+            }
         } catch (error) {
             console.error("Błąd podczas odświeżania produktów:", error);
             // Fallback - lokalne usunięcie

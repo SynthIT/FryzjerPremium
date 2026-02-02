@@ -10,6 +10,7 @@ export default function ProductsPage() {
             try {
                 const response = await fetch("/admin/api/v1/producents", {
                     method: "GET",
+                    credentials: "include",
                 });
                 const {
                     status,

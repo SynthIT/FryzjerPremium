@@ -6,6 +6,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Breadcrumbs } from "./_breadcrumbs";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
+import "@/app/globals2.css";
 
 export default function AdminLayout({
     children,
@@ -17,6 +18,9 @@ export default function AdminLayout({
     const [loading, setLoading] = React.useState<boolean>(true);
 
     React.useEffect(() => {
+        // Add class to body to override main site styles
+        document.body.classList.add("admin-panel-active");
+        
         fetch("/admin/api/v1/auth", {
             method: "POST",
             credentials: "include",
@@ -24,14 +28,21 @@ export default function AdminLayout({
             .then((res) => res.json())
             .then((data) => {
                 if (data.status !== 200) {
+                    document.body.classList.remove("admin-panel-active");
                     router.push("/");
                 } else {
                     setLoading(false);
                 }
             })
             .catch(() => {
+                document.body.classList.remove("admin-panel-active");
                 router.push("/");
             });
+        
+        // Cleanup on unmount
+        return () => {
+            document.body.classList.remove("admin-panel-active");
+        };
     }, [router]);
 
     if (loading) {
@@ -46,11 +57,11 @@ export default function AdminLayout({
     }
 
     return (
-        <div className="min-h-dvh">
+        <div className="min-h-dvh admin-panel-wrapper">
             <Navbar onMenuClick={() => setMobileMenuOpen(true)} />
-            <div className="grid grid-cols-1 md:grid-cols-[auto_1fr]">
+            <div className="flex pt-16">
                 <Sidebar />
-                <main className="min-w-0 px-3 pb-10 pt-4 sm:px-4 md:px-6">
+                <main className="flex-1 min-w-0 px-4 pb-10 pt-6 sm:px-6 md:px-8 admin-main-content h-[calc(100vh-4rem)] overflow-y-auto">
                     <Breadcrumbs />
                     {children}
                 </main>

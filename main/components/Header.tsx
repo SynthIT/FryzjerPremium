@@ -28,6 +28,7 @@ export default function Header() {
     const cartDropdownRef = useRef<HTMLDivElement>(null);
     const searchContainerRef = useRef<HTMLDivElement>(null);
     const searchInputRef = useRef<HTMLInputElement>(null);
+    const userMenuRef = useRef<HTMLDivElement>(null);
     const [showModalMenu, setShowModalMenu] = useState<boolean>(false);
 
     const { getTotalItems, lastAddedItem, clearLastAddedItem } = useCart();
@@ -79,6 +80,24 @@ export default function Header() {
                 document.removeEventListener("mousedown", handleClickOutside);
         }
     }, [showCartDropdown, clearLastAddedItem]);
+
+    // Zamknij menu użytkownika po kliknięciu poza nim
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (
+                userMenuRef.current &&
+                !userMenuRef.current.contains(event.target as Node)
+            ) {
+                setShowModalMenu(false);
+            }
+        };
+
+        if (showModalMenu) {
+            document.addEventListener("mousedown", handleClickOutside);
+            return () =>
+                document.removeEventListener("mousedown", handleClickOutside);
+        }
+    }, [showModalMenu]);
 
     const handleSearch = useCallback(
         (e: React.FormEvent) => {
@@ -480,13 +499,45 @@ export default function Header() {
                         )}
                     </div>
                     {user ? (
-                        <>
+                        <div className="user-menu-wrapper" ref={userMenuRef}>
                             <LoggedBadge
                                 user={user}
                                 setModalMenu={() => {
                                     setShowModalMenu(!showModalMenu);
                                 }}></LoggedBadge>
-                        </>
+                            {showModalMenu && (
+                                <div className="user-dropdown-menu">
+                                    <Link 
+                                        className="user-dropdown-item" 
+                                        href="/admin"
+                                        onClick={() => setShowModalMenu(false)}>
+                                        Panel zarządzania
+                                    </Link>
+                                    <Link 
+                                        className="user-dropdown-item" 
+                                        href="/zamowienia"
+                                        onClick={() => setShowModalMenu(false)}>
+                                        Zamówienia
+                                    </Link>
+                                    <Link
+                                        className="user-dropdown-item"
+                                        href="/ustawienia-konta"
+                                        onClick={() => setShowModalMenu(false)}>
+                                        Ustawienia konta
+                                    </Link>
+                                    <Link
+                                        className="user-dropdown-item user-dropdown-item-logout"
+                                        href="#"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            setShowModalMenu(false);
+                                            logout();
+                                        }}>
+                                        Wyloguj się
+                                    </Link>
+                                </div>
+                            )}
+                        </div>
                     ) : (
                         <button
                             className="login-button"
@@ -514,29 +565,6 @@ export default function Header() {
                     </button>
                 </div>
             </div>
-            {showModalMenu && (
-                <div className="absolute flex flex-col max-w-xs max-h-xs bg-zinc-900 p-4">
-                    {isAdmin() && (
-                        <Link className="max-w-xs max-h-xs" href="/admin">
-                            Panel zarządzania
-                        </Link>
-                    )}
-                    <Link className="max-w-xs max-h-xs" href="/zamowienia">
-                        Zamówienia
-                    </Link>
-                    <Link
-                        className="max-w-xs max-h-xs"
-                        href="/ustawienia-konta">
-                        Ustawienia konta
-                    </Link>
-                    <Link
-                        className="max-w-xs max-h-xs"
-                        href="#"
-                        onClick={logout}>
-                        Wyloguj się
-                    </Link>
-                </div>
-            )}
 
             {isMobileMenuOpen && (
                 <div

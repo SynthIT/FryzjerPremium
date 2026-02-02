@@ -15,6 +15,7 @@ export default function CategoriesPage() {
             try {
                 const response = await fetch("/admin/api/v1/category", {
                     method: "GET",
+                    credentials: "include",
                 });
                 const {
                     status,

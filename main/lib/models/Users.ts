@@ -16,7 +16,8 @@ export const schemaOrderList = new Schema<OrderList>(
     {
         numer_zamowienia: {
             type: String,
-            default: createOrderNumber(),
+            // IMPORTANT: pass the function reference so each document gets a fresh value
+            default: createOrderNumber,
             unique: true,
         },
         sposob_dostawy: { type: Types.ObjectId, ref: "delivery" },
