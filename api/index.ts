@@ -398,7 +398,10 @@ const polishMap: Record<string, string> = {
                           .toLowerCase()
                           .split(" ")
                           .join("-")
-                          .replace(/[ąćęłńóśźż]/g, (m) => polishMap[m] ?? m)
+                          .replace(
+                              /[ąćęłńóśźż]/g,
+                              (m: string) => polishMap[m] ?? m
+                          )
                     : val.slug;
             val.slug = slug;
             val.aktywne = true;
