@@ -1,4 +1,3 @@
-import { UsersReponse } from "@/lib/interfaces/ax";
 import { User } from "@/lib/models/Users";
 import { checkExistingUser, createJWT } from "@/lib/admin_utils";
 import { NextRequest, NextResponse } from "next/server";
@@ -8,8 +7,9 @@ export async function POST(req: NextRequest) {
     console.log(reqBody);
     try {
         const result = await checkExistingUser(reqBody.email, reqBody.password);
+        console.log(result);
         if (result instanceof User && typeof result != "string") {
-            const response: UsersReponse = {
+            const response = {
                 status: 201,
                 user: result,
             };

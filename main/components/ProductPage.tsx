@@ -25,9 +25,18 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
         Warianty | undefined
     >();
 
+    const pobierzRazTenPierdolonyProduktTyPierdolonyPedaleZesranyZasrany =
+        useCallback(async (slug: string) => {
+            const data = await getProducts(slug);
+            return data;
+        }, []);
+
     useEffect(() => {
         async function getProduct(p: string) {
-            const data = await getProducts(p);
+            const data =
+                await pobierzRazTenPierdolonyProduktTyPierdolonyPedaleZesranyZasrany(
+                    p,
+                );
             console.log(data);
             if (data.product) {
                 setProduct(data.product);
@@ -71,7 +80,7 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
         if (productSlug) {
             getProduct(productSlug);
         }
-    }, [productSlug, selectedWariant]);
+    }, [pobierzRazTenPierdolonyProduktTyPierdolonyPedaleZesranyZasrany]);
     useEffect(() => {
         async function getAllProducts() {
             const data = await getProducts();
@@ -96,15 +105,17 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
     });
 
     // Pobierz produkty z tej samej kategorii (wykluczając aktualny produkt)
-    const relatedProducts = Array.isArray(allProducts) ? allProducts
-        .filter((p) => {
-            return product
-                ? (p.kategoria as Categories[])[0].nazwa ==
-                      (product.kategoria as Categories[])[0].nazwa &&
-                      p.slug != product!.slug
-                : false;
-        })
-        .slice(0, 4) : [];
+    const relatedProducts = Array.isArray(allProducts)
+        ? allProducts
+              .filter((p) => {
+                  return product
+                      ? (p.kategoria as Categories[])[0].nazwa ==
+                            (product.kategoria as Categories[])[0].nazwa &&
+                            p.slug != product!.slug
+                      : false;
+              })
+              .slice(0, 4)
+        : [];
 
     const handleQuantityChange = useCallback((delta: number) => {
         setQuantity((prev) => Math.max(1, prev + delta));
@@ -444,22 +455,27 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                             onSubmit={async (e) => {
                                 e.preventDefault();
                                 try {
-                                    const response = await fetch("/api/v1/products/review", {
-                                        method: "POST",
-                                        headers: {
-                                            "Content-Type": "application/json",
+                                    const response = await fetch(
+                                        "/api/v1/products/review",
+                                        {
+                                            method: "POST",
+                                            headers: {
+                                                "Content-Type":
+                                                    "application/json",
+                                            },
+                                            body: JSON.stringify({
+                                                productSlug: product.slug,
+                                                review: reviewForm,
+                                            }),
                                         },
-                                        body: JSON.stringify({
-                                            productSlug: product.slug,
-                                            review: reviewForm,
-                                        }),
-                                    });
+                                    );
 
                                     const data = await response.json();
 
                                     if (data.status === 201) {
                                         // Odśwież dane produktu
-                                        const updatedProduct = await getProducts(product.slug);
+                                        const updatedProduct =
+                                            await getProducts(product.slug);
                                         if (updatedProduct.product) {
                                             setProduct(updatedProduct.product);
                                         }
@@ -472,11 +488,19 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                                         // Można dodać powiadomienie o sukcesie
                                         alert("Opinia została dodana!");
                                     } else {
-                                        alert(data.error || "Wystąpił błąd podczas dodawania opinii");
+                                        alert(
+                                            data.error ||
+                                                "Wystąpił błąd podczas dodawania opinii",
+                                        );
                                     }
                                 } catch (error) {
-                                    console.error("Error submitting review:", error);
-                                    alert("Wystąpił błąd podczas dodawania opinii");
+                                    console.error(
+                                        "Error submitting review:",
+                                        error,
+                                    );
+                                    alert(
+                                        "Wystąpił błąd podczas dodawania opinii",
+                                    );
                                 }
                             }}>
                             <div className="review-modal-field">

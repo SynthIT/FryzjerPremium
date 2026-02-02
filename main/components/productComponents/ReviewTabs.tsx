@@ -1,4 +1,5 @@
-import { Opinie, Products } from "@/lib/models/Products";
+import { Products } from "@/lib/types/productTypes";
+import { Opinie } from "@/lib/types/shared";
 import { renderStars } from "@/lib/utils";
 import { useState } from "react";
 
@@ -20,7 +21,8 @@ export default function ReviewTabs({
 
     // Sortowanie recenzji
     const sortedReviews = () => {
-        if (!product?.opinie) return [];
+        console.log(product);
+        if (!product.opinie) return [];
         return [...(product?.opinie as Opinie[])].sort((a, b) => {
             switch (sortOrder) {
                 case "latest":
@@ -82,7 +84,7 @@ export default function ReviewTabs({
                                     value={sortOrder}
                                     onChange={(e) =>
                                         setSortOrder(
-                                            e.target.value as typeof sortOrder
+                                            e.target.value as typeof sortOrder,
                                         )
                                     }
                                     className="sort-select">
@@ -214,4 +216,3 @@ export default function ReviewTabs({
         </>
     );
 }
-

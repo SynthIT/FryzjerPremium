@@ -8,7 +8,7 @@ export const getProducts = async (slug?: string) => {
         url.searchParams.append("slug", slug);
     }
     const data = await fetch(url, {
-        cache: "force-cache",
+        cache: "default",
         credentials: "include",
     });
     return data.json();

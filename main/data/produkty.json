@@ -174,8 +174,27 @@
     "ilosc": 100,
     "czas_wysylki": 5,
     "kod_produkcyjny": "BND-9122331",
-    "ocena": 0,
-    "opinie": null,
+    "ocena": 4.5,
+    "opinie": [
+      {
+        "uzytkownik": "asdad",
+        "tresc": "qwe",
+        "ocena": 4,
+        "zweryfikowane": false,
+        "_id": "69811e94227b9293bbda1bf3",
+        "createdAt": "2026-02-02T22:00:52.176Z",
+        "updatedAt": "2026-02-02T22:00:52.176Z"
+      },
+      {
+        "uzytkownik": "asddda",
+        "tresc": "123aadsaded",
+        "ocena": 5,
+        "zweryfikowane": false,
+        "_id": "698121af227b9293bbda1c02",
+        "createdAt": "2026-02-02T22:14:07.938Z",
+        "updatedAt": "2026-02-02T22:14:07.938Z"
+      }
+    ],
     "vat": 23,
     "wariant": [
       {
