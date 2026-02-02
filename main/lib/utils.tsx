@@ -1,5 +1,6 @@
 import React from "react";
-import { Products, Promos, Warianty } from "./models/Products";
+import { Products, Warianty } from "./types/productTypes";
+import { Promos } from "./types/shared";
 
 export const getProducts = async (slug?: string) => {
     const url = new URL("http://localhost:3000/api/v1/products");
@@ -84,7 +85,7 @@ export const loginUser = async ({
 const getCategories = async () => {
     const data = await fetch(
         "http://localhost:3000/api/v1/products/categories",
-        { cache: "force-cache", next: { revalidate: 300 } }
+        { cache: "force-cache", next: { revalidate: 300 } },
     );
     return data.json();
 };
@@ -92,13 +93,13 @@ const getCategories = async () => {
 export const finalPrice = (
     cena: number,
     selectedWariant?: Warianty,
-    promocje?: Promos
+    promocje?: Promos,
 ) => {
     let basePrice = cena;
     if (selectedWariant?.nadpisuje_cene && selectedWariant.nowa_cena) {
         basePrice = selectedWariant.nowa_cena;
     }
-    if (promocje) {
+    if (promocje && promocje.procent) {
         basePrice = basePrice * ((100 - promocje.procent) / 100);
     }
     return basePrice.toFixed(2);
@@ -119,7 +120,7 @@ export const cenabezvat = (cena: number, vat: number, wariant?: Warianty) => {
  */
 export const renderStars = (
     rating: number,
-    size: number = 20
+    size: number = 20,
 ): React.JSX.Element => {
     const fullStars = Math.floor(rating);
     const hasHalfStar = rating % 1 !== 0;
@@ -192,7 +193,7 @@ export const renderStars = (
  * Mapowanie nazw kategorii z URL na wyświetlane nazwy
  */
 export const getCategoryDisplayName = async (
-    categorySlug: string
+    categorySlug: string,
 ): Promise<string> => {
     const categories = await getCategories();
     if (!categorySlug) return "Wszystkie produkty";

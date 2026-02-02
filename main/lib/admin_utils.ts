@@ -18,7 +18,7 @@ import { NextRequest } from "next/server";
 import { hash, verify as passverify } from "argon2";
 import { writeFileSync } from "node:fs";
 import path from "node:path";
-import { Products, Warianty } from "./models/Products";
+import { Products, Warianty } from "./types/productTypes";
 
 /*
     FUNKCJE ODNOŚCIE UŻYTKOWNIKÓW WYCHODZĄCE Z 
@@ -34,7 +34,7 @@ import { Products, Warianty } from "./models/Products";
  */
 export function checkRequestAuth(
     req: NextRequest,
-    scope?: typeof permissionKeys
+    scope?: typeof permissionKeys,
 ): {
     val: boolean;
     user?: Users;
@@ -89,7 +89,7 @@ export async function checkExistingUser(email: string, haslo: string) {
 
 export function createJWT(
     payloaduser: Users,
-    refresh?: boolean
+    refresh?: boolean,
 ): Array<string> {
     let refreshtoken: string = "";
     if (refresh) {
@@ -107,7 +107,7 @@ export function createJWT(
             {
                 algorithm: "RS256",
                 expiresIn: "7d",
-            }
+            },
         );
     }
     const payload: JwtPayload = {
@@ -124,7 +124,7 @@ export function createJWT(
         {
             algorithm: "RS256",
             expiresIn: "1d",
-        }
+        },
     );
     return [token, refreshtoken];
 }
@@ -153,7 +153,7 @@ export function verifyJWT(req: NextRequest): {
                 key: process.env.JWT_PUBLIC_KEY!,
                 format: "pem",
                 type: "pkcs1",
-            } as PublicKeyInput)
+            } as PublicKeyInput),
         );
         const user = (cookie as JwtPayload).user;
         if (typeCheck(user)) {
@@ -170,7 +170,7 @@ export function verifyJWT(req: NextRequest): {
                         key: process.env.JWT_REFRESH_PUBLIC_KEY!,
                         format: "pem",
                         type: "pkcs1",
-                    } as PublicKeyInput)
+                    } as PublicKeyInput),
                 );
                 const user = (cookie as JwtPayload).user;
                 if (typeCheck(user)) {
@@ -187,10 +187,10 @@ export function verifyJWT(req: NextRequest): {
 
 export function returnAvailableWariant(
     req: NextRequest,
-    product: Products
+    product: Products,
 ): { res: boolean; product: Products } {
     if (!product.wariant) return { res: true, product: product };
-    const { val, user, mess } = verifyJWT(req);
+    const { val, user } = verifyJWT(req);
     if (val && user) {
         if (!user.role) return { res: true, product: product };
         product.wariant = (product.wariant as Warianty[]).filter((w) => {
@@ -207,7 +207,7 @@ export function returnAvailableWariant(
         return { res: true, product: product };
     } else {
         product.wariant = (product.wariant as Warianty[]).filter(
-            (w) => !w.permisje
+            (w) => !w.permisje,
         );
         return { res: true, product: product };
     }
@@ -285,7 +285,7 @@ export async function addNewUser(payload: Users) {
 export async function changePassword(
     req: NextRequest,
     newPassword: string,
-    oldPassword: string
+    oldPassword: string,
 ): Promise<{ mess: string; user?: Users; jwt?: string[] }> {
     const { val, user, mess } = verifyJWT(req);
     if (!val || typeof user === "undefined") return { mess: mess! };
@@ -306,7 +306,7 @@ export async function changePassword(
 
 export async function editUser(
     req: NextRequest,
-    newUser: Users
+    newUser: Users,
 ): Promise<{ mess: string; user?: Users; jwt?: string[] }> {
     const { val, user, mess } = verifyJWT(req);
     if (!val || typeof user === "undefined") return { mess: mess! };
@@ -315,7 +315,7 @@ export async function editUser(
         newUser.haslo = user.haslo;
         const res = await User.findOneAndUpdate(
             { email: user.email },
-            { $set: newUser }
+            { $set: newUser },
         ).orFail();
         await dbclose();
         const jwt = createJWT(res, true);
@@ -326,7 +326,7 @@ export async function editUser(
 }
 
 export async function deleteUser(
-    req: NextRequest
+    req: NextRequest,
 ): Promise<{ mess: string; deleted?: boolean }> {
     const { val, user, mess } = verifyJWT(req);
     if (!val || typeof user === "undefined") return { mess: mess! };
@@ -339,9 +339,9 @@ export async function deleteUser(
                     "data",
                     "uzytkownicy_cache",
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    `${(user as any)._id}.json`
+                    `${(user as any)._id}.json`,
                 ),
-                JSON.stringify(user.zamowienia)
+                JSON.stringify(user.zamowienia),
             );
         }
         const o = await User.findOneAndDelete({ email: user.email }).orFail();

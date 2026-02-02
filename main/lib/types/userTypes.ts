@@ -29,7 +29,7 @@ export const userSchema = zod.object({
     nip: zod.string().optional(),
     faktura: zod.boolean().optional(),
     role: zod
-        .array(zod.union([zod.array(roleSchema), zod.array(zod.string())]))
+        .array(zod.union([roleSchema, zod.string()]))
         .optional(),
 });
 
