@@ -7,7 +7,7 @@ import React, {
     useCallback,
     useEffect,
 } from "react";
-import { Products, Warianty } from "@/lib/models/Products";
+import { Products, Warianty } from "@/lib/types/productTypes";
 
 export interface CartItem {
     id: string;
@@ -24,7 +24,7 @@ interface CartContextType {
         product: Products,
         quantity: number,
         price: number,
-        wariant?: Warianty
+        wariant?: Warianty,
     ) => void;
     removeFromCart: (itemId: string) => void;
     updateQuantity: (itemId: string, quantity: number) => void;
@@ -77,12 +77,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             product: Products,
             quantity: number,
             price: number,
-            wariant?: Warianty
+            wariant?: Warianty,
         ) => {
             const itemId = getItemId(product.slug, wariant);
             setCartItems((prev) => {
                 const existingItemIndex = prev.findIndex(
-                    (item) => item.id === itemId
+                    (item) => item.id === itemId,
                 );
 
                 let newItem: CartItem;
@@ -113,7 +113,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                 wariant,
             });
         },
-        []
+        [],
     );
 
     const removeFromCart = useCallback((itemId: string) => {
@@ -128,11 +128,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             }
             setCartItems((prev) =>
                 prev.map((item) =>
-                    item.id === itemId ? { ...item, quantity } : item
-                )
+                    item.id === itemId ? { ...item, quantity } : item,
+                ),
             );
         },
-        [removeFromCart]
+        [removeFromCart],
     );
 
     const clearCart = useCallback(() => {

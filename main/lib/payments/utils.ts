@@ -30,33 +30,58 @@ const getStripeCustomer = async (customerId: string) => {
 const createPaymentIntent = async (
     amount: number,
     currency: string,
-    customerId: string,
+    customerId?: string,
 ) => {
     try {
         const params: Stripe.PaymentIntentCreateParams = {
             amount: amount,
             currency: currency,
-            customer: customerId,
+            customer: customerId ?? undefined,
+            payment_method_types: ["card", "blik"],
         };
         const paymentIntent = await stripe.paymentIntents.create(params);
+        return paymentIntent;
     } catch (error) {
         console.error("Error creating Payment Intent:", error);
         throw new Error("Could not create Payment Intent");
     }
 };
 
-const retrivePaymentIntent = async (user: string) => {
+const updatePaymentIntent = async (user: string, new_amount: number) => {
     try {
         const stripe_id = User.findOne({ email: user }).select("stripe_id");
         const paymentIntentId = stripe_id?.toString() || "";
         const PaymentIntents = await stripe.paymentIntents.list({
             customer: paymentIntentId,
         });
-        const paymentIntent = PaymentIntents.data;
-        const 
+        const paymentIntentData = PaymentIntents.data;
+        const paymentIntent = stripe.paymentIntents.update(
+            paymentIntentData[0].id,
+            {
+                amount: new_amount,
+            },
+        );
         return paymentIntent;
     } catch (error) {
         console.error("Error retrieving Payment Intent:", error);
         throw new Error("Could not retrieve Payment Intent");
     }
+};
+
+const confirmPaymentIntent = async (
+    paymentIntentId: string,
+    payment_method: string,
+) => {
+    try {
+    } catch (error) {
+        console.error("Error confirming Payment Intent:", error);
+        throw new Error("Could not confirm Payment Intent");
+    }
+};
+export {
+    createStripeCustomer,
+    getStripeCustomer,
+    createPaymentIntent,
+    confirmPaymentIntent,
+    updatePaymentIntent,
 };

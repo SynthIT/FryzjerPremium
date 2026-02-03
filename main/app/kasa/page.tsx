@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { useCart } from "@/contexts/CartContext";
 import Image from "next/image";
 import Link from "next/link";
@@ -9,13 +9,25 @@ import Footer from "@/components/Footer";
 import "@/app/globals.css";
 import { DeliveryMethods } from "@/lib/types/deliveryTypes";
 import DeliveryMethod from "@/components/checkout/DeliveryMethods";
+import { EmptyCart } from "@/components/cart/EmptyCard";
+import { loadStripe } from "@stripe/stripe-js";
+import { CheckoutForm } from "@/components/checkout/CheckOut";
+import { Elements } from "@stripe/react-stripe-js";
+console.log(process.env.NEXT_PUBLIC_PUBLICISHABLE_STRIPE);
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_PUBLICISHABLE_STRIPE!)
+    .then((stripe) => {
+        return stripe;
+    })
+    .catch((error) => {
+        console.error("Błąd ładowania Stripe:", error);
+        return null;
+    });
 
 export default function CheckoutPage() {
     const { cartItems, getTotalPrice } = useCart();
     const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethods[]>();
     const [selectedDeliveryMethod, setSelectDeliveryMethod] =
         useState<DeliveryMethods>();
-    const [paymentMethod, setPaymentMethod] = useState("card");
     const [total, setTotal] = useState<number>(0);
     const [subtotal, setSubtotal] = useState<number>(0);
     const [deliverFee, setDeliverFee] = useState<number>(0);
@@ -29,9 +41,8 @@ export default function CheckoutPage() {
         postalCode: "",
         country: "Polska",
     });
-
     useEffect(() => {
-        async function delivery() {
+        async function as() {
             const response = await fetch("/api/v1/products/delivery", {
                 method: "GET",
                 cache: "force-cache",
@@ -39,13 +50,12 @@ export default function CheckoutPage() {
             setDeliveryMethod(response.delivery);
             setSelectDeliveryMethod(response.delivery[0]);
         }
-        delivery();
+        as();
     }, []);
 
     useEffect(() => {
         function a() {
             if (!selectedDeliveryMethod) return;
-            console.log(selectedDeliveryMethod);
             const total = getTotalPrice();
             const deliverFee = selectedDeliveryMethod.ceny[0].cena;
             setSubtotal(total);
@@ -60,7 +70,7 @@ export default function CheckoutPage() {
             const { name, value } = e.target;
             setFormData((prev) => ({ ...prev, [name]: value }));
         },
-        []
+        [],
     );
 
     const handleSubmit = useCallback((e: React.FormEvent) => {
@@ -72,25 +82,7 @@ export default function CheckoutPage() {
     const formattedTotal = total.toFixed(2).replace(".", ",");
 
     if (cartItems.length === 0) {
-        return (
-            <>
-                <Header />
-                <div className="checkout-page">
-                    <div className="checkout-page-container">
-                        <div className="checkout-empty">
-                            <h2>Twój koszyk jest pusty</h2>
-                            <p>Dodaj produkty do koszyka, aby kontynuować.</p>
-                            <Link
-                                href="/products"
-                                className="checkout-empty-button">
-                                Przejdź do sklepu
-                            </Link>
-                        </div>
-                    </div>
-                </div>
-                <Footer />
-            </>
-        );
+        return <EmptyCart />;
     }
 
     return (
@@ -270,12 +262,11 @@ export default function CheckoutPage() {
                                                         }
                                                         price={total}
                                                         onSelect={(w) => {
-                                                            console.log(w);
                                                             setSelectDeliveryMethod(
-                                                                w
+                                                                w,
                                                             );
                                                         }}></DeliveryMethod>
-                                                )
+                                                ),
                                             )}
                                     </div>
                                 </section>
@@ -285,84 +276,16 @@ export default function CheckoutPage() {
                                     <h2 className="checkout-section-title">
                                         Metoda płatności
                                     </h2>
-                                    <div className="checkout-payment-options">
-                                        <label
-                                            className={`checkout-payment-option ${
-                                                paymentMethod === "card"
-                                                    ? "active"
-                                                    : ""
-                                            }`}>
-                                            <input
-                                                type="radio"
-                                                name="paymentMethod"
-                                                value="card"
-                                                checked={
-                                                    paymentMethod === "card"
-                                                }
-                                                onChange={(e) =>
-                                                    setPaymentMethod(
-                                                        e.target.value
-                                                    )
-                                                }
-                                            />
-                                            <div className="checkout-payment-info">
-                                                <strong>
-                                                    Karta kredytowa/debetowa
-                                                </strong>
-                                                <p>Płatność online</p>
-                                            </div>
-                                        </label>
-
-                                        <label
-                                            className={`checkout-payment-option ${
-                                                paymentMethod === "blik"
-                                                    ? "active"
-                                                    : ""
-                                            }`}>
-                                            <input
-                                                type="radio"
-                                                name="paymentMethod"
-                                                value="blik"
-                                                checked={
-                                                    paymentMethod === "blik"
-                                                }
-                                                onChange={(e) =>
-                                                    setPaymentMethod(
-                                                        e.target.value
-                                                    )
-                                                }
-                                            />
-                                            <div className="checkout-payment-info">
-                                                <strong>BLIK</strong>
-                                                <p>Płatność mobilna</p>
-                                            </div>
-                                        </label>
-
-                                        <label
-                                            className={`checkout-payment-option ${
-                                                paymentMethod === "transfer"
-                                                    ? "active"
-                                                    : ""
-                                            }`}>
-                                            <input
-                                                type="radio"
-                                                name="paymentMethod"
-                                                value="transfer"
-                                                checked={
-                                                    paymentMethod === "transfer"
-                                                }
-                                                onChange={(e) =>
-                                                    setPaymentMethod(
-                                                        e.target.value
-                                                    )
-                                                }
-                                            />
-                                            <div className="checkout-payment-info">
-                                                <strong>Przelew bankowy</strong>
-                                                <p>Opłata przy odbiorze</p>
-                                            </div>
-                                        </label>
-                                    </div>
+                                    {cs ? (
+                                        <Elements
+                                            stripe={stripePromise}
+                                            options={{
+                                                clientSecret: cs,
+                                                appearance: { theme: "flat" },
+                                            }}>
+                                            <CheckoutForm></CheckoutForm>
+                                        </Elements>
+                                    ) : null}
                                 </section>
                             </form>
                         </div>
