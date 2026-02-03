@@ -57,6 +57,7 @@ const userSchemat = new Schema<Users>(
         faktura: { type: Boolean, default: false },
         osoba_prywatna: { type: Boolean, default: true },
         role: { type: [Types.ObjectId], ref: "Roles", default: [] },
+        stripe_id: { type: String },
     },
     {
         autoIndex: false,

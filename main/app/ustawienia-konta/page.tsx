@@ -10,16 +10,18 @@ import { Users } from "@/lib/types/userTypes";
 export default function AccountSettingsPage() {
     const [activeSection, setActiveSection] = useState("personal");
     const { user, changePassword, changeUserData } = useUser();
-    const [email, setEmail] = useState<string>("");
-    const [imie, setImie] = useState<string>("");
-    const [nazwisko, setNazwisko] = useState<string>("");
-    const [nrDomu, setnrDomu] = useState<string>("");
-    const [nrMieszkania, setnrMieszkania] = useState<string | undefined>();
-    const [ulica, setUlica] = useState<string>("");
-    const [miasto, setMiasto] = useState<string>("");
-    const [kodPocztowy, setKodPocztowy] = useState<string>("");
-    const [kraj, setKraj] = useState<string>("");
-    const [numerTel, setNumerTel] = useState<string>("");
+    const [userData, setUserData] = useState<Partial<Users>>({
+        imie: "",
+        nazwisko: "",
+        email: "",
+        nr_domu: "",
+        nr_lokalu: "",
+        ulica: "",
+        miasto: "",
+        kraj: "",
+        kod_pocztowy: "",
+        telefon: "",
+    });
 
     const [oldPass, setOldPass] = useState<string>("");
     const [newPass, setNewPass] = useState<string>("");
@@ -29,16 +31,8 @@ export default function AccountSettingsPage() {
     useEffect(() => {
         function s() {
             if (!user) return false;
-            setEmail(user.email);
-            setImie(user.imie);
-            setNazwisko(user.nazwisko);
-            setnrDomu(user.nr_domu);
-            setnrMieszkania(user.nr_lokalu);
-            setUlica(user.ulica);
-            setMiasto(user.miasto);
-            setKodPocztowy(user.kod_pocztowy);
-            setKraj(user.kraj);
-            setNumerTel(user.telefon);
+            setUserData(user);
+            return true;
         }
         s();
     }, [user]);
@@ -68,7 +62,12 @@ export default function AccountSettingsPage() {
         if (newPass !== reNewPass && reNewPass !== "" && passNot) {
             b();
         }
-        if (newPass === reNewPass && newPass !== "" && reNewPass !== "" && passNot) {
+        if (
+            newPass === reNewPass &&
+            newPass !== "" &&
+            reNewPass !== "" &&
+            passNot
+        ) {
             b();
         }
     }, [newPass, reNewPass, passNot]);
@@ -128,9 +127,13 @@ export default function AccountSettingsPage() {
                                                     Imię
                                                 </label>
                                                 <input
-                                                    value={imie}
+                                                    value={userData.imie || ""}
                                                     onChange={(e) => {
-                                                        setImie(e.target.value);
+                                                        setUserData({
+                                                            ...userData,
+                                                            imie: e.target
+                                                                .value,
+                                                        });
                                                     }}
                                                     type="text"
                                                     id="firstName"
@@ -145,11 +148,15 @@ export default function AccountSettingsPage() {
                                                     Nazwisko
                                                 </label>
                                                 <input
-                                                    value={nazwisko}
+                                                    value={
+                                                        userData.nazwisko || ""
+                                                    }
                                                     onChange={(e) =>
-                                                        setNazwisko(
-                                                            e.target.value
-                                                        )
+                                                        setUserData({
+                                                            ...userData,
+                                                            nazwisko:
+                                                                e.target.value,
+                                                        })
                                                     }
                                                     type="text"
                                                     id="lastName"
@@ -166,9 +173,12 @@ export default function AccountSettingsPage() {
                                             </label>
                                             <input
                                                 disabled={true}
-                                                value={email}
+                                                value={userData.email || ""}
                                                 onChange={(e) =>
-                                                    setEmail(e.target.value)
+                                                    setUserData({
+                                                        ...userData,
+                                                        email: e.target.value,
+                                                    })
                                                 }
                                                 type="email"
                                                 id="email"
@@ -183,9 +193,12 @@ export default function AccountSettingsPage() {
                                                 Numer telefonu
                                             </label>
                                             <input
-                                                value={numerTel}
+                                                value={userData.telefon || ""}
                                                 onChange={(e) =>
-                                                    setNumerTel(e.target.value)
+                                                    setUserData({
+                                                        ...userData,
+                                                        telefon: e.target.value,
+                                                    })
                                                 }
                                                 type="tel"
                                                 id="phone"
@@ -196,9 +209,9 @@ export default function AccountSettingsPage() {
                                         <button
                                             onClick={() =>
                                                 handleChangePartial({
-                                                    imie: imie,
-                                                    nazwisko: nazwisko,
-                                                    telefon: numerTel,
+                                                    imie: userData.imie,
+                                                    nazwisko: userData.nazwisko,
+                                                    telefon: userData.telefon,
                                                 })
                                             }
                                             className="settings-save-button">
@@ -228,9 +241,12 @@ export default function AccountSettingsPage() {
                                             <input
                                                 type="text"
                                                 id="street"
-                                                value={ulica}
+                                                value={userData.ulica || ""}
                                                 onChange={(e) =>
-                                                    setUlica(e.target.value)
+                                                    setUserData({
+                                                        ...userData,
+                                                        ulica: e.target.value,
+                                                    })
                                                 }
                                                 className="form-input"
                                                 placeholder="ul. Przykładowa 123"
@@ -244,11 +260,15 @@ export default function AccountSettingsPage() {
                                                     Numer domu
                                                 </label>
                                                 <input
-                                                    value={nrDomu}
+                                                    value={
+                                                        userData.nr_domu || ""
+                                                    }
                                                     onChange={(e) =>
-                                                        setnrDomu(
-                                                            e.target.value
-                                                        )
+                                                        setUserData({
+                                                            ...userData,
+                                                            nr_domu:
+                                                                e.target.value,
+                                                        })
                                                     }
                                                     type="text"
                                                     id="house_number"
@@ -263,11 +283,15 @@ export default function AccountSettingsPage() {
                                                     Numer mieszkania
                                                 </label>
                                                 <input
-                                                    value={nrMieszkania}
+                                                    value={
+                                                        userData.nr_lokalu || ""
+                                                    }
                                                     onChange={(e) =>
-                                                        setnrMieszkania(
-                                                            e.target.value
-                                                        )
+                                                        setUserData({
+                                                            ...userData,
+                                                            nr_lokalu:
+                                                                e.target.value,
+                                                        })
                                                     }
                                                     type="text"
                                                     id="flat_number"
@@ -284,11 +308,16 @@ export default function AccountSettingsPage() {
                                                     Kod pocztowy
                                                 </label>
                                                 <input
-                                                    value={kodPocztowy}
+                                                    value={
+                                                        userData.kod_pocztowy ||
+                                                        ""
+                                                    }
                                                     onChange={(e) =>
-                                                        setKodPocztowy(
-                                                            e.target.value
-                                                        )
+                                                        setUserData({
+                                                            ...userData,
+                                                            kod_pocztowy:
+                                                                e.target.value,
+                                                        })
                                                     }
                                                     type="text"
                                                     id="postalCode"
@@ -303,11 +332,15 @@ export default function AccountSettingsPage() {
                                                     Miasto
                                                 </label>
                                                 <input
-                                                    value={miasto}
+                                                    value={
+                                                        userData.miasto || ""
+                                                    }
                                                     onChange={(e) =>
-                                                        setMiasto(
-                                                            e.target.value
-                                                        )
+                                                        setUserData({
+                                                            ...userData,
+                                                            miasto: e.target
+                                                                .value,
+                                                        })
                                                     }
                                                     type="text"
                                                     id="city"
@@ -342,11 +375,17 @@ export default function AccountSettingsPage() {
                                         <button
                                             onClick={() =>
                                                 handleChangePartial({
-                                                    ulica: ulica,
-                                                    nr_domu: nrDomu,
-                                                    nr_lokalu: nrMieszkania,
-                                                    kod_pocztowy: kodPocztowy,
-                                                    miasto: miasto,
+                                                    ulica: userData.ulica || "",
+                                                    nr_domu:
+                                                        userData.nr_domu || "",
+                                                    nr_lokalu:
+                                                        userData.nr_lokalu ||
+                                                        "",
+                                                    kod_pocztowy:
+                                                        userData.kod_pocztowy ||
+                                                        "",
+                                                    miasto:
+                                                        userData.miasto || "",
                                                 })
                                             }
                                             className="settings-save-button">
@@ -427,7 +466,7 @@ export default function AccountSettingsPage() {
                                             onClick={() =>
                                                 handlePasswordChange(
                                                     oldPass,
-                                                    newPass
+                                                    newPass,
                                                 )
                                             }
                                             className="settings-save-button">

@@ -28,9 +28,8 @@ export const userSchema = zod.object({
         .optional(),
     nip: zod.string().optional(),
     faktura: zod.boolean().optional(),
-    role: zod
-        .array(zod.union([roleSchema, zod.string()]))
-        .optional(),
+    role: zod.array(zod.union([roleSchema, zod.string()])).optional(),
+    stripe_id: zod.string().optional(),
 });
 
 export type Users = zod.infer<typeof userSchema>;
