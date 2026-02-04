@@ -8,39 +8,36 @@ import "@/app/globals.css";
 
 export default function CartPage() {
     const {
-        cartItems,
+        getCart,
         removeFromCart,
         updateQuantity,
         clearCart,
         getTotalPrice,
     } = useCart();
-
+    const { id, items } = getCart();
     const handleQuantityChange = useCallback(
         (itemId: string, delta: number) => {
-            const item = cartItems.find((item) => item.id === itemId);
+            const item = items.find((item) => item.id === itemId);
             if (item) {
                 const newQuantity = Math.max(1, item.quantity + delta);
                 updateQuantity(itemId, newQuantity);
             }
         },
-        [cartItems, updateQuantity]
+        [items, updateQuantity],
     );
 
     const handleRemove = useCallback(
         (itemId: string) => {
             removeFromCart(itemId);
         },
-        [removeFromCart]
+        [removeFromCart],
     );
 
     const subtotal = getTotalPrice();
-    const deliveryFee = subtotal > 200 ? 0 : 15; // Gratis powyżej 200 zł
-    const total = subtotal + deliveryFee;
 
     const formattedSubtotal = subtotal.toFixed(2).replace(".", ",");
 
-
-    if (cartItems.length === 0) {
+    if (items.length === 0) {
         return (
             <div className="cart-page">
                 <div className="cart-page-container">
@@ -99,7 +96,7 @@ export default function CartPage() {
                         <h1 className="cart-title">Twój koszyk</h1>
 
                         <div className="cart-items-list">
-                            {cartItems.map((item) => {
+                            {items.map((item) => {
                                 const productPrice = item.price;
                                 const itemTotal = (productPrice * item.quantity)
                                     .toFixed(2)
@@ -181,7 +178,7 @@ export default function CartPage() {
                                                     onClick={() =>
                                                         handleQuantityChange(
                                                             item.id,
-                                                            -1
+                                                            -1,
                                                         )
                                                     }
                                                     aria-label="Zmniejsz ilość">
@@ -195,7 +192,7 @@ export default function CartPage() {
                                                     onClick={() =>
                                                         handleQuantityChange(
                                                             item.id,
-                                                            1
+                                                            1,
                                                         )
                                                     }
                                                     aria-label="Zwiększ ilość">
@@ -250,7 +247,9 @@ export default function CartPage() {
                                     {formattedSubtotal} zł
                                 </span>
                             </div>
-                            <Link href="/kasa" className="cart-checkout-button">
+                            <Link
+                                href={`/kasa`}
+                                className="cart-checkout-button">
                                 Przejdź do kasy
                             </Link>
 

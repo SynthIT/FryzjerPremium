@@ -18,7 +18,7 @@ export function CheckoutForm() {
         const { error } = await stripe.confirmPayment({
             elements,
             confirmParams: {
-                return_url: `${window.location.origin}/sukces`,
+                return_url: `${window.location.origin}/api/v1/payments/succceded`, // Po udanej płatności przekieruj tutaj
             },
         });
 
