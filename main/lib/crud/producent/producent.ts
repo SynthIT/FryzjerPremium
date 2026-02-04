@@ -4,9 +4,9 @@ import mongoose from "mongoose";
 
 export async function collectProducents() {
     await db();
-    const producent = await Producent.find({}).orFail();
+    const producent = await Producent.find({});
     await dbclose();
-    return JSON.stringify(producent);
+    return JSON.stringify(producent || []);
 }
 
 export async function createProducent(prodData: Producents) {

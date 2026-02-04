@@ -97,14 +97,16 @@ export default function FiltersSidebar({ category, products, filters, onFiltersC
 
     // Generuj podkategorie - używamy slugów kategorii produktów
     // Tworzymy mapę slug -> nazwa dla wyświetlania
-    const subcategoriesMap = new Map<string, string>();
+    const subcategoriesMap = new Map<string, { slug: string; nazwa: string }>();
     filteredProducts.forEach((product) => {
       const productCategories = product.kategoria as Categories[];
       if (productCategories && productCategories.length > 0) {
         productCategories.forEach((cat) => {
           if (cat.slug && cat.nazwa) {
-            // Używamy slug jako klucz, ale przechowujemy też nazwę dla wyświetlania
-            subcategoriesMap.set(cat.nazwa.toLowerCase(), cat.nazwa);
+            // Używamy slug jako klucz, żeby uniknąć duplikatów
+            if (!subcategoriesMap.has(cat.slug)) {
+              subcategoriesMap.set(cat.slug, { slug: cat.slug, nazwa: cat.nazwa });
+            }
           }
         });
       }
@@ -112,7 +114,7 @@ export default function FiltersSidebar({ category, products, filters, onFiltersC
     
     // Zwracamy tablicę obiektów {slug, nazwa} dla łatwiejszego użycia
     const subcategories = subcategoriesMap.size > 0 
-      ? Array.from(subcategoriesMap.entries()).map(([slug, nazwa]) => ({ slug, nazwa })).sort((a, b) => a.nazwa.localeCompare(b.nazwa))
+      ? Array.from(subcategoriesMap.values()).sort((a, b) => a.nazwa.localeCompare(b.nazwa))
       : null;
 
     // Oblicz zakres cen z produktów

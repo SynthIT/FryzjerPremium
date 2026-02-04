@@ -10,6 +10,17 @@ import {
 } from "@/lib/models/Products";
 import Image from "next/image";
 import { X, Save, Trash2, Plus, Minus } from "lucide-react";
+import { makeSlugKeys, parseSlugName } from "@/lib/utils_admin";
+
+// Helper do generowania slug
+function generateSlug(text: string): string {
+    return text
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "");
+}
 
 interface ProductEditModalProps {
     product: Products;
@@ -28,10 +39,88 @@ export default function ProductEditModal({
 }: ProductEditModalProps) {
     const [editedProduct, setEditedProduct] = useState<Products>(product);
     const [isSaving, setIsSaving] = useState(false);
+    
+    // Kategorie i producent z API
+    const [categories, setCategories] = useState<Record<string, Categories[]>>({});
+    const [categoriesSlug, setCategoriesSlug] = useState<string[]>([]);
+    const [producents, setProducents] = useState<Producents[]>([]);
+    
+    // Wybrane kategorie (główna + podrzędne)
+    const [selectedMainCategory, setSelectedMainCategory] = useState<string>("");
+    const [selectedSubCategories, setSelectedSubCategories] = useState<string[]>([]);
+    const [selectedProducent, setSelectedProducent] = useState<string>("");
 
     useEffect(() => {
         setEditedProduct(product);
     }, [product]);
+
+    // Auto-generuj slug z nazwy
+    useEffect(() => {
+        if (editedProduct.nazwa && !editedProduct.slug) {
+            setEditedProduct((prev) => ({
+                ...prev,
+                slug: generateSlug(prev.nazwa),
+            }));
+        }
+    }, [editedProduct.nazwa]);
+
+    // Pobierz kategorie
+    useEffect(() => {
+        async function fetchCategories() {
+            try {
+                const response = await fetch("/admin/api/v1/category", {
+                    method: "GET",
+                    credentials: "include",
+                });
+                const data = await response.json();
+                if (data.status === 0 && data.categories) {
+                    setCategories(data.categories);
+                    setCategoriesSlug(makeSlugKeys(data.categories));
+                    
+                    // Ustaw wybrane kategorie na podstawie produktu
+                    const productCategories = getCategories();
+                    if (productCategories.length > 0) {
+                        const firstCat = productCategories[0];
+                        const mainSlug = firstCat.slug;
+                        setSelectedMainCategory(mainSlug);
+                        setSelectedSubCategories(
+                            productCategories
+                                .map((cat) => cat._id || "")
+                                .filter((id) => id)
+                        );
+                    }
+                }
+            } catch (error) {
+                console.error("Błąd podczas pobierania kategorii:", error);
+            }
+        }
+        fetchCategories();
+    }, []);
+
+    // Pobierz producentów
+    useEffect(() => {
+        async function fetchProducents() {
+            try {
+                const response = await fetch("/admin/api/v1/producents", {
+                    method: "GET",
+                    credentials: "include",
+                });
+                const data = await response.json();
+                if (data.status === 0 && data.producents) {
+                    setProducents(data.producents);
+                    
+                    // Ustaw wybranego producenta
+                    const producent = getProducent();
+                    if (producent && producent._id) {
+                        setSelectedProducent(producent._id);
+                    }
+                }
+            } catch (error) {
+                console.error("Błąd podczas pobierania producentów:", error);
+            }
+        }
+        fetchProducents();
+    }, []);
 
     if (!isOpen) return null;
 
@@ -67,10 +156,16 @@ export default function ProductEditModal({
     const handleSave = async () => {
         setIsSaving(true);
         try {
+            // Upewnij się, że slug jest wygenerowany
+            const productToSave = {
+                ...editedProduct,
+                slug: editedProduct.slug || generateSlug(editedProduct.nazwa),
+            };
+            
             const { updateProduct } = await import("@/lib/utils");
-            const result = await updateProduct(editedProduct);
+            const result = await updateProduct(productToSave);
             if (result.status === 0) {
-                onUpdate(editedProduct);
+                onUpdate(productToSave);
             } else {
                 alert(
                     "Błąd podczas zapisywania produktu: " +
@@ -113,33 +208,42 @@ export default function ProductEditModal({
         setEditedProduct((prev) => ({ ...prev, [field]: value }));
     };
 
-    const updateCategory = (
-        index: number,
-        field: keyof Categories,
-        value: string
-    ) => {
-        const categories = getCategories();
-        const updated = [...categories];
-        if (updated[index]) {
-            updated[index] = { ...updated[index], [field]: value };
-            updateField("kategoria", updated);
+    // Obsługa wyboru głównej kategorii
+    const handleMainCategoryChange = (mainSlug: string) => {
+        setSelectedMainCategory(mainSlug);
+        setSelectedSubCategories([]);
+        // Zaktualizuj kategorie produktu
+        if (categories[mainSlug]) {
+            updateField("kategoria", categories[mainSlug]);
         }
     };
 
-    const addCategory = () => {
-        const categories = getCategories();
-        updateField("kategoria", [
-            ...categories,
-            { nazwa: "", slug: "", image: "" },
-        ]);
+    // Obsługa wyboru podkategorii
+    const handleSubCategoryToggle = (subCategoryId: string) => {
+        setSelectedSubCategories((prev) => {
+            const newSelected = prev.includes(subCategoryId)
+                ? prev.filter((id) => id !== subCategoryId)
+                : [...prev, subCategoryId];
+            
+            // Zaktualizuj kategorie produktu
+            if (selectedMainCategory && categories[selectedMainCategory]) {
+                const selectedCats = categories[selectedMainCategory].filter(
+                    (cat) => newSelected.includes(cat._id || "")
+                );
+                updateField("kategoria", selectedCats);
+            }
+            
+            return newSelected;
+        });
     };
 
-    const removeCategory = (index: number) => {
-        const categories = getCategories();
-        updateField(
-            "kategoria",
-            categories.filter((_, i) => i !== index)
-        );
+    // Obsługa zmiany producenta
+    const handleProducentChange = (producentId: string) => {
+        setSelectedProducent(producentId);
+        const producentData = producents.find((p) => p._id === producentId);
+        if (producentData) {
+            updateField("producent", producentData._id || producentData);
+        }
     };
 
     const addMedia = () => {
@@ -164,6 +268,63 @@ export default function ProductEditModal({
             "media",
             media.filter((_, i) => i !== index)
         );
+    };
+
+    // Obsługa specyfikacji
+    const getSpecyfikacja = () => {
+        return editedProduct.specyfikacja || [];
+    };
+
+    const addSpecyfikacja = () => {
+        const spec = getSpecyfikacja();
+        updateField("specyfikacja", [...spec, { key: "", value: "" }]);
+    };
+
+    const updateSpecyfikacja = (index: number, field: "key" | "value", value: string) => {
+        const spec = getSpecyfikacja();
+        const updated = [...spec];
+        updated[index] = { ...updated[index], [field]: value };
+        updateField("specyfikacja", updated);
+    };
+
+    const removeSpecyfikacja = (index: number) => {
+        const spec = getSpecyfikacja();
+        updateField("specyfikacja", spec.filter((_, i) => i !== index));
+    };
+
+    // Obsługa wariantów
+    const getWarianty = (): Warianty[] => {
+        return editedProduct.wariant || [];
+    };
+
+    const addWariant = () => {
+        const warianty = getWarianty();
+        updateField("wariant", [
+            ...warianty,
+            {
+                nazwa: "",
+                slug: "",
+                typ: "kolor",
+                nadpisuje_cene: false,
+                inna_cena_skupu: false,
+            },
+        ]);
+    };
+
+    const updateWariant = (index: number, field: keyof Warianty, value: any) => {
+        const warianty = getWarianty();
+        const updated = [...warianty];
+        updated[index] = { ...updated[index], [field]: value };
+        // Auto-generuj slug z nazwy wariantu
+        if (field === "nazwa" && value) {
+            updated[index].slug = generateSlug(value);
+        }
+        updateField("wariant", updated);
+    };
+
+    const removeWariant = (index: number) => {
+        const warianty = getWarianty();
+        updateField("wariant", warianty.filter((_, i) => i !== index));
     };
 
     return (
@@ -202,7 +363,7 @@ export default function ProductEditModal({
                             </div>
                             <div>
                                 <label className="block text-sm font-medium mb-1">
-                                    Slug *
+                                    Slug (auto-generowany)
                                 </label>
                                 <input
                                     type="text"
@@ -211,11 +372,15 @@ export default function ProductEditModal({
                                         updateField("slug", e.target.value)
                                     }
                                     className="w-full px-3 py-2 border rounded-md"
+                                    readOnly
                                 />
+                                <span className="text-xs text-muted-foreground">
+                                    Slug jest automatycznie generowany z nazwy
+                                </span>
                             </div>
                             <div>
                                 <label className="block text-sm font-medium mb-1">
-                                    Cena (zł) *
+                                    Cena (bez VAT) *
                                 </label>
                                 <input
                                     type="number"
@@ -224,6 +389,23 @@ export default function ProductEditModal({
                                     onChange={(e) =>
                                         updateField(
                                             "cena",
+                                            parseFloat(e.target.value) || 0
+                                        )
+                                    }
+                                    className="w-full px-3 py-2 border rounded-md"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium mb-1">
+                                    Cena skupu (analityka) *
+                                </label>
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    value={editedProduct.cena_skupu || 0}
+                                    onChange={(e) =>
+                                        updateField(
+                                            "cena_skupu",
                                             parseFloat(e.target.value) || 0
                                         )
                                     }
@@ -251,7 +433,7 @@ export default function ProductEditModal({
                                     Dostępność *
                                 </label>
                                 <select
-                                    value={editedProduct.dostepnosc || ""}
+                                    value={editedProduct.dostepnosc || "duza"}
                                     onChange={(e) =>
                                         updateField(
                                             "dostepnosc",
@@ -259,16 +441,10 @@ export default function ProductEditModal({
                                         )
                                     }
                                     className="w-full px-3 py-2 border rounded-md">
-                                    <option value="dostępny">Dostępny</option>
-                                    <option value="niedostępny">
-                                        Niedostępny
-                                    </option>
-                                    <option value="na zamówienie">
-                                        Na zamówienie
-                                    </option>
-                                    <option value="wyprzedany">
-                                        Wyprzedany
-                                    </option>
+                                    <option value="duza">Duża</option>
+                                    <option value="ograniczona">Ograniczona</option>
+                                    <option value="mała">Mała</option>
+                                    <option value="niedostępne">Niedostępne</option>
                                 </select>
                             </div>
                             <div>
@@ -379,109 +555,319 @@ export default function ProductEditModal({
                         />
                     </div>
 
-                    {/* Categories - Array */}
+                    {/* Categories - Select */}
+                    <div>
+                        <h3 className="text-lg font-semibold mb-2">Kategorie *</h3>
+                        <div className="space-y-2">
+                            <select
+                                value={selectedMainCategory}
+                                onChange={(e) => handleMainCategoryChange(e.target.value)}
+                                className="w-full px-3 py-2 border rounded-md">
+                                <option value="">Wybierz główną kategorię</option>
+                                {categoriesSlug.map((slug) => (
+                                    <option key={slug} value={slug}>
+                                        {parseSlugName(slug)}
+                                    </option>
+                                ))}
+                            </select>
+                            {selectedMainCategory && categories[selectedMainCategory] && (
+                                <div className="space-y-1">
+                                    <label className="text-xs text-muted-foreground">
+                                        Wybierz podkategorie (wiele):
+                                    </label>
+                                    {categories[selectedMainCategory].map((cat) => (
+                                        <label
+                                            key={cat._id || cat.nazwa}
+                                            className="flex items-center gap-2 p-2 border rounded-md cursor-pointer hover:bg-accent">
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedSubCategories.includes(cat._id || "")}
+                                                onChange={() =>
+                                                    handleSubCategoryToggle(cat._id || "")
+                                                }
+                                                className="w-4 h-4"
+                                            />
+                                            <span className="text-sm">{cat.nazwa}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Producer - Select */}
+                    <div>
+                        <h3 className="text-lg font-semibold mb-2">
+                            Producent *
+                        </h3>
+                        <select
+                            value={selectedProducent}
+                            onChange={(e) => handleProducentChange(e.target.value)}
+                            className="w-full px-3 py-2 border rounded-md">
+                            <option value="">Wybierz producenta</option>
+                            {producents.map((prod) => (
+                                <option key={prod._id || prod.nazwa} value={prod._id || ""}>
+                                    {prod.nazwa}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* Specyfikacja */}
                     <div>
                         <div className="flex items-center justify-between mb-2">
-                            <h3 className="text-lg font-semibold">Kategorie</h3>
+                            <h3 className="text-lg font-semibold">Specyfikacja</h3>
                             <button
-                                onClick={addCategory}
+                                type="button"
+                                onClick={addSpecyfikacja}
                                 className="px-3 py-1 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90 flex items-center gap-1">
                                 <Plus className="h-4 w-4" />
-                                Dodaj kategorię
+                                Dodaj
                             </button>
                         </div>
                         <div className="space-y-2">
-                            {getCategories().map((cat, index) => (
-                                <div
-                                    key={index}
-                                    className="flex gap-2 items-start p-3 border rounded-md">
-                                    <div className="flex-1 grid grid-cols-3 gap-2">
-                                        <input
-                                            type="text"
-                                            placeholder="Nazwa kategorii"
-                                            value={cat.nazwa || ""}
-                                            onChange={(e) =>
-                                                updateCategory(
-                                                    index,
-                                                    "nazwa",
-                                                    e.target.value
-                                                )
-                                            }
-                                            className="px-3 py-2 border rounded-md"
-                                        />
-                                        <input
-                                            type="text"
-                                            placeholder="Slug kategorii"
-                                            value={cat.slug || ""}
-                                            onChange={(e) =>
-                                                updateCategory(
-                                                    index,
-                                                    "slug",
-                                                    e.target.value
-                                                )
-                                            }
-                                            className="px-3 py-2 border rounded-md"
-                                        />
-                                        <input
-                                            type="text"
-                                            placeholder="URL obrazka"
-                                            value={cat.image || ""}
-                                            onChange={(e) =>
-                                                updateCategory(
-                                                    index,
-                                                    "image",
-                                                    e.target.value
-                                                )
-                                            }
-                                            className="px-3 py-2 border rounded-md"
-                                        />
-                                    </div>
+                            {getSpecyfikacja().map((spec, index) => (
+                                <div key={index} className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        placeholder="Klucz"
+                                        value={spec.key}
+                                        onChange={(e) =>
+                                            updateSpecyfikacja(index, "key", e.target.value)
+                                        }
+                                        className="flex-1 px-3 py-2 border rounded-md"
+                                    />
+                                    <input
+                                        type="text"
+                                        placeholder="Wartość"
+                                        value={spec.value}
+                                        onChange={(e) =>
+                                            updateSpecyfikacja(index, "value", e.target.value)
+                                        }
+                                        className="flex-1 px-3 py-2 border rounded-md"
+                                    />
                                     <button
-                                        onClick={() => removeCategory(index)}
+                                        type="button"
+                                        onClick={() => removeSpecyfikacja(index)}
                                         className="p-2 text-red-600 hover:bg-red-50 rounded-md">
                                         <Minus className="h-4 w-4" />
                                     </button>
                                 </div>
                             ))}
-                            {getCategories().length === 0 && (
-                                <p className="text-sm text-muted-foreground text-center py-4">
-                                    Brak kategorii. Kliknij {'"'}Dodaj kategorię
-                                    {'"'} aby dodać.
-                                </p>
-                            )}
                         </div>
                     </div>
 
-                    {/* Producer */}
+                    {/* Warianty */}
                     <div>
-                        <h3 className="text-lg font-semibold mb-2">
-                            Producent
-                        </h3>
-                        <div className="grid grid-cols-2 gap-4">
-                            <input
-                                type="text"
-                                placeholder="Nazwa producenta"
-                                value={getProducent()?.nazwa || ""}
-                                onChange={(e) =>
-                                    updateField("producent", {
-                                        nazwa: e.target.value,
-                                    } as Producents)
-                                }
-                                className="px-3 py-2 border rounded-md"
-                            />
-                            <input
-                                type="text"
-                                placeholder="Slug producenta (opcjonalnie)"
-                                value={getProducent()?.slug || ""}
-                                onChange={(e) =>
-                                    updateField("producent", {
-                                        ...getProducent(),
-                                        nazwa: getProducent()?.nazwa || "",
-                                        slug: e.target.value,
-                                    } as Producents)
-                                }
-                                className="px-3 py-2 border rounded-md"
-                            />
+                        <div className="flex items-center justify-between mb-2">
+                            <h3 className="text-lg font-semibold">Warianty</h3>
+                            <button
+                                type="button"
+                                onClick={addWariant}
+                                className="px-3 py-1 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90 flex items-center gap-1">
+                                <Plus className="h-4 w-4" />
+                                Dodaj wariant
+                            </button>
+                        </div>
+                        <div className="space-y-4">
+                            {getWarianty().map((wariant, index) => (
+                                <div key={index} className="p-4 border rounded-md space-y-3">
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <div>
+                                            <label className="text-xs font-medium">Nazwa wariantu *</label>
+                                            <input
+                                                type="text"
+                                                value={wariant.nazwa}
+                                                onChange={(e) =>
+                                                    updateWariant(index, "nazwa", e.target.value)
+                                                }
+                                                className="w-full px-3 py-2 border rounded-md text-sm"
+                                                placeholder="Np. Czerwony"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-xs font-medium">Typ *</label>
+                                            <select
+                                                value={wariant.typ}
+                                                onChange={(e) =>
+                                                    updateWariant(index, "typ", e.target.value as Warianty["typ"])
+                                                }
+                                                className="w-full px-3 py-2 border rounded-md text-sm">
+                                                <option value="kolor">Kolor</option>
+                                                <option value="rozmiar">Rozmiar</option>
+                                                <option value="objetosc">Objętość</option>
+                                                <option value="specjalna">Specjalna</option>
+                                                <option value="hurt">Hurt</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    {/* Pola zależne od typu */}
+                                    {wariant.typ === "kolor" && (
+                                        <div className="grid grid-cols-3 gap-2">
+                                            <input
+                                                type="text"
+                                                placeholder="Nazwa koloru"
+                                                value={wariant.kolory?.name || ""}
+                                                onChange={(e) =>
+                                                    updateWariant(index, "kolory", {
+                                                        ...wariant.kolory,
+                                                        name: e.target.value,
+                                                        val: e.target.value,
+                                                        hex: wariant.kolory?.hex || null,
+                                                    })
+                                                }
+                                                className="px-3 py-2 border rounded-md text-sm"
+                                            />
+                                            <input
+                                                type="text"
+                                                placeholder="Wartość"
+                                                value={wariant.kolory?.val || ""}
+                                                onChange={(e) =>
+                                                    updateWariant(index, "kolory", {
+                                                        ...wariant.kolory,
+                                                        name: wariant.kolory?.name || "",
+                                                        val: e.target.value,
+                                                        hex: wariant.kolory?.hex || null,
+                                                    })
+                                                }
+                                                className="px-3 py-2 border rounded-md text-sm"
+                                            />
+                                            <input
+                                                type="color"
+                                                value={wariant.kolory?.hex || "#000000"}
+                                                onChange={(e) =>
+                                                    updateWariant(index, "kolory", {
+                                                        ...wariant.kolory,
+                                                        name: wariant.kolory?.name || "",
+                                                        val: wariant.kolory?.val || "",
+                                                        hex: e.target.value,
+                                                    })
+                                                }
+                                                className="rounded-md border h-10"
+                                            />
+                                        </div>
+                                    )}
+                                    {wariant.typ === "rozmiar" && (
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <input
+                                                type="text"
+                                                placeholder="Nazwa rozmiaru"
+                                                value={wariant.rozmiary?.name || ""}
+                                                onChange={(e) =>
+                                                    updateWariant(index, "rozmiary", {
+                                                        ...wariant.rozmiary,
+                                                        name: e.target.value,
+                                                        val: e.target.value,
+                                                        hex: null,
+                                                    })
+                                                }
+                                                className="px-3 py-2 border rounded-md text-sm"
+                                            />
+                                            <input
+                                                type="text"
+                                                placeholder="Wartość"
+                                                value={wariant.rozmiary?.val || ""}
+                                                onChange={(e) =>
+                                                    updateWariant(index, "rozmiary", {
+                                                        ...wariant.rozmiary,
+                                                        name: wariant.rozmiary?.name || "",
+                                                        val: e.target.value,
+                                                        hex: null,
+                                                    })
+                                                }
+                                                className="px-3 py-2 border rounded-md text-sm"
+                                            />
+                                        </div>
+                                    )}
+                                    {wariant.typ === "objetosc" && (
+                                        <div>
+                                            <input
+                                                type="number"
+                                                placeholder="Objętość (ml)"
+                                                value={wariant.objetosc || ""}
+                                                onChange={(e) =>
+                                                    updateWariant(index, "objetosc", parseFloat(e.target.value) || 0)
+                                                }
+                                                className="w-full px-3 py-2 border rounded-md text-sm"
+                                            />
+                                        </div>
+                                    )}
+
+                                    {/* Nadpisuje cenę */}
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="checkbox"
+                                            checked={wariant.nadpisuje_cene || false}
+                                            onChange={(e) =>
+                                                updateWariant(index, "nadpisuje_cene", e.target.checked)
+                                            }
+                                            className="w-4 h-4"
+                                        />
+                                        <label className="text-xs">Nadpisuje cenę</label>
+                                        {wariant.nadpisuje_cene && (
+                                            <input
+                                                type="number"
+                                                step="0.01"
+                                                placeholder="Nowa cena"
+                                                value={wariant.nowa_cena || ""}
+                                                onChange={(e) =>
+                                                    updateWariant(index, "nowa_cena", parseFloat(e.target.value) || 0)
+                                                }
+                                                className="flex-1 px-3 py-2 border rounded-md text-sm"
+                                            />
+                                        )}
+                                    </div>
+
+                                    {/* Inna cena skupu */}
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="checkbox"
+                                            checked={wariant.inna_cena_skupu || false}
+                                            onChange={(e) =>
+                                                updateWariant(index, "inna_cena_skupu", e.target.checked)
+                                            }
+                                            className="w-4 h-4"
+                                        />
+                                        <label className="text-xs">Inna cena skupu (analityka)</label>
+                                        {wariant.inna_cena_skupu && (
+                                            <input
+                                                type="number"
+                                                step="0.01"
+                                                placeholder="Cena skupu"
+                                                value={wariant.cena_skupu || ""}
+                                                onChange={(e) =>
+                                                    updateWariant(index, "cena_skupu", parseFloat(e.target.value) || 0)
+                                                }
+                                                className="flex-1 px-3 py-2 border rounded-md text-sm"
+                                            />
+                                        )}
+                                    </div>
+
+                                    {/* Permisje */}
+                                    {(wariant.typ === "hurt" || wariant.typ === "specjalna") && (
+                                        <div>
+                                            <label className="text-xs font-medium">Permisje (opcjonalnie)</label>
+                                            <input
+                                                type="number"
+                                                placeholder="Kod permisji"
+                                                value={wariant.permisje || ""}
+                                                onChange={(e) =>
+                                                    updateWariant(index, "permisje", parseInt(e.target.value) || undefined)
+                                                }
+                                                className="w-full px-3 py-2 border rounded-md text-sm"
+                                            />
+                                        </div>
+                                    )}
+
+                                    <button
+                                        type="button"
+                                        onClick={() => removeWariant(index)}
+                                        className="w-full px-3 py-2 text-sm text-red-600 border border-red-300 rounded-md hover:bg-red-50">
+                                        Usuń wariant
+                                    </button>
+                                </div>
+                            ))}
                         </div>
                     </div>
 

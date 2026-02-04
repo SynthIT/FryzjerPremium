@@ -18,8 +18,26 @@ export async function GET(req: NextRequest) {
         );
     }
 
-    const cat = await collectCategories();
-    return NextResponse.json({ status: 0, categories: JSON.parse(cat) });
+    try {
+        const cat = await collectCategories();
+        const parsedCategories = JSON.parse(cat);
+        return NextResponse.json({ 
+            status: 0, 
+            categories: parsedCategories || {} 
+        });
+    } catch (error) {
+        console.error("Błąd podczas pobierania kategorii:", error);
+        new LogService({
+            path: req.url,
+            kind: "error",
+            position: "admin",
+            http: req.method,
+        }).error(`Błąd podczas pobierania kategorii: ${error}`);
+        return NextResponse.json(
+            { status: 0, categories: {} },
+            { status: 200 }
+        );
+    }
 }
 
 export async function DELETE(req: NextRequest) {

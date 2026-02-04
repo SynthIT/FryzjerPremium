@@ -17,22 +17,29 @@ export default function CategoriesPage() {
                     method: "GET",
                     credentials: "include",
                 });
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                const data = await response.json();
                 const {
                     status,
                     categories,
                 }: {
                     status: number;
                     categories: Record<string, Categories[]>;
-                } = await response.json();
+                } = data;
                 console.log(categories);
                 if (status === 0 && categories) {
                     setCategories(categories);
                     setCategoriesSlug(makeSlugKeys(categories));
                 } else {
-                    throw new Error();
+                    setCategories({});
+                    setCategoriesSlug([]);
                 }
             } catch (error) {
-                console.error("Błąd podczas pobierania produktów:", error);
+                console.error("Błąd podczas pobierania kategorii:", error);
+                setCategories({});
+                setCategoriesSlug([]);
             }
         }
         fetchProducts();
@@ -54,17 +61,19 @@ export default function CategoriesPage() {
                     Dodaj produkt
                 </a>
             </div>
-            {categories ? (
-                categoriesSlug?.map((val) => (
-                    <>
-                        <p key={val}>{parseSlugName(val)}</p>
-                        {categories[val].map((val, index) => (
-                            <AdminCategoryCard
-                                key={index}
-                                category={val}
-                                onClick={() => {}}></AdminCategoryCard>
-                        ))}
-                    </>
+            {categories && categoriesSlug && categoriesSlug.length > 0 ? (
+                categoriesSlug.map((val) => (
+                    <div key={val}>
+                        <p className="font-semibold text-lg mb-2">{parseSlugName(val)}</p>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                            {categories[val]?.map((cat, index) => (
+                                <AdminCategoryCard
+                                    key={cat._id || `${val}-${index}`}
+                                    category={cat}
+                                    onClick={() => {}}></AdminCategoryCard>
+                            ))}
+                        </div>
+                    </div>
                 ))
             ) : (
                 <div className="rounded-lg border">

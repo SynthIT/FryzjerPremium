@@ -5,13 +5,15 @@ import mongoose from "mongoose";
 
 export async function collectCategories() {
     await db();
-    const categories = await Category.find({}).orFail();
+    const categories = await Category.find({});
     const cats: Record<string, Categories[]> = {};
-    for (const docs of categories) {
-        if (!cats[docs.slug]) {
-            cats[docs.slug] = [];
+    if (categories && categories.length > 0) {
+        for (const docs of categories) {
+            if (!cats[docs.slug]) {
+                cats[docs.slug] = [];
+            }
+            cats[docs.slug].push(docs);
         }
-        cats[docs.slug].push(docs);
     }
     await dbclose();
     return JSON.stringify(cats);

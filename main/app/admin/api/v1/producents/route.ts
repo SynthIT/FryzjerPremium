@@ -17,8 +17,26 @@ export async function GET(req: NextRequest) {
             { status: 401 }
         );
     }
-    const producents = await collectProducents();
-    return NextResponse.json({ status: 0, producents: JSON.parse(producents) });
+    try {
+        const producents = await collectProducents();
+        const parsedProducents = JSON.parse(producents);
+        return NextResponse.json({ 
+            status: 0, 
+            producents: Array.isArray(parsedProducents) ? parsedProducents : [] 
+        });
+    } catch (error) {
+        console.error("Błąd podczas pobierania producentów:", error);
+        new LogService({
+            path: req.url,
+            kind: "error",
+            position: "admin",
+            http: req.method,
+        }).error(`Błąd podczas pobierania producentów: ${error}`);
+        return NextResponse.json(
+            { status: 0, producents: [] },
+            { status: 200 }
+        );
+    }
 }
 
 export async function DELETE(req: NextRequest) {
