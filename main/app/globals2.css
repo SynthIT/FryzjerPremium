@@ -149,9 +149,7 @@ body {
 .admin-panel-wrapper {
   background: var(--background) !important;
   color: var(--foreground) !important;
-}
-
-/* Ensure body has white background when admin panel is active */
+}/* Ensure body has white background when admin panel is active */
 body:has(.admin-panel-wrapper) {
   background: var(--background) !important;
   background-image: none !important;

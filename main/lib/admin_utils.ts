@@ -20,6 +20,8 @@ import { writeFileSync } from "node:fs";
 import path from "node:path";
 import { Products, Warianty } from "./types/productTypes";
 
+let didCleanupIndexes = false;
+
 /*
     FUNKCJE ODNOŚCIE UŻYTKOWNIKÓW WYCHODZĄCE Z 
     FRONTU, ORAZ DO ADMIN PANELU
@@ -197,24 +199,22 @@ export function returnAvailableWariant(
     if (val && user) {
         if (!user.role) return { res: true, product: product };
         const filteredProduct = { ...product };
-        filteredProduct.wariant = (product.wariant as Warianty[]).filter(
-            (w) => {
-                if (!w.permisje) return true;
-                console.log(w);
-                return user.role!.some((role) => {
-                    console.log(role);
-                    const rol = role as Roles;
-                    if (!rol.uzytkownik) return false;
+        filteredProduct.wariant = (product.wariant as Warianty[]).filter((w) => {
+            if (!w.permisje) return true;
+            console.log(w);
+            return user.role!.some((role) => {
+                console.log(role);
+                const rol = role as Roles;
+                if (!rol.uzytkownik) return false;
 
-                    return hasPermission(w.permisje!, rol.uzytkownik);
-                });
-            },
-        );
+                return hasPermission(w.permisje!, rol.uzytkownik);
+            });
+        });
         return { res: true, product: filteredProduct };
     } else {
         const filteredProduct = { ...product };
         filteredProduct.wariant = (product.wariant as Warianty[]).filter(
-            (w) => !w.permisje,
+            (w) => !w.permisje
         );
         return { res: true, product: filteredProduct };
     }
@@ -359,9 +359,26 @@ export async function deleteUser(
     }
 }
 
-async function db() {
+export async function db() {
     await mongoose.connect("mongodb://localhost:27017/fryzjerpremium");
+    // One-time cleanup for a stale/incorrect unique index that can break registration:
+    // users: { zamowienia: [ObjectId] } + unique index on "zamowienia.numer_zamowienia"
+    // => can generate duplicate null keys.
+    if (!didCleanupIndexes) {
+        didCleanupIndexes = true;
+        try {
+            const indexes = await User.collection.indexes();
+            const bad = indexes.find(
+                (i) => i.name === "zamowienia.numer_zamowienia_1"
+            );
+            if (bad && bad.name) {
+                await User.collection.dropIndex(bad.name);
+            }
+        } catch {
+            // ignore (collection may not exist yet, insufficient perms, etc.)
+        }
+    }
 }
-async function dbclose() {
+export async function dbclose() {
     await mongoose.connection.close();
 }
