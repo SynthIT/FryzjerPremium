@@ -29,17 +29,23 @@ export const mediaProductSchema = new Schema<Media>(
     {
         optimisticConcurrency: true,
         timestamps: true,
+        autoIndex: false,
     },
 );
 
-export const specialPromoSchema = new Schema<SpecjalnaPromocja>({
-    nazwa: { type: String, required: true, unique: true },
-    warunek: { type: Number, required: true },
-    obniza_cene: { type: Boolean },
-    obnizka: { type: Number },
-    zmienia_cene: { type: Boolean },
-    nowa_cena: { type: Number },
-});
+export const specialPromoSchema = new Schema<SpecjalnaPromocja>(
+    {
+        nazwa: { type: String, required: true, unique: true },
+        warunek: { type: Number, required: true },
+        obniza_cene: { type: Boolean },
+        obnizka: { type: Number },
+        zmienia_cene: { type: Boolean },
+        nowa_cena: { type: Number },
+    },
+    {
+        autoIndex: false,
+    },
+);
 
 export const promosSchema = new Schema<Promos>(
     {
@@ -66,6 +72,7 @@ export const categoriesSchema = new Schema<Categories>(
     },
     {
         optimisticConcurrency: true,
+        autoIndex: false,
     },
 );
 

@@ -87,6 +87,3 @@ export const Product: Model<Products> =
     (models.Products as Model<Products>) ??
     model<Products>("Products", productSchema);
 
-// Re-eksport typów dla kompatybilności z istniejącymi importami
-export type { Products, Producents, Warianty } from "../types/productTypes";
-export type { Categories, Promos, Opinie } from "../types/shared";

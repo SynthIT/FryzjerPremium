@@ -1,5 +1,5 @@
 import { Model, model, models, Schema, Types } from "mongoose";
-import { Courses, Firmy, KursWarianty } from "../types/coursesTypes.";
+import { Courses, Firmy, KursWarianty } from "../types/coursesTypes";
 import { mediaProductSchema, reviewProductSchema } from "./shared";
 
 const KursWariant = new Schema<KursWarianty>(
@@ -33,34 +33,37 @@ const FirmaSchema = new Schema<Firmy>(
     },
 );
 
-const courseSchema = new Schema<Courses>({
-    slug: { type: String, required: true, unique: true },
-    nazwa: { type: String, required: true, unique: true },
-    cena: { type: Number, required: true },
-    kategoria: {
-        type: [Types.ObjectId],
-        required: true,
-        ref: "Categories",
+const courseSchema = new Schema<Courses>(
+    {
+        slug: { type: String, required: true, unique: true },
+        nazwa: { type: String, required: true, unique: true },
+        cena: { type: Number, required: true },
+        kategoria: {
+            type: [Types.ObjectId],
+            required: true,
+            ref: "Categories",
+        },
+        firma: { type: Types.ObjectId, ref: "Firmy", required: true },
+        media: { type: [mediaProductSchema], default: [] },
+        promocje: { type: Types.ObjectId, ref: "Promos" },
+        opis: { type: String, required: true },
+        ocena: { type: Number, default: 0 },
+        opinie: { type: [reviewProductSchema], default: [] },
+        vat: { type: Number, required: true, default: 23 },
+        wariant: { type: [KursWariant], default: [] },
+        sku: { type: String },
+        aktywne: { type: Boolean },
+        // Pola specyficzne dla szkoleń (opcjonalne - nie zepsują istniejących danych)
+        czasTrwania: { type: String },
+        poziom: { type: String },
+        liczbaLekcji: { type: Number },
+        instruktor: { type: String },
+        jezyk: { type: String, default: "polski" },
+        certyfikat: { type: Boolean, default: false },
+        krotkiOpis: { type: String }, // Krótki opis/subtitle
     },
-    firma: { type: Types.ObjectId, ref: "Firmy", required: true },
-    media: { type: [mediaProductSchema], default: [] },
-    promocje: { type: Types.ObjectId, ref: "Promos" },
-    opis: { type: String, required: true },
-    ocena: { type: Number, default: 0 },
-    opinie: { type: [reviewProductSchema], default: [] },
-    vat: { type: Number, required: true, default: 23 },
-    wariant: { type: [KursWariant], default: [] },
-    sku: { type: String },
-    aktywne: { type: Boolean },
-    // Pola specyficzne dla szkoleń (opcjonalne - nie zepsują istniejących danych)
-    czasTrwania: { type: String },
-    poziom: { type: String },
-    liczbaLekcji: { type: Number },
-    instruktor: { type: String },
-    jezyk: { type: String, default: "polski" },
-    certyfikat: { type: Boolean, default: false },
-    krotkiOpis: { type: String }, // Krótki opis/subtitle
-});
+    { autoIndex: false },
+);
 
 export const Course: Model<Courses> =
     (models.Courses as Model<Courses>) ??

@@ -1,3 +1,4 @@
+import { db } from "@/lib/db/init";
 import { Product } from "@/lib/models/Products";
 import { Promo } from "@/lib/models/shared";
 import { Promos, zodPromocje } from "@/lib/types/shared";
@@ -6,7 +7,6 @@ import mongoose from "mongoose";
 export async function collectPromo() {
     await db();
     const promocje = await Promo.find({}).orFail();
-    await dbclose();
     return JSON.stringify(promocje);
 }
 
@@ -14,7 +14,6 @@ export async function createPromo(promocja: Promos) {
     zodPromocje.parse(promocja);
     await db();
     const promo = await Promo.create(promocja);
-    await dbclose();
     return promo;
 }
 
@@ -35,6 +34,7 @@ export async function deletePromoBySlug(slug: string) {
 export async function updatePromo(promocje: Promos) {
     const ok = zodPromocje.safeParse(promocje);
     if (ok.success) {
+        await db();
         const promocja = await Promo.findOneAndUpdate(
             {
                 slug: promocje.nazwa,
@@ -45,11 +45,4 @@ export async function updatePromo(promocje: Promos) {
     } else {
         console.error(ok.error);
     }
-}
-
-async function db() {
-    await mongoose.connect("mongodb://localhost:27017/fryzjerpremium");
-}
-async function dbclose() {
-    await mongoose.connection.close();
 }

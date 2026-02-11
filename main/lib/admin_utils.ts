@@ -13,15 +13,15 @@ import {
     PublicKeyInput,
 } from "node:crypto";
 import { JwtPayload, sign, verify } from "jsonwebtoken";
-import mongoose from "mongoose";
 import { NextRequest } from "next/server";
 import { hash, verify as passverify } from "argon2";
 import { writeFileSync } from "node:fs";
 import path from "node:path";
 import { Products, Warianty } from "./types/productTypes";
-import { Courses, KursWarianty } from "./types/coursesTypes.";
+import { Courses, KursWarianty } from "./types/coursesTypes";
+import { db } from "@/lib/db/init";
 
-let didCleanupIndexes = false;
+
 
 /*
     FUNKCJE ODNOŚCIE UŻYTKOWNIKÓW WYCHODZĄCE Z 
@@ -78,7 +78,6 @@ export async function checkExistingUser(email: string, haslo: string) {
             .populate("role")
             .populate("zamowienia")
             .orFail();
-        await dbclose();
         if (existingUser) {
             if (!(await passverify(existingUser.haslo.trim(), haslo.trim())))
                 return "Hasła nie są takie same";
@@ -237,7 +236,6 @@ export async function addNewUser(payload: Users) {
     await db();
     const existingUser = await User.findOne({ email: payload.email });
     if (existingUser && existingUser.email === payload.email) {
-        await dbclose();
         return "Użytkownik o podanym emailu już istnieje.";
     } else {
         const jest = await Role.findOne({ nazwa: "admin" });
@@ -274,7 +272,6 @@ export async function addNewUser(payload: Users) {
                 role: [rola._id!],
             };
             const u = await User.create(upayload);
-            await dbclose();
             return u;
         } else {
             const hashedPassword = await hash(payload.haslo, { type: 2 });
@@ -296,7 +293,6 @@ export async function addNewUser(payload: Users) {
                 role: [jest._id!],
             };
             const u = await User.create(upayload);
-            await dbclose();
             return u;
         }
     }
@@ -316,7 +312,6 @@ export async function changePassword(
         if (!ok) throw new Error("Hasla nie sa takie same");
         res.haslo = await hash(newPassword, { type: 2 });
         res.save();
-        await dbclose();
         const jwt = createJWT(res, true);
         return { mess: "Hasło zostało zmienione", user: res, jwt: jwt };
     } catch (err) {
@@ -326,7 +321,7 @@ export async function changePassword(
 
 export async function editUser(
     req: NextRequest,
-    newUser: Users,
+    newUser: Partial<Users>,
 ): Promise<{ mess: string; user?: Users; jwt?: string[] }> {
     const { val, user, mess } = verifyJWT(req);
     if (!val || typeof user === "undefined") return { mess: mess! };
@@ -337,7 +332,6 @@ export async function editUser(
             { email: user.email },
             { $set: newUser },
         ).orFail();
-        await dbclose();
         const jwt = createJWT(res, true);
         return { mess: "Użytkownik został zedytowany", user: res, jwt };
     } catch (err) {
@@ -372,26 +366,3 @@ export async function deleteUser(
     }
 }
 
-export async function db() {
-    await mongoose.connect("mongodb://localhost:27017/fryzjerpremium");
-    // One-time cleanup for a stale/incorrect unique index that can break registration:
-    // users: { zamowienia: [ObjectId] } + unique index on "zamowienia.numer_zamowienia"
-    // => can generate duplicate null keys.
-    if (!didCleanupIndexes) {
-        didCleanupIndexes = true;
-        try {
-            const indexes = await User.collection.indexes();
-            const bad = indexes.find(
-                (i) => i.name === "zamowienia.numer_zamowienia_1"
-            );
-            if (bad && bad.name) {
-                await User.collection.dropIndex(bad.name);
-            }
-        } catch {
-            // ignore (collection may not exist yet, insufficient perms, etc.)
-        }
-    }
-}
-export async function dbclose() {
-    await mongoose.connection.close();
-}

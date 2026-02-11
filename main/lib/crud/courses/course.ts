@@ -1,7 +1,8 @@
+import { db } from "@/lib/db/init";
 import { Course } from "@/lib/models/Courses";
-import { zodCourses, Courses } from "@/lib/types/coursesTypes.";
+import { zodCourses, Courses } from "@/lib/types/coursesTypes";
 import { Categories } from "@/lib/types/shared";
-import mongoose, { Types } from "mongoose";
+import { Types } from "mongoose";
 
 export async function collectCourses() {
     try {
@@ -11,12 +12,8 @@ export async function collectCourses() {
             .populate("promocje")
             .populate("firma")
             .lean();
-        await dbclose();
-        console.log("📚 collectCourses: znaleziono", cours?.length || 0, "kursów");
         return JSON.stringify(cours || []);
     } catch (error) {
-        console.error("❌ Błąd w collectCourses:", error);
-        await dbclose().catch(() => {});
         return JSON.stringify([]);
     }
 }
@@ -25,14 +22,12 @@ export async function createCourse(course: Courses) {
     zodCourses.parse(course);
     await db();
     const cours = await Course.create(course);
-    await dbclose();
     return cours;
 }
 
 export async function deleteCourseBySlug(slug: string) {
     await db();
     const cours = await Course.findOneAndDelete({ slug: slug });
-    await dbclose();
     return cours;
 }
 
@@ -55,13 +50,5 @@ export async function updateCourse(courseData: Courses) {
             new: true,
         },
     );
-    await dbclose();
     return cours;
-}
-
-async function db() {
-    await mongoose.connect("mongodb://localhost:27017/fryzjerpremium");
-}
-async function dbclose() {
-    await mongoose.connection.close();
 }

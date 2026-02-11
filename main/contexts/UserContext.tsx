@@ -12,36 +12,39 @@ import {
 } from "react";
 
 interface UserContextType {
-    user: Users | undefined;
+    user: string | undefined;
+    userData: Users | undefined;
     orders: OrderList[] | undefined;
     addUser: (user: Users) => void;
     changePassword: (
         newPassword: string,
-        oldPassword: string
+        oldPassword: string,
     ) => Promise<boolean>;
     changeUserData: (changed: Partial<Users>) => false | Promise<boolean>;
     logout: () => void;
     deleteAccount: () => void;
     addNewOrder: (order: OrderList) => Promise<boolean>;
     getOneOrder: (nr_zam: string) => OrderList | undefined;
+    getUser: () => void;
     isAdmin: () => boolean;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: ReactNode }) {
-    const [user, setUser] = useState<Users | undefined>();
+    const [user, setUser] = useState<string | undefined>();
+    const [userData, setUserData] = useState<Users | undefined>();
     const [orders, setOrders] = useState<OrderList[]>([]);
 
     useEffect(() => {
         if (user !== undefined) {
-            localStorage.setItem("user", JSON.stringify(user));
+            localStorage.setItem("user", user);
         }
         if (localStorage.getItem("user")) return;
     }, [user, orders]);
 
     useEffect(() => {
-        async function u(c?: Users) {
+        async function u(c?: string) {
             fetch("/api/v1/auth/check", {
                 method: "POST",
                 credentials: "include",
@@ -52,35 +55,16 @@ export function UserProvider({ children }: { children: ReactNode }) {
                     return res.json();
                 })
                 .then((data) => {
-                    console.log(data);
                     if (!data) return;
-                    if (c) {
-                        setUser(c);
-                        if (c.zamowienia && c.zamowienia.length > 0) {
-                            setOrders(c.zamowienia as OrderList[]);
-                        }
-                    } else {
-                        setUser(data.user);
-                        if (
-                            data.user.zamowienia &&
-                            data.user.zamowienia.length > 0
-                        ) {
-                            setOrders(data.user.zamowienia as OrderList[]);
-                        }
+                    setUser(data.user._id);
+                    if (data.user.zamowienia) {
+                        setOrders(data.user.zamowienia);
                     }
                 });
         }
         try {
             const loggedUser = localStorage.getItem("user");
-            const validateUser = userSchema.safeParse(loggedUser);
-            console.log(loggedUser);
-            console.log(validateUser);
-            if (!validateUser.success) {
-                u();
-            }
-            if (validateUser.data) {
-                u(validateUser.data);
-            }
+            u(loggedUser ?? undefined);
         } catch (err) {
             console.log("Błąd podczas ładowania użytkownika: ", err);
         }
@@ -91,9 +75,9 @@ export function UserProvider({ children }: { children: ReactNode }) {
         const orders = user.zamowienia as OrderList[];
         if (orders.length > 0) {
             setOrders(orders);
-            setUser(user);
+            setUser(user._id);
         }
-        setUser(user);
+        setUser(user._id);
     }, []);
 
     const changePassword = useCallback(
@@ -115,12 +99,12 @@ export function UserProvider({ children }: { children: ReactNode }) {
             }
             return changepass();
         },
-        []
+        [],
     );
 
     const changeUserData = useCallback(
         (changed: Partial<Users>) => {
-            async function editUser(edit: Users) {
+            async function editUser(edit: Partial<Users>) {
                 const req = await fetch("/api/v1/auth/change/user", {
                     method: "PUT",
                     credentials: "include",
@@ -130,19 +114,13 @@ export function UserProvider({ children }: { children: ReactNode }) {
                     .then((data) => {
                         return data;
                     });
-                if (req.status === 201) {
-                    setUser(edit);
-                }
+
                 return req.status === 201;
             }
             if (!user) return false;
-            const editUsers = {
-                ...user,
-                ...changed,
-            } satisfies Users;
-            return editUser(editUsers);
+            return editUser(changed);
         },
-        [user]
+        [user],
     );
     const logout = useCallback(() => {
         async function out() {
@@ -197,20 +175,44 @@ export function UserProvider({ children }: { children: ReactNode }) {
             });
             return order;
         },
-        [orders]
+        [orders],
     );
+    const getUser = useCallback(() => {
+        async function getuser() {
+            await fetch("/api/v1/auth/change/user", {
+                method: "GET",
+                credentials: "include",
+            })
+                .then((data) => data.json())
+                .then((res) => {
+                    if (res.status == 0) {
+                        setUserData(res.user);
+                    }
+                });
+        }
+        if (!user) return;
+        getuser();
+    }, [user]);
 
     const isAdmin = useCallback(() => {
-        if (!user) return false;
-        if (!user.role) return false;
-        console.log(hasAnyAdminPermission(user.role as Roles[]));
-        return hasAnyAdminPermission(user.role as Roles[]);
-    }, [user]);
+        if (!userData) {
+            getUser();
+            if(!userData!.role) return false;
+            console.log(hasAnyAdminPermission(userData!.role as Roles[]));
+            return hasAnyAdminPermission(userData!.role as Roles[]);
+            
+        } else {
+            if (!userData.role) return false;
+            console.log(hasAnyAdminPermission(userData.role as Roles[]));
+            return hasAnyAdminPermission(userData.role as Roles[]);
+        }
+    }, [userData, getUser]);
 
     return (
         <UserContext.Provider
             value={{
                 user,
+                userData,
                 orders,
                 addUser,
                 changePassword,
@@ -219,6 +221,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
                 deleteAccount,
                 addNewOrder,
                 getOneOrder,
+                getUser,
                 isAdmin,
             }}>
             {children}

@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import "@/app/globals2.css";
-import { Courses, Categories, Firmy, Media } from "@/lib/types/coursesTypes.";
+import { Courses, Firmy } from "@/lib/types/coursesTypes";
+import { Categories, Media } from "@/lib/types/shared";
 import { makeSlugKeys, parseSlugName } from "@/lib/utils_admin";
 import { useRouter } from "next/navigation";
 import { Plus, X, Clock, Users, BookOpen, Award, Globe } from "lucide-react";
@@ -20,7 +21,7 @@ function generateSlug(text: string): string {
 export default function NewCoursePage() {
     const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
-    
+
     // Podstawowe dane szkolenia
     const [nazwa, setNazwa] = useState<string>("");
     const [slug, setSlug] = useState<string>("");
@@ -40,10 +41,15 @@ export default function NewCoursePage() {
     const [certyfikat, setCertyfikat] = useState<boolean>(false);
 
     // Kategorie i firma
-    const [categories, setCategories] = useState<Record<string, Categories[]>>({});
+    const [categories, setCategories] = useState<Record<string, Categories[]>>(
+        {},
+    );
     const [categoriesSlug, setCategoriesSlug] = useState<string[]>([]);
-    const [selectedMainCategory, setSelectedMainCategory] = useState<string>("");
-    const [selectedSubCategories, setSelectedSubCategories] = useState<string[]>([]);
+    const [selectedMainCategory, setSelectedMainCategory] =
+        useState<string>("");
+    const [selectedSubCategories, setSelectedSubCategories] = useState<
+        string[]
+    >([]);
     const [firmy, setFirmy] = useState<Firmy[]>([]);
     const [selectedFirma, setSelectedFirma] = useState<string>("");
 
@@ -64,39 +70,29 @@ export default function NewCoursePage() {
     useEffect(() => {
         async function fetchCategories() {
             try {
-                const response = await fetch("/admin/api/v1/category", {
+                const p1 = fetch("/admin/api/v1/category", {
                     method: "GET",
                     credentials: "include",
+                }).then((data) => data.json());
+                const p2 = fetch("/admin/api/v1/firmy", {
+                    method: "GET",
+                    credentials: "include",
+                }).then((data) => data.json());
+                await Promise.all([p1, p2]).then(([a, b]) => {
+                    console.log(b);
+                    if (a.status == 0) {
+                        setCategories(a.categories);
+                        setCategoriesSlug(makeSlugKeys(a.categories));
+                    }
+                    if (b.status == 0) {
+                        setFirmy(b.firmy);
+                    }
                 });
-                const data = await response.json();
-                if (data.status === 0 && data.categories) {
-                    setCategories(data.categories);
-                    setCategoriesSlug(makeSlugKeys(data.categories));
-                }
             } catch (error) {
-                console.error("Błąd podczas pobierania kategorii:", error);
+                console.error("Błąd podczas pobierania danych:", error);
             }
         }
         fetchCategories();
-    }, []);
-
-    // Pobierz firmy
-    useEffect(() => {
-        async function fetchFirmy() {
-            try {
-                const response = await fetch("/admin/api/v1/firmy", {
-                    method: "GET",
-                    credentials: "include",
-                });
-                const data = await response.json();
-                if (Array.isArray(data)) {
-                    setFirmy(data);
-                }
-            } catch (error) {
-                console.error("Błąd podczas pobierania firm:", error);
-            }
-        }
-        fetchFirmy();
     }, []);
 
     // Obsługa wyboru głównej kategorii
@@ -133,7 +129,7 @@ export default function NewCoursePage() {
         if (!e.target.files) return;
         const files = Array.from(e.target.files);
         setGalleryFiles((prev) => [...prev, ...files]);
-        
+
         files.forEach((file) => {
             const reader = new FileReader();
             reader.onloadend = () => {
@@ -165,7 +161,7 @@ export default function NewCoursePage() {
             }
 
             // Przygotuj firmę
-            const firmaData = firmy.find((f) => f._id === selectedFirma);
+            const firmaData = firmy.find((f) => f.slug === selectedFirma);
             if (!firmaData) {
                 alert("Wybierz firmę");
                 setIsSubmitting(false);
@@ -215,6 +211,7 @@ export default function NewCoursePage() {
                 jezyk: jezyk || "polski",
                 certyfikat: certyfikat || false,
                 krotkiOpis: krotkiOpis || undefined,
+                promocje: null,
             };
 
             const response = await fetch("/admin/api/v1/courses", {
@@ -227,12 +224,15 @@ export default function NewCoursePage() {
             });
 
             const result = await response.json();
-            
+
             if (result.status === 201 || response.ok) {
                 alert("Szkolenie zostało dodane pomyślnie!");
                 router.push("/admin/courses");
             } else {
-                alert("Błąd podczas dodawania szkolenia: " + (result.error || "Nieznany błąd"));
+                alert(
+                    "Błąd podczas dodawania szkolenia: " +
+                        (result.error || "Nieznany błąd"),
+                );
             }
         } catch (error) {
             console.error("Błąd podczas dodawania szkolenia:", error);
@@ -260,7 +260,7 @@ export default function NewCoursePage() {
                         <BookOpen className="h-5 w-5" />
                         Podstawowe informacje
                     </h2>
-                    
+
                     <div className="grid gap-4 sm:grid-cols-2">
                         <div className="sm:col-span-2">
                             <label className="block text-sm font-medium mb-2">
@@ -306,7 +306,9 @@ export default function NewCoursePage() {
                                 step="0.01"
                                 min="0"
                                 value={cena}
-                                onChange={(e) => setCena(parseFloat(e.target.value) || 0)}
+                                onChange={(e) =>
+                                    setCena(parseFloat(e.target.value) || 0)
+                                }
                                 required
                                 className="w-full rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
                                 placeholder="0.00"
@@ -322,7 +324,9 @@ export default function NewCoursePage() {
                                 min="0"
                                 max="100"
                                 value={vat}
-                                onChange={(e) => setVat(parseFloat(e.target.value) || 23)}
+                                onChange={(e) =>
+                                    setVat(parseFloat(e.target.value) || 23)
+                                }
                                 className="w-full rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
                             />
                         </div>
@@ -335,7 +339,7 @@ export default function NewCoursePage() {
                         <Clock className="h-5 w-5" />
                         Szczegóły szkolenia
                     </h2>
-                    
+
                     <div className="grid gap-4 sm:grid-cols-2">
                         <div>
                             <label className="block text-sm font-medium mb-2">
@@ -360,10 +364,18 @@ export default function NewCoursePage() {
                                 onChange={(e) => setPoziom(e.target.value)}
                                 required
                                 className="w-full rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring">
-                                <option value="poczatkujacy">Początkujący</option>
-                                <option value="sredniozaawansowany">Średniozaawansowany</option>
-                                <option value="zaawansowany">Zaawansowany</option>
-                                <option value="wszystkie">Wszystkie poziomy</option>
+                                <option value="poczatkujacy">
+                                    Początkujący
+                                </option>
+                                <option value="sredniozaawansowany">
+                                    Średniozaawansowany
+                                </option>
+                                <option value="zaawansowany">
+                                    Zaawansowany
+                                </option>
+                                <option value="wszystkie">
+                                    Wszystkie poziomy
+                                </option>
                             </select>
                         </div>
 
@@ -375,7 +387,11 @@ export default function NewCoursePage() {
                                 type="number"
                                 min="0"
                                 value={liczbaLekcji}
-                                onChange={(e) => setLiczbaLekcji(parseInt(e.target.value) || 0)}
+                                onChange={(e) =>
+                                    setLiczbaLekcji(
+                                        parseInt(e.target.value) || 0,
+                                    )
+                                }
                                 className="w-full rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
                                 placeholder="0"
                             />
@@ -412,11 +428,15 @@ export default function NewCoursePage() {
                             <input
                                 type="checkbox"
                                 checked={certyfikat}
-                                onChange={(e) => setCertyfikat(e.target.checked)}
+                                onChange={(e) =>
+                                    setCertyfikat(e.target.checked)
+                                }
                                 className="w-4 h-4"
                                 id="certyfikat"
                             />
-                            <label htmlFor="certyfikat" className="text-sm font-medium cursor-pointer">
+                            <label
+                                htmlFor="certyfikat"
+                                className="text-sm font-medium cursor-pointer">
                                 Certyfikat ukończenia
                             </label>
                         </div>
@@ -426,7 +446,7 @@ export default function NewCoursePage() {
                 {/* Sekcja 3: Opis */}
                 <div className="rounded-lg border p-6 space-y-6">
                     <h2 className="text-xl font-semibold">Opis szkolenia</h2>
-                    
+
                     <div>
                         <label className="block text-sm font-medium mb-2">
                             Pełny opis *
@@ -448,7 +468,7 @@ export default function NewCoursePage() {
                         <Users className="h-5 w-5" />
                         Kategorie i organizator
                     </h2>
-                    
+
                     <div className="space-y-4">
                         <div>
                             <label className="block text-sm font-medium mb-2">
@@ -457,38 +477,51 @@ export default function NewCoursePage() {
                             <div className="space-y-2">
                                 <select
                                     value={selectedMainCategory}
-                                    onChange={(e) => handleMainCategoryChange(e.target.value)}
+                                    onChange={(e) =>
+                                        handleMainCategoryChange(e.target.value)
+                                    }
                                     required
                                     className="w-full rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring">
-                                    <option value="">Wybierz główną kategorię</option>
+                                    <option value="">
+                                        Wybierz główną kategorię
+                                    </option>
                                     {categoriesSlug.map((slug) => (
                                         <option key={slug} value={slug}>
                                             {parseSlugName(slug)}
                                         </option>
                                     ))}
                                 </select>
-                                {selectedMainCategory && categories[selectedMainCategory] && (
-                                    <div className="space-y-2 mt-2">
-                                        <label className="text-xs text-muted-foreground">
-                                            Wybierz podkategorie (wiele):
-                                        </label>
-                                        {categories[selectedMainCategory].map((cat) => (
-                                            <label
-                                                key={cat._id || cat.nazwa}
-                                                className="flex items-center gap-2 p-3 border rounded-md cursor-pointer hover:bg-accent">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={selectedSubCategories.includes(cat._id || "")}
-                                                    onChange={() =>
-                                                        handleSubCategoryToggle(cat._id || "")
-                                                    }
-                                                    className="w-4 h-4"
-                                                />
-                                                <span className="text-sm">{cat.nazwa}</span>
+                                {selectedMainCategory &&
+                                    categories[selectedMainCategory] && (
+                                        <div className="space-y-2 mt-2">
+                                            <label className="text-xs text-muted-foreground">
+                                                Wybierz podkategorie (wiele):
                                             </label>
-                                        ))}
-                                    </div>
-                                )}
+                                            {categories[
+                                                selectedMainCategory
+                                            ].map((cat) => (
+                                                <label
+                                                    key={cat._id || cat.nazwa}
+                                                    className="flex items-center gap-2 p-3 border rounded-md cursor-pointer hover:bg-accent">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={selectedSubCategories.includes(
+                                                            cat._id || "",
+                                                        )}
+                                                        onChange={() =>
+                                                            handleSubCategoryToggle(
+                                                                cat._id || "",
+                                                            )
+                                                        }
+                                                        className="w-4 h-4"
+                                                    />
+                                                    <span className="text-sm">
+                                                        {cat.nazwa}
+                                                    </span>
+                                                </label>
+                                            ))}
+                                        </div>
+                                    )}
                             </div>
                         </div>
 
@@ -498,12 +531,16 @@ export default function NewCoursePage() {
                             </label>
                             <select
                                 value={selectedFirma}
-                                onChange={(e) => setSelectedFirma(e.target.value)}
+                                onChange={(e) =>
+                                    setSelectedFirma(e.target.value)
+                                }
                                 required
                                 className="w-full rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring">
                                 <option value="">Wybierz firmę</option>
                                 {firmy.map((firma) => (
-                                    <option key={firma._id || firma.nazwa} value={firma._id || ""}>
+                                    <option
+                                        key={firma.slug}
+                                        value={firma.nazwa}>
                                         {firma.nazwa}
                                     </option>
                                 ))}
@@ -515,7 +552,7 @@ export default function NewCoursePage() {
                 {/* Sekcja 5: Zdjęcia */}
                 <div className="rounded-lg border p-6 space-y-6">
                     <h2 className="text-xl font-semibold">Zdjęcia szkolenia</h2>
-                    
+
                     <div className="space-y-4">
                         <div>
                             <label className="block text-sm font-medium mb-2">
@@ -569,7 +606,9 @@ export default function NewCoursePage() {
                                             />
                                             <button
                                                 type="button"
-                                                onClick={() => removeGalleryImage(index)}
+                                                onClick={() =>
+                                                    removeGalleryImage(index)
+                                                }
                                                 className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600">
                                                 <X className="h-3 w-3" />
                                             </button>
@@ -591,7 +630,9 @@ export default function NewCoursePage() {
                             className="w-4 h-4"
                             id="aktywne"
                         />
-                        <label htmlFor="aktywne" className="text-sm font-medium cursor-pointer">
+                        <label
+                            htmlFor="aktywne"
+                            className="text-sm font-medium cursor-pointer">
                             Szkolenie aktywne (widoczne w sklepie)
                         </label>
                     </div>

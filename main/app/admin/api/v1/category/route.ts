@@ -14,16 +14,16 @@ export async function GET(req: NextRequest) {
     if (!val) {
         return NextResponse.json(
             { status: 1, error: "Brak autoryzacji" },
-            { status: 401 }
+            { status: 401 },
         );
     }
 
     try {
         const cat = await collectCategories();
         const parsedCategories = JSON.parse(cat);
-        return NextResponse.json({ 
-            status: 0, 
-            categories: parsedCategories || {} 
+        return NextResponse.json({
+            status: 0,
+            categories: parsedCategories || {},
         });
     } catch (error) {
         console.error("Błąd podczas pobierania kategorii:", error);
@@ -33,10 +33,7 @@ export async function GET(req: NextRequest) {
             position: "admin",
             http: req.method,
         }).error(`Błąd podczas pobierania kategorii: ${error}`);
-        return NextResponse.json(
-            { status: 0, categories: {} },
-            { status: 200 }
-        );
+        return NextResponse.json({ status: 1 }, { status: 500 });
     }
 }
 
@@ -54,7 +51,7 @@ export async function DELETE(req: NextRequest) {
         }).error(`${mess} dla użytkownika ${user?.email}`);
         return NextResponse.json(
             { status: 1, error: "Brak autoryzacji", details: mess },
-            { status: 401 }
+            { status: 401 },
         );
     }
     const { searchParams } = new URL(req.url);
@@ -62,7 +59,7 @@ export async function DELETE(req: NextRequest) {
     if (!slug) {
         return NextResponse.json(
             { status: 1, error: "Brak slug produktu do usunięcia" },
-            { status: 500 }
+            { status: 500 },
         );
     }
     try {
@@ -83,7 +80,7 @@ export async function DELETE(req: NextRequest) {
         }).error(`${e}`);
         return NextResponse.json(
             { status: 1, error: "Błąd podczas usuwania produktu" },
-            { status: 500 }
+            { status: 500 },
         );
     }
 }
@@ -102,7 +99,7 @@ export async function PUT(req: NextRequest) {
         }).error(`${mess} dla użytkownika ${user?.email}`);
         return NextResponse.json(
             { status: 1, error: "Brak autoryzacji", details: mess },
-            { status: 401 }
+            { status: 401 },
         );
     }
     const catData = await req.json();
@@ -128,7 +125,7 @@ export async function PUT(req: NextRequest) {
         }).error(`${e}`);
         return NextResponse.json(
             { status: 1, error: "Błąd podczas aktualizacji produktu" },
-            { status: 500 }
+            { status: 500 },
         );
     }
 }
@@ -147,7 +144,7 @@ export async function POST(req: NextRequest) {
         }).error(`${mess} dla użytkownika ${user?.email}`);
         return NextResponse.json(
             { status: 1, error: "Brak autoryzacji", details: mess },
-            { status: 401 }
+            { status: 401 },
         );
     }
     const catData = await req.json();
@@ -161,7 +158,7 @@ export async function POST(req: NextRequest) {
         }).log(`Kategoria: ${res?._id} - (${res.nazwa}) została dodana`);
         return NextResponse.json(
             { status: 201, error: "Błąd podczas aktualizacji produktu" },
-            { status: 201 }
+            { status: 201 },
         );
     } catch (e) {
         new LogService({
@@ -172,7 +169,7 @@ export async function POST(req: NextRequest) {
         }).error(`${e}`);
         return NextResponse.json(
             { status: 1, error: "Błąd podczas aktualizacji produktu" },
-            { status: 500 }
+            { status: 500 },
         );
     }
 }

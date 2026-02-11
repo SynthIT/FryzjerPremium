@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Firmy, Media } from "@/lib/types/coursesTypes.";
+import { Firmy, Media } from "@/lib/types/coursesTypes";
 import { X, Save, Trash2 } from "lucide-react";
 
 // Helper do generowania slug

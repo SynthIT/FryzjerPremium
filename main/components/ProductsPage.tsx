@@ -12,7 +12,7 @@ import {
     getCourses,
 } from "@/lib/utils";
 import { Categories, Producents, Products } from "@/lib/models/Products";
-import { Courses } from "@/lib/types/coursesTypes.";
+import { Courses } from "@/lib/types/coursesTypes";
 import ProductElement from "./productsComponents/ProductElement";
 import CourseElement from "./coursesComponents/CourseElement";
 

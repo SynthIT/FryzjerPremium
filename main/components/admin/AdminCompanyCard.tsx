@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Firmy } from "@/lib/types/coursesTypes.";
+import { Firmy } from "@/lib/types/coursesTypes";
 
 interface AdminCompanyCardProps {
     company: Firmy;

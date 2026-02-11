@@ -1,4 +1,4 @@
-import { Courses } from "@/lib/types/coursesTypes.";
+import { Courses } from "@/lib/types/coursesTypes";
 import path from "path";
 import { readFileSync, writeFileSync } from "fs";
 import { NextRequest, NextResponse } from "next/server";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Courses } from "@/lib/types/coursesTypes.";
+import { Courses } from "@/lib/types/coursesTypes";
 import AdminCourseCard from "@/components/admin/AdminCourseCard";
 import CourseEditModal from "@/components/admin/CourseEditModal";
 import Link from "next/link";

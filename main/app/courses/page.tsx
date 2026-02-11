@@ -6,7 +6,7 @@ import "@/app/globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { getCourses } from "@/lib/utils";
-import { Courses } from "@/lib/types/coursesTypes.";
+import { Courses } from "@/lib/types/coursesTypes";
 import CourseElement from "@/components/coursesComponents/CourseElement";
 
 export default function CoursesPage() {

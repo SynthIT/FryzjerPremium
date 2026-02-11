@@ -1,4 +1,4 @@
-import { Courses, Promos } from "@/lib/types/coursesTypes.";
+import { Courses, Promos } from "@/lib/types/coursesTypes";
 import { renderStars } from "@/lib/utils";
 import Link from "next/link";
 import Image from "next/image";

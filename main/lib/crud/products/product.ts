@@ -1,7 +1,8 @@
+import { db } from "@/lib/db/init";
 import { Product } from "@/lib/models/Products";
 import { zodProducts, Products } from "@/lib/types/productTypes";
 import { Categories } from "@/lib/types/shared";
-import mongoose, { Types } from "mongoose";
+import { Types } from "mongoose";
 
 export async function collectProducts() {
     await db();
@@ -10,7 +11,6 @@ export async function collectProducts() {
         .populate("promocje")
         .populate("producent")
         .lean();
-    await dbclose();
     return JSON.stringify(products || []);
 }
 
@@ -18,14 +18,12 @@ export async function createProduct(productData: Products) {
     zodProducts.parse(productData);
     await db();
     const prod = await Product.create(productData);
-    await dbclose();
     return prod;
 }
 
 export async function deleteProductBySlug(slug: string) {
     await db();
     const prod = await Product.findOneAndDelete({ slug: slug });
-    await dbclose();
     return prod;
 }
 
@@ -48,13 +46,5 @@ export async function updateProduct(productData: Products) {
             new: true,
         },
     );
-    await dbclose();
     return prod;
-}
-
-async function db() {
-    await mongoose.connect("mongodb://localhost:27017/fryzjerpremium");
-}
-async function dbclose() {
-    await mongoose.connection.close();
 }

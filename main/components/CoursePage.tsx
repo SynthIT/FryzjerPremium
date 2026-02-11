@@ -6,7 +6,7 @@ import Link from "next/link";
 import "@/app/globals.css";
 import { getCourses, renderStars } from "@/lib/utils";
 import { useCart } from "@/contexts/CartContext";
-import { Courses } from "@/lib/types/coursesTypes.";
+import { Courses } from "@/lib/types/coursesTypes";
 import { Promos, Opinie } from "@/lib/types/shared";
 import ReviewTabs from "./productComponents/ReviewTabs";
 import { Clock, Users, Award, Globe, CheckCircle, PlayCircle } from "lucide-react";

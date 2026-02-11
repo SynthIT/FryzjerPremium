@@ -1,11 +1,11 @@
 import { User } from "@/lib/models/Users";
 import { Users, Roles as Role } from "@/lib/types/userTypes";
 import mongoose from "mongoose";
+import { db } from "@/lib/db/init";
 
 export async function collectUsers() {
     await db();
     const uzytkownicy = await User.find({}).populate("role");
-    await dbclose();
     return uzytkownicy;
 }
 
@@ -21,7 +21,6 @@ export async function collectAdmins() {
                     (doc.role[0] as Role).nazwa === "admin",
             ),
         );
-    await dbclose();
     return JSON.stringify(uzytkownicy);
 }
 
@@ -33,11 +32,4 @@ export async function addAdmin(user: Users) {
     if ((uzytkownik.role as Role[]).length > 0) {
         uzytkownik.role?.unshift();
     }
-}
-
-async function db() {
-    await mongoose.connect("mongodb://localhost:27017/fryzjerpremium");
-}
-async function dbclose() {
-    await mongoose.connection.close();
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Firmy } from "@/lib/types/coursesTypes.";
+import { Firmy } from "@/lib/types/coursesTypes";
 import AdminCompanyCard from "@/components/admin/AdminCompanyCard";
 import CompanyEditModal from "@/components/admin/CompanyEditModal";
 import Link from "next/link";

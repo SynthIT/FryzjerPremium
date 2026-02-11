@@ -1,3 +1,4 @@
+import { db } from "@/lib/db/init";
 import { Producent, Product } from "@/lib/models/Products";
 import { zodProducents, Producents } from "@/lib/types/productTypes";
 import mongoose from "mongoose";
@@ -5,7 +6,6 @@ import mongoose from "mongoose";
 export async function collectProducents() {
     await db();
     const producent = await Producent.find({});
-    await dbclose();
     return JSON.stringify(producent || []);
 }
 
@@ -13,7 +13,6 @@ export async function createProducent(prodData: Producents) {
     zodProducents.parse(prodData);
     await db();
     const producent = await Producent.create(prodData);
-    await dbclose();
     return producent;
 }
 
@@ -34,6 +33,7 @@ export async function deleteProducentBySlug(slug: string) {
 
 export async function updateProducent(newProducent: Producents) {
     zodProducents.parse(newProducent);
+    await db();
     const producent = await Producent.findOneAndUpdate(
         {
             slug: newProducent.slug,
@@ -41,11 +41,4 @@ export async function updateProducent(newProducent: Producents) {
         newProducent,
     ).orFail();
     return producent;
-}
-
-async function db() {
-    await mongoose.connect("mongodb://localhost:27017/fryzjerpremium");
-}
-async function dbclose() {
-    await mongoose.connection.close();
 }

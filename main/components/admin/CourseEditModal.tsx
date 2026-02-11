@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Courses, Categories, Firmy, Media } from "@/lib/types/coursesTypes.";
+import { Courses, Categories, Firmy, Media } from "@/lib/types/coursesTypes";
 import { X, Save, Trash2, Plus, Minus } from "lucide-react";
 import { makeSlugKeys, parseSlugName } from "@/lib/utils_admin";
 

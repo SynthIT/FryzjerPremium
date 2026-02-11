@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import "@/app/globals2.css";
-import { Firmy, Media } from "@/lib/types/coursesTypes.";
+import { Firmy, Media } from "@/lib/types/coursesTypes";
 import { useRouter } from "next/navigation";
 
 // Helper do generowania slug

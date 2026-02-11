@@ -1,4 +1,4 @@
-import { editUser } from "@/lib/admin_utils";
+import { editUser, verifyJWT } from "@/lib/admin_utils";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function PUT(req: NextRequest) {
@@ -8,11 +8,11 @@ export async function PUT(req: NextRequest) {
     if (!user)
         return NextResponse.json(
             { status: 400, message: mess },
-            { status: 400 }
+            { status: 400 },
         );
     const res = NextResponse.json(
         { status: 201, message: mess, user: user },
-        { status: 201 }
+        { status: 201 },
     );
     res.cookies.set("Authorization", `Bearer ${jwt![0]}`, {
         httpOnly: true,
@@ -27,4 +27,12 @@ export async function PUT(req: NextRequest) {
         });
     }
     return res;
+}
+
+export function GET(req: NextRequest) {
+    const { val, mess, user } = verifyJWT(req);
+    if (val) {
+        return NextResponse.json({ status: 0, user: user }, { status: 200 });
+    }
+    return NextResponse.json({}, { status: 204 });
 }

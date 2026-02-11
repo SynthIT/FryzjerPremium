@@ -13,17 +13,20 @@ export async function GET(req: NextRequest) {
     if (!val) {
         return NextResponse.json(
             { status: 1, error: "Brak autoryzacji" },
-            { status: 401 }
+            { status: 401 },
         );
     }
-    
+
     try {
         const firmy = await collectFirmy();
         const parsedFirmy = JSON.parse(firmy);
-        return NextResponse.json(Array.isArray(parsedFirmy) ? parsedFirmy : []);
+        return NextResponse.json(
+            { status: 0, firmy: parsedFirmy },
+            { status: 200 },
+        );
     } catch (error) {
         console.error("Błąd podczas pobierania firm:", error);
-        return NextResponse.json([], { status: 200 });
+        return NextResponse.json({ status: 1 }, { status: 500 });
     }
 }
 
@@ -33,7 +36,7 @@ export async function DELETE(req: NextRequest) {
         console.log(mess);
         return NextResponse.json(
             { status: 1, error: "Brak autoryzacji", details: mess },
-            { status: 401 }
+            { status: 401 },
         );
     }
     const { searchParams } = new URL(req.url);
@@ -41,7 +44,7 @@ export async function DELETE(req: NextRequest) {
     if (!slug) {
         return NextResponse.json(
             { status: 1, error: "Brak slug firmy do usunięcia" },
-            { status: 500 }
+            { status: 500 },
         );
     }
     try {
@@ -51,7 +54,9 @@ export async function DELETE(req: NextRequest) {
             kind: "log",
             position: "admin",
             http: req.method,
-        }).log(`Firma: ${doc?.firma?._id} - (${doc?.firma?.nazwa}) została usunięta`);
+        }).log(
+            `Firma: ${doc?.firma?._id} - (${doc?.firma?.nazwa}) została usunięta`,
+        );
         return NextResponse.json({ status: 0, message: "Firma usunięta" });
     } catch (e) {
         new LogService({
@@ -62,7 +67,7 @@ export async function DELETE(req: NextRequest) {
         }).error(`${e}`);
         return NextResponse.json(
             { status: 1, error: "Błąd podczas usuwania firmy" },
-            { status: 500 }
+            { status: 500 },
         );
     }
 }
@@ -73,7 +78,7 @@ export async function PUT(req: NextRequest) {
         console.log(mess);
         return NextResponse.json(
             { status: 1, error: "Brak autoryzacji", details: mess },
-            { status: 401 }
+            { status: 401 },
         );
     }
     const firmaData = await req.json();
@@ -100,7 +105,7 @@ export async function PUT(req: NextRequest) {
         }).error(`${e}`);
         return NextResponse.json(
             { status: 1, error: "Błąd podczas aktualizacji firmy" },
-            { status: 500 }
+            { status: 500 },
         );
     }
 }
@@ -111,7 +116,7 @@ export async function POST(req: NextRequest) {
         console.log(mess);
         return NextResponse.json(
             { status: 1, error: "Brak autoryzacji", details: mess },
-            { status: 401 }
+            { status: 401 },
         );
     }
     const firmaData = await req.json();
@@ -125,7 +130,7 @@ export async function POST(req: NextRequest) {
         }).log(`Firma: ${res?._id} została dodana`);
         return NextResponse.json(
             { status: 201, error: "Firma została dodana" },
-            { status: 201 }
+            { status: 201 },
         );
     } catch (e) {
         new LogService({
@@ -136,7 +141,7 @@ export async function POST(req: NextRequest) {
         }).error(`${e}`);
         return NextResponse.json(
             { status: 1, error: "Błąd podczas dodawania firmy" },
-            { status: 500 }
+            { status: 500 },
         );
     }
 }

@@ -1,3 +1,4 @@
+import { db } from "@/lib/db/init";
 import { Product } from "@/lib/models/Products";
 import { Category } from "@/lib/models/shared";
 import { Categories, zodCategories } from "@/lib/types/shared";
@@ -15,7 +16,6 @@ export async function collectCategories() {
             cats[docs.slug].push(docs);
         }
     }
-    await dbclose();
     return JSON.stringify(cats);
 }
 
@@ -23,7 +23,6 @@ export async function createCategory(catData: Categories) {
     zodCategories.parse(catData);
     await db();
     const cat = await Category.create(catData);
-    await dbclose();
     return cat;
 }
 
@@ -47,6 +46,7 @@ export async function deleteCatBySlug(slug: string) {
 
 export async function updateCategory(newCat: Categories) {
     zodCategories.parse(newCat);
+    await db();
     const category = await Category.findOneAndUpdate(
         {
             slug: newCat.slug,
@@ -54,11 +54,4 @@ export async function updateCategory(newCat: Categories) {
         { $set: newCat },
     ).orFail();
     return category;
-}
-
-async function db() {
-    await mongoose.connect("mongodb://localhost:27017/fryzjerpremium");
-}
-async function dbclose() {
-    await mongoose.connection.close();
 }

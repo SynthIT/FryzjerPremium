@@ -1,3 +1,4 @@
+import { db } from "@/lib/db/init";
 import { Delivery } from "@/lib/models/Delivery";
 import { DeliveryMethods, zodDeliveryMethods } from "@/lib/types/deliveryTypes";
 import mongoose from "mongoose";
@@ -5,7 +6,6 @@ import mongoose from "mongoose";
 export async function getDeliveryMethods() {
     await db();
     const res = await Delivery.find();
-    await dbclose();
     return res;
 }
 
@@ -21,7 +21,6 @@ export async function updateDeliveryMethod(
             { new: true },
         )
         .orFail();
-    await dbclose();
     return res;
 }
 
@@ -32,7 +31,6 @@ export async function createDeliveryMethod(data: DeliveryMethods) {
         throw new Error("Invalid data");
     }
     const res = await Delivery.create(ok.data);
-    await dbclose();
     return res;
 }
 
@@ -41,13 +39,5 @@ export async function deleteDeliveryMethodBySlug(slug: string) {
     const res = await Delivery.findOneAndDelete({
         slug: slug,
     }).orFail();
-    await dbclose();
     return res;
-}
-
-async function db() {
-    await mongoose.connect("mongodb://localhost:27017/fryzjerpremium");
-}
-async function dbclose() {
-    await mongoose.connection.close();
 }
