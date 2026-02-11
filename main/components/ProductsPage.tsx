@@ -9,9 +9,12 @@ import {
     getCategoryDisplayName,
     decodeCategory,
     getProducts,
+    getCourses,
 } from "@/lib/utils";
 import { Categories, Producents, Products } from "@/lib/models/Products";
+import { Courses } from "@/lib/types/coursesTypes.";
 import ProductElement from "./productsComponents/ProductElement";
+import CourseElement from "./coursesComponents/CourseElement";
 
 interface ProductsPageProps {
     categoryName?: string;
@@ -19,6 +22,17 @@ interface ProductsPageProps {
 
 export default function ProductsPage({ categoryName }: ProductsPageProps) {
     const [allProducts, setAllProduct] = useState<Products[]>([]);
+    const [allCourses, setAllCourses] = useState<Courses[]>([]);
+
+    const params = useParams();
+    const urlCategoryParam = categoryName || (params?.category as string) || "";
+    const urlCategory = useMemo(
+        () => decodeCategory(urlCategoryParam),
+        [urlCategoryParam]
+    );
+    const isCoursesPage = urlCategory.toLowerCase() === "szkolenia";
+    const [selectedCategory, setSelectedCategory] =
+        useState("Wszystkie produkty");
 
     useEffect(() => {
         async function getProduct() {
@@ -33,15 +47,76 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
         getProduct();
     }, []);
 
-    const params = useParams();
-    const urlCategoryParam = categoryName || (params?.category as string) || "";
-
-    const urlCategory = useMemo(
-        () => decodeCategory(urlCategoryParam),
-        [urlCategoryParam]
-    );
-    const [selectedCategory, setSelectedCategory] =
-        useState("Wszystkie produkty");
+    useEffect(() => {
+        async function fetchCourses() {
+            if (isCoursesPage) {
+                try {
+                    console.log("🔄 Pobieranie szkoleń dla strony /products/szkolenia");
+                    const data = await getCourses();
+                    console.log("📦 Otrzymane dane z API:", data);
+                    console.log("📦 Typ danych:", typeof data);
+                    console.log("📦 Czy to obiekt:", data && typeof data === "object");
+                    console.log("📦 Czy ma courses:", data && "courses" in data);
+                    console.log("📦 Czy to tablica:", Array.isArray(data));
+                    console.log("📊 Status:", data?.status);
+                    console.log("📚 Liczba szkoleń:", data?.courses?.length || 0);
+                    
+                    // Sprawdź różne możliwe formaty odpowiedzi
+                    let coursesToSet: Courses[] = [];
+                    
+                    if (data && data.courses && Array.isArray(data.courses)) {
+                        coursesToSet = data.courses;
+                        console.log("✅ Format: data.courses (tablica)");
+                    } else if (data && Array.isArray(data)) {
+                        coursesToSet = data;
+                        console.log("✅ Format: data jest tablicą");
+                    } else if (data && data.status === 200 && Array.isArray(data.courses)) {
+                        coursesToSet = data.courses;
+                        console.log("✅ Format: data.status === 200");
+                    } else if (data && typeof data === "object" && "courses" in data) {
+                        coursesToSet = Array.isArray(data.courses) ? data.courses : [];
+                        console.log("✅ Format: data.courses (sprawdzam czy tablica)");
+                    } else {
+                        console.warn("⚠️ Nieznany format danych. Pełne dane:", JSON.stringify(data, null, 2));
+                        coursesToSet = [];
+                    }
+                    
+                    console.log("🎯 Ustawiam szkolenia:", coursesToSet.length);
+                    setAllCourses(coursesToSet);
+                    
+                    // Jeśli nie ma szkoleń, spróbuj utworzyć przykładowe
+                    if (coursesToSet.length === 0) {
+                        console.log("⚠️ Brak szkoleń - próbuję utworzyć przykładowe...");
+                        try {
+                            const initResponse = await fetch("/api/v1/courses/init", {
+                                method: "POST",
+                                credentials: "include",
+                            });
+                            const initData = await initResponse.json();
+                            console.log("📝 Odpowiedź z init:", initData);
+                            
+                            if (initData.status === 0) {
+                                // Odśwież dane
+                                const newData = await getCourses();
+                                if (newData && newData.courses && Array.isArray(newData.courses)) {
+                                    setAllCourses(newData.courses);
+                                }
+                            }
+                        } catch (initError) {
+                            console.error("❌ Błąd podczas inicjalizacji:", initError);
+                        }
+                    }
+                } catch (error) {
+                    console.error("❌ Błąd podczas ładowania szkoleń:", error);
+                    console.error("❌ Szczegóły błędu:", error instanceof Error ? error.message : error);
+                    setAllCourses([]);
+                }
+            } else {
+                console.log("ℹ️ To nie jest strona szkoleń, nie pobieram danych");
+            }
+        }
+        fetchCourses();
+    }, [isCoursesPage]);
     const [sortBy, setSortBy] = useState("Najpopularniejsze");
     const [currentPage, setCurrentPage] = useState(1);
     const productsPerPage = 9;
@@ -58,20 +133,26 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
 
     useEffect(() => {
         async function setSelected(urlCategory: string) {
-            try {
-                const displayName = await getCategoryDisplayName(urlCategory);
-                setSelectedCategory(displayName);
-            } catch (error) {
-                console.error("Błąd podczas ładowania nazwy kategorii:", error);
-                setSelectedCategory(
-                    urlCategory
-                        ? urlCategory.charAt(0).toUpperCase() +
-                              urlCategory.slice(1)
-                        : "Wszystkie produkty"
-                );
+            if (urlCategory.toLowerCase() === "szkolenia") {
+                setSelectedCategory("Szkolenia");
+            } else {
+                try {
+                    const displayName = await getCategoryDisplayName(urlCategory);
+                    setSelectedCategory(displayName);
+                } catch (error) {
+                    console.error("Błąd podczas ładowania nazwy kategorii:", error);
+                    setSelectedCategory(
+                        urlCategory
+                            ? urlCategory.charAt(0).toUpperCase() +
+                                  urlCategory.slice(1)
+                            : "Wszystkie produkty"
+                    );
+                }
             }
+            // Dla szkoleń ustaw większy zakres cen
+            const maxPrice = urlCategory.toLowerCase() === "szkolenia" ? 5000 : 15000;
             setFilters({
-                priceRange: { min: 0, max: 15000 },
+                priceRange: { min: 0, max: maxPrice },
                 selectedSubcategories: [],
                 selectedBrands: [],
                 selectedSizes: [],
@@ -115,6 +196,44 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
         });
     }, [allProducts, sortBy]);
 
+    // Sortowanie szkoleń - memoized
+    const sortedCourses = useMemo(() => {
+        if (!isCoursesPage) return [];
+        if (!Array.isArray(allCourses)) {
+            console.log("⚠️ allCourses nie jest tablicą:", allCourses);
+            return [];
+        }
+        if (allCourses.length === 0) {
+            console.log("⚠️ allCourses jest pustą tablicą");
+            return [];
+        }
+        console.log("🔄 Sortowanie", allCourses.length, "szkoleń według:", sortBy);
+        const sorted = [...allCourses].sort((a, b) => {
+            switch (sortBy) {
+                case "Cena: od najniższej":
+                    return a.cena - b.cena;
+                case "Cena: od najwyższej":
+                    return b.cena - a.cena;
+                case "Ocena":
+                    return (b.ocena || 0) - (a.ocena || 0);
+                case "Najnowsze":
+                    const dateA =
+                        a.createdAt instanceof Date
+                            ? a.createdAt.getTime()
+                            : new Date(a.createdAt || 0).getTime();
+                    const dateB =
+                        b.createdAt instanceof Date
+                            ? b.createdAt.getTime()
+                            : new Date(b.createdAt || 0).getTime();
+                    return dateB - dateA;
+                default: // 'Najpopularniejsze'
+                    return (b.ocena || 0) - (a.ocena || 0);
+            }
+        });
+        console.log("✅ Posortowano", sorted.length, "szkoleń");
+        return sorted;
+    }, [allCourses, sortBy, isCoursesPage]);
+
     // Tworzymy mapę nazwa -> slug dla wszystkich kategorii w produktach
     const categoryNameToSlugMap = useMemo(() => {
         const map = new Map<string, string>();
@@ -149,8 +268,49 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
         return map;
     }, [allProducts]);
 
+    // Filtruj szkolenia według ceny - memoized
+    const filteredCourses = useMemo(() => {
+        if (!isCoursesPage) {
+            console.log("⚠️ To nie jest strona szkoleń, zwracam pustą tablicę");
+            return [];
+        }
+        if (sortedCourses.length === 0) {
+            console.log("⚠️ sortedCourses jest pusty - nie ma czego filtrować");
+            return [];
+        }
+        console.log("🔄 Filtrowanie", sortedCourses.length, "szkoleń");
+        console.log("💰 Zakres ceny:", filters.priceRange.min, "-", filters.priceRange.max);
+        
+        // Sprawdź ceny wszystkich kursów przed filtrowaniem
+        sortedCourses.forEach((course, idx) => {
+            console.log(`  Kurs ${idx + 1}: ${course.nazwa}, cena: ${course.cena}, aktywny: ${course.aktywne !== false}`);
+        });
+        
+        const filtered = sortedCourses.filter((course) => {
+            // Filtrowanie według ceny
+            const coursePrice = course.cena || 0;
+            if (
+                coursePrice < filters.priceRange.min ||
+                coursePrice > filters.priceRange.max
+            ) {
+                console.log(`❌ Kurs "${course.nazwa}" odfiltrowany - cena ${coursePrice} poza zakresem ${filters.priceRange.min}-${filters.priceRange.max}`);
+                return false;
+            }
+            // Filtrowanie aktywnych szkoleń
+            if (course.aktywne === false) {
+                console.log(`❌ Kurs "${course.nazwa}" odfiltrowany - nieaktywny`);
+                return false;
+            }
+            console.log(`✅ Kurs "${course.nazwa}" przeszedł filtry`);
+            return true;
+        });
+        console.log("✅ Po filtrowaniu zostało", filtered.length, "szkoleń z", sortedCourses.length);
+        return filtered;
+    }, [sortedCourses, filters, isCoursesPage]);
+
     // Filtruj produkty według kategorii i wszystkich filtrów - memoized
     const filteredProducts = useMemo(() => {
+        if (isCoursesPage) return [];
         return sortedProducts.filter((product) => {
             // Filtrowanie według kategorii
             if (
@@ -255,14 +415,32 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
     }, [filters]);
 
     // Paginacja - memoized
-    const totalProducts = Array.isArray(filteredProducts) ? filteredProducts.length : 0;
+    const itemsToDisplay = isCoursesPage ? filteredCourses : filteredProducts;
+    const totalItems = Array.isArray(itemsToDisplay) ? itemsToDisplay.length : 0;
     const startIndex = (currentPage - 1) * productsPerPage;
     const endIndex = startIndex + productsPerPage;
-    const displayedProducts = useMemo(
-        () => Array.isArray(filteredProducts) ? filteredProducts.slice(startIndex, endIndex) : [],
-        [filteredProducts, startIndex, endIndex]
+    const displayedItems = useMemo(
+        () => {
+            const items = Array.isArray(itemsToDisplay) ? itemsToDisplay.slice(startIndex, endIndex) : [];
+            console.log("📄 Paginacja - wyświetlam", items.length, "z", totalItems, "elementów (strona", currentPage, ")");
+            return items;
+        },
+        [itemsToDisplay, startIndex, endIndex, totalItems, currentPage]
     );
-    const totalPages = Math.ceil(totalProducts / productsPerPage);
+    const totalPages = Math.ceil(totalItems / productsPerPage);
+    
+    // Debug log
+    useEffect(() => {
+        if (isCoursesPage) {
+            console.log("🔍 DEBUG SZKOLENIA:");
+            console.log("  allCourses:", allCourses.length);
+            console.log("  sortedCourses:", sortedCourses.length);
+            console.log("  filteredCourses:", filteredCourses.length);
+            console.log("  itemsToDisplay:", itemsToDisplay.length);
+            console.log("  displayedItems:", displayedItems.length);
+            console.log("  filters.priceRange:", filters.priceRange);
+        }
+    }, [isCoursesPage, allCourses.length, sortedCourses.length, filteredCourses.length, itemsToDisplay.length, displayedItems.length, filters]);
 
     // Handlery - memoized
     const handleSortChange = useCallback(
@@ -304,8 +482,8 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
                     <div className="products-page-info">
                         <span className="products-count">
                             Wyświetlanie {startIndex + 1}-
-                            {Math.min(endIndex, totalProducts)} z{" "}
-                            {totalProducts} produktów
+                            {Math.min(endIndex, totalItems)} z{" "}
+                            {totalItems} {isCoursesPage ? "szkoleń" : "produktów"}
                         </span>
                         <div className="sort-dropdown-wrapper">
                             <label className="sort-label">Sortuj według:</label>
@@ -333,16 +511,45 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
                         onFiltersChange={setFilters}
                     />
 
-                    {/* Products Grid */}
+                    {/* Products/Courses Grid */}
                     <div className="products-main-content">
+                        {isCoursesPage && (
+                            <div style={{ padding: "20px", background: "#f0f0f0", marginBottom: "20px", borderRadius: "8px", fontSize: "12px" }}>
+                                <p><strong>Debug info:</strong></p>
+                                <p>isCoursesPage: {isCoursesPage ? "true" : "false"}</p>
+                                <p>allCourses.length: {allCourses.length}</p>
+                                <p>filteredCourses.length: {filteredCourses.length}</p>
+                                <p>displayedItems.length: {displayedItems.length}</p>
+                                <p>totalItems: {totalItems}</p>
+                            </div>
+                        )}
                         <div className="products-grid-listing">
-                            {displayedProducts.map((product, index) => (
-                                <ProductElement
-                                    index={index}
-                                    key={index}
-                                    product={product}
-                                />
-                            ))}
+                            {isCoursesPage ? (
+                                displayedItems.length > 0 ? (
+                                    displayedItems.map((course, index) => (
+                                        <CourseElement
+                                            key={course.slug || index}
+                                            course={course as Courses}
+                                            index={index}
+                                        />
+                                    ))
+                                ) : (
+                                    <div style={{ padding: "40px", textAlign: "center", gridColumn: "1 / -1" }}>
+                                        <p style={{ fontSize: "18px", marginBottom: "10px" }}>Brak szkoleń do wyświetlenia</p>
+                                        <p style={{ fontSize: "14px", color: "#666" }}>allCourses: {allCourses.length}</p>
+                                        <p style={{ fontSize: "14px", color: "#666" }}>filteredCourses: {filteredCourses.length}</p>
+                                        <p style={{ fontSize: "14px", color: "#666" }}>sortedCourses: {sortedCourses.length}</p>
+                                    </div>
+                                )
+                            ) : (
+                                displayedItems.map((product, index) => (
+                                    <ProductElement
+                                        index={index}
+                                        key={index}
+                                        product={product as Products}
+                                    />
+                                ))
+                            )}
                         </div>
 
                         {/* Pagination */}

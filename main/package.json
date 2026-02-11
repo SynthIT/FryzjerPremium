@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "create-example-course": "tsx scripts/create-example-course.ts",
+    "check-courses": "tsx scripts/check-courses.ts"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.10",

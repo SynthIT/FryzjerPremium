@@ -42,6 +42,14 @@ export const zodCourses = z.object({
     wariant: z.array(zodKursWarianty).optional(),
     sku: z.string().nullable(),
     aktywne: z.boolean().nullable(),
+    // Pola specyficzne dla szkoleń (opcjonalne, żeby nie zepsuć istniejących danych)
+    czasTrwania: z.string().optional(),
+    poziom: z.string().optional(),
+    liczbaLekcji: z.number().optional(),
+    instruktor: z.string().optional(),
+    jezyk: z.string().optional(),
+    certyfikat: z.boolean().optional(),
+    krotkiOpis: z.string().optional(), // Krótki opis/subtitle
 });
 
 export type Courses = z.infer<typeof zodCourses>;

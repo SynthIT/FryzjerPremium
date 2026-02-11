@@ -4,9 +4,9 @@ import mongoose from "mongoose";
 
 export async function collectFirmy() {
     await db();
-    const firmy = await Firma.find({}).orFail();
+    const firmy = await Firma.find({}).lean();
     await dbclose();
-    return JSON.stringify(firmy);
+    return JSON.stringify(firmy || []);
 }
 
 export async function createFirma(firmaData: Producents) {

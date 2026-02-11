@@ -1,0 +1,56 @@
+[
+  {
+    "_id": "698c7b69f0865b458e089604",
+    "slug": "kompleksowy-kurs-strzyzenia-meskiego",
+    "nazwa": "Kompleksowy kurs strzyżenia męskiego",
+    "cena": 299,
+    "kategoria": [
+      {
+        "_id": "697a8e046f07ba005344f44f",
+        "nazwa": "Szampon",
+        "slug": "Kosmetyki",
+        "image": "anb",
+        "__v": 0
+      }
+    ],
+    "firma": {
+      "_id": "698c7b69f0865b458e089600",
+      "nazwa": "Akademia Fryzjerstwa Premium",
+      "logo": {
+        "nazwa": "logo-akademia",
+        "slug": "logo-akademia",
+        "typ": "image",
+        "alt": "Logo Akademii Fryzjerstwa Premium",
+        "path": "/images/logo-akademia.png",
+        "_id": "698c7b69f0865b458e089601",
+        "createdAt": "2026-02-11T12:51:53.323Z",
+        "updatedAt": "2026-02-11T12:51:53.323Z"
+      },
+      "opis": "Profesjonalna akademia oferująca szkolenia z zakresu fryzjerstwa",
+      "slug": "akademia-fryzjerstwa-premium",
+      "strona_internetowa": "https://akademia-fryzjerstwa.pl",
+      "__v": 0
+    },
+    "media": [
+      {
+        "nazwa": "kurs-strzyzenia-main",
+        "slug": "kurs-strzyzenia-main",
+        "typ": "image",
+        "alt": "Kompleksowy kurs strzyżenia męskiego",
+        "path": "/images/courses/strzyzenie-meskie-main.jpg",
+        "_id": "698c7b69f0865b458e089605",
+        "createdAt": "2026-02-11T12:51:53.331Z",
+        "updatedAt": "2026-02-11T12:51:53.331Z"
+      }
+    ],
+    "promocje": null,
+    "opis": "Zapraszamy na kompleksowy kurs strzyżenia męskiego, który nauczy Cię profesjonalnych technik pracy z męskimi fryzurami. W trakcie kursu poznasz podstawowe i zaawansowane techniki strzyżenia, pracę z różnymi typami włosów, stylizację i modelowanie włosów oraz używanie profesjonalnych narzędzi fryzjerskich.",
+    "ocena": 4.8,
+    "opinie": [],
+    "vat": 23,
+    "sku": null,
+    "aktywne": true,
+    "wariant": [],
+    "__v": 0
+  }
+]

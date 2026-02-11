@@ -19,6 +19,7 @@ import { hash, verify as passverify } from "argon2";
 import { writeFileSync } from "node:fs";
 import path from "node:path";
 import { Products, Warianty } from "./types/productTypes";
+import { Courses, KursWarianty } from "./types/coursesTypes.";
 
 let didCleanupIndexes = false;
 
@@ -218,6 +219,18 @@ export function returnAvailableWariant(
         );
         return { res: true, product: filteredProduct };
     }
+}
+
+export function returnAvailableCourseWariant(
+    req: NextRequest,
+    course: Courses,
+): { res: boolean; course: Courses } {
+    if (!course || !course.cena) {
+        return { res: false, course: course };
+    }
+    // Kursy nie mają permisji w wariantach (KursWarianty nie ma pola permisje)
+    // Więc zwracamy kurs bez zmian
+    return { res: true, course: course };
 }
 
 export async function addNewUser(payload: Users) {

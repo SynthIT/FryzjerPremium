@@ -4,14 +4,21 @@ import { Categories } from "@/lib/types/shared";
 import mongoose, { Types } from "mongoose";
 
 export async function collectCourses() {
-    await db();
-    const cours = await Course.find()
-        .populate("kategoria")
-        .populate("promocje")
-        .populate("firma")
-        .orFail();
-    await dbclose();
-    return JSON.stringify(cours);
+    try {
+        await db();
+        const cours = await Course.find()
+            .populate("kategoria")
+            .populate("promocje")
+            .populate("firma")
+            .lean();
+        await dbclose();
+        console.log("📚 collectCourses: znaleziono", cours?.length || 0, "kursów");
+        return JSON.stringify(cours || []);
+    } catch (error) {
+        console.error("❌ Błąd w collectCourses:", error);
+        await dbclose().catch(() => {});
+        return JSON.stringify([]);
+    }
 }
 
 export async function createCourse(course: Courses) {

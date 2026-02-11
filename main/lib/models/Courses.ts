@@ -52,6 +52,14 @@ const courseSchema = new Schema<Courses>({
     wariant: { type: [KursWariant], default: [] },
     sku: { type: String },
     aktywne: { type: Boolean },
+    // Pola specyficzne dla szkoleń (opcjonalne - nie zepsują istniejących danych)
+    czasTrwania: { type: String },
+    poziom: { type: String },
+    liczbaLekcji: { type: Number },
+    instruktor: { type: String },
+    jezyk: { type: String, default: "polski" },
+    certyfikat: { type: Boolean, default: false },
+    krotkiOpis: { type: String }, // Krótki opis/subtitle
 });
 
 export const Course: Model<Courses> =

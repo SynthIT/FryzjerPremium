@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Product, Opinie, Products } from "@/lib/models/Products";
+import { Product } from "@/lib/models/Products";
+import { Opinie } from "@/lib/types/shared";
+import { Products } from "@/lib/types/productTypes";
 import mongoose from "mongoose";
 import path from "path";
 import { readFileSync, writeFileSync } from "fs";

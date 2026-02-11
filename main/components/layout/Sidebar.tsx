@@ -33,6 +33,7 @@ import {
     Truck,
     PlusCircle,
     TruckIcon,
+    GraduationCap,
 } from "lucide-react";
 
 type NavItem = {
@@ -116,12 +117,17 @@ const navItems: NavItem[] = [
     },
     {
         href: "/admin/courses",
-        label: "Kursy",
-        icon: <Receipt className="h-5 w-5" />,
+        label: "Szkolenia",
+        icon: <GraduationCap className="h-5 w-5" />,
         children: [
             {
+                href: "/admin/courses",
+                label: "Przeglądaj szkolenia",
+                icon: <GraduationCap className="h-4 w-4" />,
+            },
+            {
                 href: "/admin/courses/new",
-                label: "Dodaj nowy kurs",
+                label: "Dodaj nowe szkolenie",
                 icon: <PlusCircle className="h-4 w-4" />,
             },
             {
