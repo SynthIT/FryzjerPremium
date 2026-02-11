@@ -9,8 +9,8 @@ import { Users } from "@/lib/types/userTypes";
 
 export default function AccountSettingsPage() {
     const [activeSection, setActiveSection] = useState("personal");
-    const { user, changePassword, changeUserData } = useUser();
-    const [userData, setUserData] = useState<Partial<Users>>({
+    const { userData, getUser, changePassword, changeUserData } = useUser();
+    const [user, setUserData] = useState<Partial<Users>>({
         imie: "",
         nazwisko: "",
         email: "",
@@ -30,12 +30,16 @@ export default function AccountSettingsPage() {
 
     useEffect(() => {
         function s() {
-            if (!user) return false;
-            setUserData(user);
+            if (!userData) {
+                getUser();
+                setUserData(userData!);
+            } else {
+                setUserData(userData);
+            }
             return true;
         }
         s();
-    }, [user]);
+    }, [userData, getUser]);
 
     const sections = [
         { id: "personal", label: "Dane osobowe", icon: <User /> },
@@ -127,10 +131,10 @@ export default function AccountSettingsPage() {
                                                     Imię
                                                 </label>
                                                 <input
-                                                    value={userData.imie || ""}
+                                                    value={user.imie || ""}
                                                     onChange={(e) => {
                                                         setUserData({
-                                                            ...userData,
+                                                            ...user,
                                                             imie: e.target
                                                                 .value,
                                                         });
@@ -148,12 +152,10 @@ export default function AccountSettingsPage() {
                                                     Nazwisko
                                                 </label>
                                                 <input
-                                                    value={
-                                                        userData.nazwisko || ""
-                                                    }
+                                                    value={user.nazwisko || ""}
                                                     onChange={(e) =>
                                                         setUserData({
-                                                            ...userData,
+                                                            ...user,
                                                             nazwisko:
                                                                 e.target.value,
                                                         })
@@ -173,7 +175,7 @@ export default function AccountSettingsPage() {
                                             </label>
                                             <input
                                                 disabled={true}
-                                                value={userData.email || ""}
+                                                value={user.email || ""}
                                                 onChange={(e) =>
                                                     setUserData({
                                                         ...userData,
@@ -193,7 +195,7 @@ export default function AccountSettingsPage() {
                                                 Numer telefonu
                                             </label>
                                             <input
-                                                value={userData.telefon || ""}
+                                                value={user.telefon || ""}
                                                 onChange={(e) =>
                                                     setUserData({
                                                         ...userData,
@@ -209,9 +211,9 @@ export default function AccountSettingsPage() {
                                         <button
                                             onClick={() =>
                                                 handleChangePartial({
-                                                    imie: userData.imie,
-                                                    nazwisko: userData.nazwisko,
-                                                    telefon: userData.telefon,
+                                                    imie: user.imie,
+                                                    nazwisko: user.nazwisko,
+                                                    telefon: user.telefon,
                                                 })
                                             }
                                             className="settings-save-button">
@@ -241,10 +243,10 @@ export default function AccountSettingsPage() {
                                             <input
                                                 type="text"
                                                 id="street"
-                                                value={userData.ulica || ""}
+                                                value={user.ulica || ""}
                                                 onChange={(e) =>
                                                     setUserData({
-                                                        ...userData,
+                                                        ...user,
                                                         ulica: e.target.value,
                                                     })
                                                 }
@@ -260,12 +262,10 @@ export default function AccountSettingsPage() {
                                                     Numer domu
                                                 </label>
                                                 <input
-                                                    value={
-                                                        userData.nr_domu || ""
-                                                    }
+                                                    value={user.nr_domu || ""}
                                                     onChange={(e) =>
                                                         setUserData({
-                                                            ...userData,
+                                                            ...user,
                                                             nr_domu:
                                                                 e.target.value,
                                                         })
@@ -283,12 +283,10 @@ export default function AccountSettingsPage() {
                                                     Numer mieszkania
                                                 </label>
                                                 <input
-                                                    value={
-                                                        userData.nr_lokalu || ""
-                                                    }
+                                                    value={user.nr_lokalu || ""}
                                                     onChange={(e) =>
                                                         setUserData({
-                                                            ...userData,
+                                                            ...user,
                                                             nr_lokalu:
                                                                 e.target.value,
                                                         })
@@ -309,12 +307,11 @@ export default function AccountSettingsPage() {
                                                 </label>
                                                 <input
                                                     value={
-                                                        userData.kod_pocztowy ||
-                                                        ""
+                                                        user.kod_pocztowy || ""
                                                     }
                                                     onChange={(e) =>
                                                         setUserData({
-                                                            ...userData,
+                                                            ...user,
                                                             kod_pocztowy:
                                                                 e.target.value,
                                                         })
@@ -332,12 +329,10 @@ export default function AccountSettingsPage() {
                                                     Miasto
                                                 </label>
                                                 <input
-                                                    value={
-                                                        userData.miasto || ""
-                                                    }
+                                                    value={user.miasto || ""}
                                                     onChange={(e) =>
                                                         setUserData({
-                                                            ...userData,
+                                                            ...user,
                                                             miasto: e.target
                                                                 .value,
                                                         })
@@ -375,17 +370,13 @@ export default function AccountSettingsPage() {
                                         <button
                                             onClick={() =>
                                                 handleChangePartial({
-                                                    ulica: userData.ulica || "",
-                                                    nr_domu:
-                                                        userData.nr_domu || "",
+                                                    ulica: user.ulica || "",
+                                                    nr_domu: user.nr_domu || "",
                                                     nr_lokalu:
-                                                        userData.nr_lokalu ||
-                                                        "",
+                                                        user.nr_lokalu || "",
                                                     kod_pocztowy:
-                                                        userData.kod_pocztowy ||
-                                                        "",
-                                                    miasto:
-                                                        userData.miasto || "",
+                                                        user.kod_pocztowy || "",
+                                                    miasto: user.miasto || "",
                                                 })
                                             }
                                             className="settings-save-button">

@@ -32,7 +32,7 @@ export default function Header() {
     const [showModalMenu, setShowModalMenu] = useState<boolean>(false);
 
     const { getTotalItems, lastAddedItem, clearLastAddedItem } = useCart();
-    const { addUser, user, isAdmin, logout } = useUser();
+    const { addUser, userData, isAdmin, logout, getUser } = useUser();
     const { notify } = useNotification();
 
     const cartItemsCount = getTotalItems();
@@ -43,7 +43,10 @@ export default function Header() {
             setMounted(true);
         }
         a();
-    }, []);
+        if (!userData) {
+            getUser();
+        }
+    }, [userData, getUser]);
 
     // Pokazuj okienko po dodaniu produktu
     useEffect(() => {
@@ -104,7 +107,7 @@ export default function Header() {
             e.preventDefault();
             console.log("Szukaj:", searchQuery);
         },
-        [searchQuery]
+        [searchQuery],
     );
 
     const closeMobileMenu = useCallback(() => {
@@ -207,7 +210,7 @@ export default function Header() {
             }
             closeMobileMenu();
         },
-        [closeMobileMenu]
+        [closeMobileMenu],
     );
 
     const toggleDropdown = useCallback(() => {
@@ -274,7 +277,7 @@ export default function Header() {
                                     onClick={(e) => {
                                         e.preventDefault();
                                         smoothScrollTo(
-                                            "product-categories-section"
+                                            "product-categories-section",
                                         );
                                     }}>
                                     Kategorie
@@ -498,23 +501,27 @@ export default function Header() {
                             </div>
                         )}
                     </div>
-                    {user ? (
+                    {userData ? (
                         <div className="user-menu-wrapper" ref={userMenuRef}>
                             <LoggedBadge
-                                user={user}
+                                user={userData}
                                 setModalMenu={() => {
                                     setShowModalMenu(!showModalMenu);
                                 }}></LoggedBadge>
                             {showModalMenu && (
                                 <div className="user-dropdown-menu">
-                                    <Link 
-                                        className="user-dropdown-item" 
-                                        href="/admin"
-                                        onClick={() => setShowModalMenu(false)}>
-                                        Panel zarządzania
-                                    </Link>
-                                    <Link 
-                                        className="user-dropdown-item" 
+                                    {isAdmin() && (
+                                        <Link
+                                            className="user-dropdown-item"
+                                            href="/admin"
+                                            onClick={() =>
+                                                setShowModalMenu(false)
+                                            }>
+                                            Panel zarządzania
+                                        </Link>
+                                    )}
+                                    <Link
+                                        className="user-dropdown-item"
                                         href="/zamowienia"
                                         onClick={() => setShowModalMenu(false)}>
                                         Zamówienia
@@ -724,7 +731,7 @@ export default function Header() {
                                                 addUser(response.user);
                                                 notify(
                                                     "Zostałeś zalogowany",
-                                                    "log"
+                                                    "log",
                                                 );
                                             } else {
                                                 console.log(response.error);
@@ -750,7 +757,7 @@ export default function Header() {
                             </form>
                         </div>
                     </div>,
-                    document.body
+                    document.body,
                 )}
         </header>
     );
