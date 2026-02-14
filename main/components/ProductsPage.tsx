@@ -11,7 +11,8 @@ import {
     getProducts,
     getCourses,
 } from "@/lib/utils";
-import { Categories, Producents, Products } from "@/lib/models/Products";
+import { Producents, Products } from "@/lib/types/productTypes";
+import { Categories } from "@/lib/types/shared";
 import { Courses } from "@/lib/types/coursesTypes";
 import ProductElement from "./productsComponents/ProductElement";
 import CourseElement from "./coursesComponents/CourseElement";
@@ -28,7 +29,7 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
     const urlCategoryParam = categoryName || (params?.category as string) || "";
     const urlCategory = useMemo(
         () => decodeCategory(urlCategoryParam),
-        [urlCategoryParam]
+        [urlCategoryParam],
     );
     const isCoursesPage = urlCategory.toLowerCase() === "szkolenia";
     const [selectedCategory, setSelectedCategory] =
@@ -51,68 +52,111 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
         async function fetchCourses() {
             if (isCoursesPage) {
                 try {
-                    console.log("🔄 Pobieranie szkoleń dla strony /products/szkolenia");
+                    console.log(
+                        "🔄 Pobieranie szkoleń dla strony /products/szkolenia",
+                    );
                     const data = await getCourses();
                     console.log("📦 Otrzymane dane z API:", data);
                     console.log("📦 Typ danych:", typeof data);
-                    console.log("📦 Czy to obiekt:", data && typeof data === "object");
-                    console.log("📦 Czy ma courses:", data && "courses" in data);
+                    console.log(
+                        "📦 Czy to obiekt:",
+                        data && typeof data === "object",
+                    );
+                    console.log(
+                        "📦 Czy ma courses:",
+                        data && "courses" in data,
+                    );
                     console.log("📦 Czy to tablica:", Array.isArray(data));
                     console.log("📊 Status:", data?.status);
-                    console.log("📚 Liczba szkoleń:", data?.courses?.length || 0);
-                    
+                    console.log(
+                        "📚 Liczba szkoleń:",
+                        data?.courses?.length || 0,
+                    );
+
                     // Sprawdź różne możliwe formaty odpowiedzi
                     let coursesToSet: Courses[] = [];
-                    
+
                     if (data && data.courses && Array.isArray(data.courses)) {
                         coursesToSet = data.courses;
                         console.log("✅ Format: data.courses (tablica)");
                     } else if (data && Array.isArray(data)) {
                         coursesToSet = data;
                         console.log("✅ Format: data jest tablicą");
-                    } else if (data && data.status === 200 && Array.isArray(data.courses)) {
+                    } else if (
+                        data &&
+                        data.status === 200 &&
+                        Array.isArray(data.courses)
+                    ) {
                         coursesToSet = data.courses;
                         console.log("✅ Format: data.status === 200");
-                    } else if (data && typeof data === "object" && "courses" in data) {
-                        coursesToSet = Array.isArray(data.courses) ? data.courses : [];
-                        console.log("✅ Format: data.courses (sprawdzam czy tablica)");
+                    } else if (
+                        data &&
+                        typeof data === "object" &&
+                        "courses" in data
+                    ) {
+                        coursesToSet = Array.isArray(data.courses)
+                            ? data.courses
+                            : [];
+                        console.log(
+                            "✅ Format: data.courses (sprawdzam czy tablica)",
+                        );
                     } else {
-                        console.warn("⚠️ Nieznany format danych. Pełne dane:", JSON.stringify(data, null, 2));
+                        console.warn(
+                            "⚠️ Nieznany format danych. Pełne dane:",
+                            JSON.stringify(data, null, 2),
+                        );
                         coursesToSet = [];
                     }
-                    
+
                     console.log("🎯 Ustawiam szkolenia:", coursesToSet.length);
                     setAllCourses(coursesToSet);
-                    
+
                     // Jeśli nie ma szkoleń, spróbuj utworzyć przykładowe
                     if (coursesToSet.length === 0) {
-                        console.log("⚠️ Brak szkoleń - próbuję utworzyć przykładowe...");
+                        console.log(
+                            "⚠️ Brak szkoleń - próbuję utworzyć przykładowe...",
+                        );
                         try {
-                            const initResponse = await fetch("/api/v1/courses/init", {
-                                method: "POST",
-                                credentials: "include",
-                            });
+                            const initResponse = await fetch(
+                                "/api/v1/courses/init",
+                                {
+                                    method: "POST",
+                                    credentials: "include",
+                                },
+                            );
                             const initData = await initResponse.json();
                             console.log("📝 Odpowiedź z init:", initData);
-                            
+
                             if (initData.status === 0) {
                                 // Odśwież dane
                                 const newData = await getCourses();
-                                if (newData && newData.courses && Array.isArray(newData.courses)) {
+                                if (
+                                    newData &&
+                                    newData.courses &&
+                                    Array.isArray(newData.courses)
+                                ) {
                                     setAllCourses(newData.courses);
                                 }
                             }
                         } catch (initError) {
-                            console.error("❌ Błąd podczas inicjalizacji:", initError);
+                            console.error(
+                                "❌ Błąd podczas inicjalizacji:",
+                                initError,
+                            );
                         }
                     }
                 } catch (error) {
                     console.error("❌ Błąd podczas ładowania szkoleń:", error);
-                    console.error("❌ Szczegóły błędu:", error instanceof Error ? error.message : error);
+                    console.error(
+                        "❌ Szczegóły błędu:",
+                        error instanceof Error ? error.message : error,
+                    );
                     setAllCourses([]);
                 }
             } else {
-                console.log("ℹ️ To nie jest strona szkoleń, nie pobieram danych");
+                console.log(
+                    "ℹ️ To nie jest strona szkoleń, nie pobieram danych",
+                );
             }
         }
         fetchCourses();
@@ -137,20 +181,25 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
                 setSelectedCategory("Szkolenia");
             } else {
                 try {
-                    const displayName = await getCategoryDisplayName(urlCategory);
+                    const displayName =
+                        await getCategoryDisplayName(urlCategory);
                     setSelectedCategory(displayName);
                 } catch (error) {
-                    console.error("Błąd podczas ładowania nazwy kategorii:", error);
+                    console.error(
+                        "Błąd podczas ładowania nazwy kategorii:",
+                        error,
+                    );
                     setSelectedCategory(
                         urlCategory
                             ? urlCategory.charAt(0).toUpperCase() +
                                   urlCategory.slice(1)
-                            : "Wszystkie produkty"
+                            : "Wszystkie produkty",
                     );
                 }
             }
             // Dla szkoleń ustaw większy zakres cen
-            const maxPrice = urlCategory.toLowerCase() === "szkolenia" ? 5000 : 15000;
+            const maxPrice =
+                urlCategory.toLowerCase() === "szkolenia" ? 5000 : 15000;
             setFilters({
                 priceRange: { min: 0, max: maxPrice },
                 selectedSubcategories: [],
@@ -207,7 +256,12 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
             console.log("⚠️ allCourses jest pustą tablicą");
             return [];
         }
-        console.log("🔄 Sortowanie", allCourses.length, "szkoleń według:", sortBy);
+        console.log(
+            "🔄 Sortowanie",
+            allCourses.length,
+            "szkoleń według:",
+            sortBy,
+        );
         const sorted = [...allCourses].sort((a, b) => {
             switch (sortBy) {
                 case "Cena: od najniższej":
@@ -261,7 +315,7 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
             ) {
                 map.set(
                     productProducent.slug,
-                    productProducent.nazwa.toLowerCase()
+                    productProducent.nazwa.toLowerCase(),
                 );
             }
         });
@@ -279,13 +333,20 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
             return [];
         }
         console.log("🔄 Filtrowanie", sortedCourses.length, "szkoleń");
-        console.log("💰 Zakres ceny:", filters.priceRange.min, "-", filters.priceRange.max);
-        
+        console.log(
+            "💰 Zakres ceny:",
+            filters.priceRange.min,
+            "-",
+            filters.priceRange.max,
+        );
+
         // Sprawdź ceny wszystkich kursów przed filtrowaniem
         sortedCourses.forEach((course, idx) => {
-            console.log(`  Kurs ${idx + 1}: ${course.nazwa}, cena: ${course.cena}, aktywny: ${course.aktywne !== false}`);
+            console.log(
+                `  Kurs ${idx + 1}: ${course.nazwa}, cena: ${course.cena}, aktywny: ${course.aktywne !== false}`,
+            );
         });
-        
+
         const filtered = sortedCourses.filter((course) => {
             // Filtrowanie według ceny
             const coursePrice = course.cena || 0;
@@ -293,18 +354,27 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
                 coursePrice < filters.priceRange.min ||
                 coursePrice > filters.priceRange.max
             ) {
-                console.log(`❌ Kurs "${course.nazwa}" odfiltrowany - cena ${coursePrice} poza zakresem ${filters.priceRange.min}-${filters.priceRange.max}`);
+                console.log(
+                    `❌ Kurs "${course.nazwa}" odfiltrowany - cena ${coursePrice} poza zakresem ${filters.priceRange.min}-${filters.priceRange.max}`,
+                );
                 return false;
             }
             // Filtrowanie aktywnych szkoleń
             if (course.aktywne === false) {
-                console.log(`❌ Kurs "${course.nazwa}" odfiltrowany - nieaktywny`);
+                console.log(
+                    `❌ Kurs "${course.nazwa}" odfiltrowany - nieaktywny`,
+                );
                 return false;
             }
             console.log(`✅ Kurs "${course.nazwa}" przeszedł filtry`);
             return true;
         });
-        console.log("✅ Po filtrowaniu zostało", filtered.length, "szkoleń z", sortedCourses.length);
+        console.log(
+            "✅ Po filtrowaniu zostało",
+            filtered.length,
+            "szkoleń z",
+            sortedCourses.length,
+        );
         return filtered;
     }, [sortedCourses, filters, isCoursesPage]);
 
@@ -346,12 +416,12 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
                         if (!selectedSlug) {
                             // Jeśli nie znaleziono slug dla nazwy, porównaj bezpośrednio po nazwie
                             return productCategories.some(
-                                (cat) => cat.nazwa === selectedNazwa
+                                (cat) => cat.nazwa === selectedNazwa,
                             );
                         }
                         // Porównaj slug kategorii produktu z slugiem wybranej podkategorii
                         return productCategories.some(
-                            (cat) => cat.nazwa.toLowerCase() === selectedSlug
+                            (cat) => cat.nazwa.toLowerCase() === selectedSlug,
                         );
                     });
 
@@ -378,10 +448,10 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
                             "selectedNazwa:",
                             selectedNazwa,
                             "mapped to:",
-                            selectedProducent
+                            selectedProducent,
                         );
                         return productProducent.nazwa == selectedProducent;
-                    }
+                    },
                 );
 
                 if (!matchesAnyProducent) {
@@ -402,9 +472,15 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
             return true;
         });
     }, [
+        isCoursesPage,
         sortedProducts,
         urlCategory,
-        filters,
+        filters.priceRange.min,
+        filters.priceRange.max,
+        filters.selectedSubcategories,
+        filters.selectedBrands,
+        filters.selectedTypes.length,
+        filters.selectedSizes.length,
         categoryNameToSlugMap,
         produentsToMap,
     ]);
@@ -416,19 +492,28 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
 
     // Paginacja - memoized
     const itemsToDisplay = isCoursesPage ? filteredCourses : filteredProducts;
-    const totalItems = Array.isArray(itemsToDisplay) ? itemsToDisplay.length : 0;
+    const totalItems = Array.isArray(itemsToDisplay)
+        ? itemsToDisplay.length
+        : 0;
     const startIndex = (currentPage - 1) * productsPerPage;
     const endIndex = startIndex + productsPerPage;
-    const displayedItems = useMemo(
-        () => {
-            const items = Array.isArray(itemsToDisplay) ? itemsToDisplay.slice(startIndex, endIndex) : [];
-            console.log("📄 Paginacja - wyświetlam", items.length, "z", totalItems, "elementów (strona", currentPage, ")");
-            return items;
-        },
-        [itemsToDisplay, startIndex, endIndex, totalItems, currentPage]
-    );
+    const displayedItems = useMemo(() => {
+        const items = Array.isArray(itemsToDisplay)
+            ? itemsToDisplay.slice(startIndex, endIndex)
+            : [];
+        console.log(
+            "📄 Paginacja - wyświetlam",
+            items.length,
+            "z",
+            totalItems,
+            "elementów (strona",
+            currentPage,
+            ")",
+        );
+        return items;
+    }, [itemsToDisplay, startIndex, endIndex, totalItems, currentPage]);
     const totalPages = Math.ceil(totalItems / productsPerPage);
-    
+
     // Debug log
     useEffect(() => {
         if (isCoursesPage) {
@@ -440,14 +525,22 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
             console.log("  displayedItems:", displayedItems.length);
             console.log("  filters.priceRange:", filters.priceRange);
         }
-    }, [isCoursesPage, allCourses.length, sortedCourses.length, filteredCourses.length, itemsToDisplay.length, displayedItems.length, filters]);
+    }, [
+        isCoursesPage,
+        allCourses.length,
+        sortedCourses.length,
+        filteredCourses.length,
+        itemsToDisplay.length,
+        displayedItems.length,
+        filters,
+    ]);
 
     // Handlery - memoized
     const handleSortChange = useCallback(
         (e: React.ChangeEvent<HTMLSelectElement>) => {
             setSortBy(e.target.value);
         },
-        []
+        [],
     );
 
     const handlePageChange = useCallback((page: number) => {
@@ -482,8 +575,8 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
                     <div className="products-page-info">
                         <span className="products-count">
                             Wyświetlanie {startIndex + 1}-
-                            {Math.min(endIndex, totalItems)} z{" "}
-                            {totalItems} {isCoursesPage ? "szkoleń" : "produktów"}
+                            {Math.min(endIndex, totalItems)} z {totalItems}{" "}
+                            {isCoursesPage ? "szkoleń" : "produktów"}
                         </span>
                         <div className="sort-dropdown-wrapper">
                             <label className="sort-label">Sortuj według:</label>
@@ -514,12 +607,30 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
                     {/* Products/Courses Grid */}
                     <div className="products-main-content">
                         {isCoursesPage && (
-                            <div style={{ padding: "20px", background: "#f0f0f0", marginBottom: "20px", borderRadius: "8px", fontSize: "12px" }}>
-                                <p><strong>Debug info:</strong></p>
-                                <p>isCoursesPage: {isCoursesPage ? "true" : "false"}</p>
+                            <div
+                                style={{
+                                    padding: "20px",
+                                    background: "#f0f0f0",
+                                    marginBottom: "20px",
+                                    borderRadius: "8px",
+                                    fontSize: "12px",
+                                }}>
+                                <p>
+                                    <strong>Debug info:</strong>
+                                </p>
+                                <p>
+                                    isCoursesPage:{" "}
+                                    {isCoursesPage ? "true" : "false"}
+                                </p>
                                 <p>allCourses.length: {allCourses.length}</p>
-                                <p>filteredCourses.length: {filteredCourses.length}</p>
-                                <p>displayedItems.length: {displayedItems.length}</p>
+                                <p>
+                                    filteredCourses.length:{" "}
+                                    {filteredCourses.length}
+                                </p>
+                                <p>
+                                    displayedItems.length:{" "}
+                                    {displayedItems.length}
+                                </p>
                                 <p>totalItems: {totalItems}</p>
                             </div>
                         )}
@@ -534,11 +645,42 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
                                         />
                                     ))
                                 ) : (
-                                    <div style={{ padding: "40px", textAlign: "center", gridColumn: "1 / -1" }}>
-                                        <p style={{ fontSize: "18px", marginBottom: "10px" }}>Brak szkoleń do wyświetlenia</p>
-                                        <p style={{ fontSize: "14px", color: "#666" }}>allCourses: {allCourses.length}</p>
-                                        <p style={{ fontSize: "14px", color: "#666" }}>filteredCourses: {filteredCourses.length}</p>
-                                        <p style={{ fontSize: "14px", color: "#666" }}>sortedCourses: {sortedCourses.length}</p>
+                                    <div
+                                        style={{
+                                            padding: "40px",
+                                            textAlign: "center",
+                                            gridColumn: "1 / -1",
+                                        }}>
+                                        <p
+                                            style={{
+                                                fontSize: "18px",
+                                                marginBottom: "10px",
+                                            }}>
+                                            Brak szkoleń do wyświetlenia
+                                        </p>
+                                        <p
+                                            style={{
+                                                fontSize: "14px",
+                                                color: "#666",
+                                            }}>
+                                            allCourses: {allCourses.length}
+                                        </p>
+                                        <p
+                                            style={{
+                                                fontSize: "14px",
+                                                color: "#666",
+                                            }}>
+                                            filteredCourses:{" "}
+                                            {filteredCourses.length}
+                                        </p>
+                                        <p
+                                            style={{
+                                                fontSize: "14px",
+                                                color: "#666",
+                                            }}>
+                                            sortedCourses:{" "}
+                                            {sortedCourses.length}
+                                        </p>
                                     </div>
                                 )
                             ) : (
@@ -583,7 +725,7 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
                                                         }`}
                                                         onClick={() =>
                                                             handlePageChange(
-                                                                pageNum
+                                                                pageNum,
                                                             )
                                                         }>
                                                         {pageNum}
@@ -602,7 +744,7 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
                                                 );
                                             }
                                             return null;
-                                        }
+                                        },
                                     )}
                                 </div>
                                 <button

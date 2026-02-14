@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Firmy, Media } from "@/lib/types/coursesTypes";
+import { Firmy } from "@/lib/types/coursesTypes";
+import { Media } from "@/lib/types/shared";
 import { X, Save, Trash2 } from "lucide-react";
 
 // Helper do generowania slug
@@ -62,7 +63,10 @@ export default function CompanyEditModal({
             if (result.status === 0 || response.ok) {
                 onUpdate(editedCompany);
             } else {
-                alert("Błąd podczas zapisywania: " + (result.error || "Nieznany błąd"));
+                alert(
+                    "Błąd podczas zapisywania: " +
+                        (result.error || "Nieznany błąd"),
+                );
             }
         } catch (error) {
             console.error("Błąd podczas zapisywania firmy:", error);
@@ -73,22 +77,30 @@ export default function CompanyEditModal({
     };
 
     const handleDelete = async () => {
-        if (!confirm("Czy na pewno chcesz usunąć tę firmę? To również usunie wszystkie powiązane szkolenia!")) return;
-        
+        if (
+            !confirm(
+                "Czy na pewno chcesz usunąć tę firmę? To również usunie wszystkie powiązane szkolenia!",
+            )
+        )
+            return;
+
         try {
             const response = await fetch(
                 `/admin/api/v1/firmy?slug=${editedCompany.slug}`,
                 {
                     method: "DELETE",
                     credentials: "include",
-                }
+                },
             );
 
             const result = await response.json();
             if (result.status === 0 || response.ok) {
                 onDelete(editedCompany.slug || "");
             } else {
-                alert("Błąd podczas usuwania firmy: " + (result.error || "Nieznany błąd"));
+                alert(
+                    "Błąd podczas usuwania firmy: " +
+                        (result.error || "Nieznany błąd"),
+                );
             }
         } catch (error) {
             console.error("Błąd podczas usuwania firmy:", error);
@@ -96,15 +108,18 @@ export default function CompanyEditModal({
         }
     };
 
-    const updateField = <K extends keyof Firmy>(
-        field: K,
-        value: Firmy[K]
-    ) => {
+    const updateField = <K extends keyof Firmy>(field: K, value: Firmy[K]) => {
         setEditedCompany((prev) => ({ ...prev, [field]: value }));
     };
 
     const updateLogo = (field: keyof Media, value: string) => {
-        const logo = editedCompany.logo || { nazwa: "", slug: "", typ: "image", alt: "", path: "" };
+        const logo = editedCompany.logo || {
+            nazwa: "",
+            slug: "",
+            typ: "image",
+            alt: "",
+            path: "",
+        };
         updateField("logo", { ...logo, [field]: value });
     };
 
@@ -127,7 +142,9 @@ export default function CompanyEditModal({
                 <div className="flex-1 overflow-y-auto p-6 space-y-6">
                     {/* Basic Info */}
                     <div className="space-y-4">
-                        <h3 className="text-lg font-semibold">Podstawowe informacje</h3>
+                        <h3 className="text-lg font-semibold">
+                            Podstawowe informacje
+                        </h3>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="col-span-2">
                                 <label className="block text-sm font-medium mb-1">
@@ -136,7 +153,9 @@ export default function CompanyEditModal({
                                 <input
                                     type="text"
                                     value={editedCompany.nazwa || ""}
-                                    onChange={(e) => updateField("nazwa", e.target.value)}
+                                    onChange={(e) =>
+                                        updateField("nazwa", e.target.value)
+                                    }
                                     className="w-full px-3 py-2 border rounded-md"
                                 />
                             </div>
@@ -147,7 +166,9 @@ export default function CompanyEditModal({
                                 <input
                                     type="text"
                                     value={editedCompany.slug || ""}
-                                    onChange={(e) => updateField("slug", e.target.value)}
+                                    onChange={(e) =>
+                                        updateField("slug", e.target.value)
+                                    }
                                     className="w-full px-3 py-2 border rounded-md"
                                     readOnly
                                 />
@@ -161,8 +182,15 @@ export default function CompanyEditModal({
                                 </label>
                                 <input
                                     type="url"
-                                    value={editedCompany.strona_internetowa || ""}
-                                    onChange={(e) => updateField("strona_internetowa", e.target.value)}
+                                    value={
+                                        editedCompany.strona_internetowa || ""
+                                    }
+                                    onChange={(e) =>
+                                        updateField(
+                                            "strona_internetowa",
+                                            e.target.value,
+                                        )
+                                    }
                                     className="w-full px-3 py-2 border rounded-md"
                                     placeholder="https://example.com"
                                 />
@@ -174,7 +202,9 @@ export default function CompanyEditModal({
                                 <textarea
                                     rows={4}
                                     value={editedCompany.opis || ""}
-                                    onChange={(e) => updateField("opis", e.target.value)}
+                                    onChange={(e) =>
+                                        updateField("opis", e.target.value)
+                                    }
                                     className="w-full px-3 py-2 border rounded-md"
                                     placeholder="Opis firmy..."
                                 />
@@ -193,7 +223,9 @@ export default function CompanyEditModal({
                                 <input
                                     type="text"
                                     value={editedCompany.logo?.path || ""}
-                                    onChange={(e) => updateLogo("path", e.target.value)}
+                                    onChange={(e) =>
+                                        updateLogo("path", e.target.value)
+                                    }
                                     className="w-full px-3 py-2 border rounded-md"
                                     placeholder="/path/to/logo.png"
                                 />
@@ -205,7 +237,9 @@ export default function CompanyEditModal({
                                 <input
                                     type="text"
                                     value={editedCompany.logo?.alt || ""}
-                                    onChange={(e) => updateLogo("alt", e.target.value)}
+                                    onChange={(e) =>
+                                        updateLogo("alt", e.target.value)
+                                    }
                                     className="w-full px-3 py-2 border rounded-md"
                                     placeholder="Opis logo"
                                 />

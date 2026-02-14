@@ -38,8 +38,6 @@ export default function ProductsPage() {
                     Dodaj role
                 </a>
             </div>
-
-            {roles && ()}
         </div>
     );
 }

@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { Courses, Categories, Firmy } from "@/lib/types/coursesTypes";
+import { Courses, Firmy } from "@/lib/types/coursesTypes";
+import { Categories } from "@/lib/types/shared";
 
 interface AdminCourseCardProps {
     course: Courses;
@@ -21,7 +22,7 @@ export default function AdminCourseCard({
                     typeof cat === "object" &&
                     cat !== null &&
                     "nazwa" in cat &&
-                    "slug" in cat
+                    "slug" in cat,
             ) as Categories[];
         }
         return [];
@@ -34,10 +35,7 @@ export default function AdminCourseCard({
     const getFirmaName = (): string => {
         if (!course.firma) return "Brak firmy";
         if (typeof course.firma === "string") return course.firma;
-        if (
-            typeof course.firma === "object" &&
-            "nazwa" in course.firma
-        ) {
+        if (typeof course.firma === "object" && "nazwa" in course.firma) {
             return (course.firma as Firmy).nazwa || "Brak firmy";
         }
         return "Brak firmy";
@@ -151,20 +149,14 @@ export default function AdminCourseCard({
                             </span>
                         )}
                     </div>
-                    <div
-                        className="truncate max-w-[120px]"
-                        title={firmaName}>
+                    <div className="truncate max-w-[120px]" title={firmaName}>
                         {firmaName}
                     </div>
                 </div>
 
                 {/* Additional Info */}
                 <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
-                    <div>
-                        {course.sku && (
-                            <span>SKU: {course.sku}</span>
-                        )}
-                    </div>
+                    <div>{course.sku && <span>SKU: {course.sku}</span>}</div>
                     <div>
                         {course.vat !== undefined && (
                             <span>VAT: {course.vat}%</span>

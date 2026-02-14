@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Promos } from "@/lib/models/Products";
+import { Promos } from "@/lib/types/shared";
 import AdminPromoCard from "@/components/admin/AdminPromoCard";
 
 export default function ProductsPage() {

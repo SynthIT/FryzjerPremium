@@ -1,12 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import {
-    Products,
-    Categories,
-    Producents,
-    Promos,
-} from "@/lib/models/Products";
+import { Categories, Promos } from "@/lib/types/shared";
+import { Products, Producents } from "@/lib/types/productTypes";
 
 interface AdminProductCardProps {
     product: Products;
@@ -26,7 +22,7 @@ export default function AdminProductCard({
                     typeof cat === "object" &&
                     cat !== null &&
                     "nazwa" in cat &&
-                    "slug" in cat
+                    "slug" in cat,
             ) as Categories[];
         }
         return [];

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Producents, Products } from "@/lib/models/Products";
+import { Producents, Products } from "@/lib/types/productTypes";
 
 export default function ProductsPage() {
     const [producent, setProducent] = useState<Producents[]>([]);

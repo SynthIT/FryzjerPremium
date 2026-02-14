@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Producents } from "@/lib/models/Products";
+import { Producents } from "@/lib/types/productTypes";
 
 interface AdminProducentCardProps {
     producent: Producents;

@@ -1,6 +1,6 @@
 "use client";
 
-import { Promos } from "@/lib/models/Products";
+import { Promos } from "@/lib/types/shared";
 import { useEffect, useMemo, useState } from "react";
 
 interface AdminPromoCardProps {

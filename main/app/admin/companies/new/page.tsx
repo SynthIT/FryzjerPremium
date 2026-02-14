@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import "@/app/globals2.css";
-import { Firmy, Media } from "@/lib/types/coursesTypes";
+import { Firmy } from "@/lib/types/coursesTypes";
+import { Media } from "@/lib/types/shared";
 import { useRouter } from "next/navigation";
 
 // Helper do generowania slug
@@ -18,7 +19,7 @@ function generateSlug(text: string): string {
 export default function NewCompanyPage() {
     const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
-    
+
     // Podstawowe dane firmy
     const [nazwa, setNazwa] = useState<string>("");
     const [slug, setSlug] = useState<string>("");
@@ -68,12 +69,15 @@ export default function NewCompanyPage() {
             });
 
             const result = await response.json();
-            
+
             if (result.status === 201 || response.ok) {
                 alert("Firma została dodana pomyślnie!");
                 router.push("/admin/companies");
             } else {
-                alert("Błąd podczas dodawania firmy: " + (result.error || "Nieznany błąd"));
+                alert(
+                    "Błąd podczas dodawania firmy: " +
+                        (result.error || "Nieznany błąd"),
+                );
             }
         } catch (error) {
             console.error("Błąd podczas dodawania firmy:", error);
@@ -90,11 +94,14 @@ export default function NewCompanyPage() {
                     Dodaj firmę
                 </h1>
                 <p className="text-sm text-muted-foreground sm:text-base">
-                    Uzupełnij podstawowe informacje o firmie prowadzącej szkolenia.
+                    Uzupełnij podstawowe informacje o firmie prowadzącej
+                    szkolenia.
                 </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="grid gap-4 rounded-lg border p-3 sm:p-4 sm:grid-cols-2">
+            <form
+                onSubmit={handleSubmit}
+                className="grid gap-4 rounded-lg border p-3 sm:p-4 sm:grid-cols-2">
                 {/* Nazwa i Slug */}
                 <div className="grid gap-2 sm:col-span-2">
                     <label className="text-sm font-medium">Nazwa firmy *</label>
@@ -125,7 +132,9 @@ export default function NewCompanyPage() {
 
                 {/* Strona internetowa */}
                 <div className="grid gap-2 sm:col-span-2">
-                    <label className="text-sm font-medium">Strona internetowa</label>
+                    <label className="text-sm font-medium">
+                        Strona internetowa
+                    </label>
                     <input
                         type="url"
                         value={strona_internetowa}

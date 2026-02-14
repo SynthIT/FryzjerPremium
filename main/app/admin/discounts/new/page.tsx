@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import "@/app/globals2.css";
-import { Promos } from "@/lib/models/Products";
+import { Promos } from "@/lib/types/shared";
 
 export default function NewProductPage() {
     const [nazwa, setNazwa] = useState<string>("");
@@ -22,6 +22,7 @@ export default function NewProductPage() {
             procent: procent,
             rozpoczecie: start,
             wygasa: end,
+            aktywna: aktywna,
         };
         const res = await fetch("/admin/api/v1/promo/", {
             method: "post",

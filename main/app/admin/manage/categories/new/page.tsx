@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import "@/app/globals2.css";
 import { makeSlugKeys, parseSlugName } from "@/lib/utils_admin";
-import { Categories } from "@/lib/models/Products";
+import { Categories } from "@/lib/types/shared";
 
 export default function NewProductPage() {
     const [nazwa, setNazwa] = useState<string>("");

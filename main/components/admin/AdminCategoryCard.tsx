@@ -1,6 +1,6 @@
 "use client";
 
-import { Categories } from "@/lib/models/Products";
+import { Categories } from "@/lib/types/shared";
 
 interface AdminCategoryCardProps {
     category: Categories;

@@ -29,8 +29,8 @@ export const zodProducents = z.object({
     _id: z.instanceof(Types.ObjectId).optional(),
     nazwa: z.string(),
     logo: zodMedia,
+    slug: z.string(),
     opis: z.string().optional(),
-    slug: z.string().nullable(),
     strona_internetowa: z.string().nullable(),
 });
 

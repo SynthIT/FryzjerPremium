@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import "@/app/globals2.css";
-import { Products, Categories, Producents, Warianty } from "@/lib/models/Products";
+import { Products, Producents, Warianty } from "@/lib/types/productTypes";
+import { Categories } from "@/lib/types/shared";
 import { makeSlugKeys, parseSlugName } from "@/lib/utils_admin";
 import { useRouter } from "next/navigation";
 import { Plus, Minus, X } from "lucide-react";
@@ -20,7 +21,7 @@ function generateSlug(text: string): string {
 export default function NewProductPage() {
     const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
-    
+
     // Podstawowe dane produktu
     const [nazwa, setNazwa] = useState<string>("");
     const [slug, setSlug] = useState<string>("");
@@ -38,10 +39,15 @@ export default function NewProductPage() {
     const [aktywne, setAktywne] = useState<boolean>(true);
 
     // Kategorie i producent
-    const [categories, setCategories] = useState<Record<string, Categories[]>>({});
+    const [categories, setCategories] = useState<Record<string, Categories[]>>(
+        {},
+    );
     const [categoriesSlug, setCategoriesSlug] = useState<string[]>([]);
-    const [selectedMainCategory, setSelectedMainCategory] = useState<string>("");
-    const [selectedSubCategories, setSelectedSubCategories] = useState<string[]>([]);
+    const [selectedMainCategory, setSelectedMainCategory] =
+        useState<string>("");
+    const [selectedSubCategories, setSelectedSubCategories] = useState<
+        string[]
+    >([]);
     const [producents, setProducents] = useState<Producents[]>([]);
     const [selectedProducent, setSelectedProducent] = useState<string>("");
 
@@ -50,7 +56,9 @@ export default function NewProductPage() {
     const [mediaPreview, setMediaPreview] = useState<string[]>([]);
 
     // Specyfikacja
-    const [specyfikacja, setSpecyfikacja] = useState<Array<{ key: string; value: string }>>([]);
+    const [specyfikacja, setSpecyfikacja] = useState<
+        Array<{ key: string; value: string }>
+    >([]);
 
     // Warianty
     const [warianty, setWarianty] = useState<Warianty[]>([]);
@@ -123,7 +131,7 @@ export default function NewProductPage() {
         if (!e.target.files) return;
         const files = Array.from(e.target.files);
         setMediaFiles((prev) => [...prev, ...files]);
-        
+
         files.forEach((file) => {
             const reader = new FileReader();
             reader.onloadend = () => {
@@ -143,7 +151,11 @@ export default function NewProductPage() {
         setSpecyfikacja((prev) => [...prev, { key: "", value: "" }]);
     };
 
-    const updateSpecyfikacja = (index: number, field: "key" | "value", value: string) => {
+    const updateSpecyfikacja = (
+        index: number,
+        field: "key" | "value",
+        value: string,
+    ) => {
         setSpecyfikacja((prev) => {
             const updated = [...prev];
             updated[index] = { ...updated[index], [field]: value };
@@ -169,7 +181,12 @@ export default function NewProductPage() {
         ]);
     };
 
-    const updateWariant = (index: number, field: keyof Warianty, value: any) => {
+    const updateWariant = (
+        index: number,
+        field: keyof Warianty,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        value: any,
+    ) => {
         setWarianty((prev) => {
             const updated = [...prev];
             updated[index] = { ...updated[index], [field]: value };
@@ -202,7 +219,9 @@ export default function NewProductPage() {
             }
 
             // Przygotuj producent - musi być ObjectId lub pełny obiekt
-            const producentData = producents.find((p) => p._id === selectedProducent);
+            const producentData = producents.find(
+                (p) => p.slug === selectedProducent,
+            );
             if (!producentData) {
                 alert("Wybierz producenta");
                 setIsSubmitting(false);
@@ -235,11 +254,13 @@ export default function NewProductPage() {
                 ocena,
                 opinie: null,
                 vat,
+                promocje: null,
                 wariant: warianty.length > 0 ? warianty : undefined,
                 kod_ean: kod_ean || null,
                 sku: sku || null,
                 aktywne: aktywne,
-                specyfikacja: specyfikacja.length > 0 ? specyfikacja : undefined,
+                specyfikacja:
+                    specyfikacja.length > 0 ? specyfikacja : undefined,
             };
 
             const response = await fetch("/admin/api/v1/products", {
@@ -252,12 +273,15 @@ export default function NewProductPage() {
             });
 
             const result = await response.json();
-            
+
             if (result.status === 201 || response.ok) {
                 alert("Produkt został dodany pomyślnie!");
                 router.push("/admin/manage/products");
             } else {
-                alert("Błąd podczas dodawania produktu: " + (result.error || "Nieznany błąd"));
+                alert(
+                    "Błąd podczas dodawania produktu: " +
+                        (result.error || "Nieznany błąd"),
+                );
             }
         } catch (error) {
             console.error("Błąd podczas dodawania produktu:", error);
@@ -278,7 +302,9 @@ export default function NewProductPage() {
                 </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="grid gap-4 rounded-lg border p-3 sm:p-4 sm:grid-cols-2">
+            <form
+                onSubmit={handleSubmit}
+                className="grid gap-4 rounded-lg border p-3 sm:p-4 sm:grid-cols-2">
                 {/* Nazwa i Slug */}
                 <div className="grid gap-2 sm:col-span-2">
                     <label className="text-sm font-medium">Nazwa *</label>
@@ -297,24 +323,32 @@ export default function NewProductPage() {
 
                 {/* Cena i Cena skupu */}
                 <div className="grid gap-2">
-                    <label className="text-sm font-medium">Cena (bez VAT) *</label>
+                    <label className="text-sm font-medium">
+                        Cena (bez VAT) *
+                    </label>
                     <input
                         type="number"
                         step="0.01"
                         value={cena}
-                        onChange={(e) => setCena(parseFloat(e.target.value) || 0)}
+                        onChange={(e) =>
+                            setCena(parseFloat(e.target.value) || 0)
+                        }
                         required
                         className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
                         placeholder="0.00"
                     />
                 </div>
                 <div className="grid gap-2">
-                    <label className="text-sm font-medium">Cena skupu (analityka) *</label>
+                    <label className="text-sm font-medium">
+                        Cena skupu (analityka) *
+                    </label>
                     <input
                         type="number"
                         step="0.01"
                         value={cena_skupu}
-                        onChange={(e) => setCena_skupu(parseFloat(e.target.value) || 0)}
+                        onChange={(e) =>
+                            setCena_skupu(parseFloat(e.target.value) || 0)
+                        }
                         required
                         className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
                         placeholder="0.00"
@@ -338,12 +372,16 @@ export default function NewProductPage() {
 
                 {/* Stan magazynowy */}
                 <div className="grid gap-2">
-                    <label className="text-sm font-medium">Stan magazynowy *</label>
+                    <label className="text-sm font-medium">
+                        Stan magazynowy *
+                    </label>
                     <input
                         type="number"
                         min="0"
                         value={ilosc}
-                        onChange={(e) => setIlosc(parseInt(e.target.value) || 0)}
+                        onChange={(e) =>
+                            setIlosc(parseInt(e.target.value) || 0)
+                        }
                         required
                         className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
                         placeholder="0"
@@ -369,7 +407,9 @@ export default function NewProductPage() {
                     <div className="space-y-2">
                         <select
                             value={selectedMainCategory}
-                            onChange={(e) => handleMainCategoryChange(e.target.value)}
+                            onChange={(e) =>
+                                handleMainCategoryChange(e.target.value)
+                            }
                             required
                             className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring">
                             <option value="">Wybierz główną kategorię</option>
@@ -379,28 +419,37 @@ export default function NewProductPage() {
                                 </option>
                             ))}
                         </select>
-                        {selectedMainCategory && categories[selectedMainCategory] && (
-                            <div className="space-y-1">
-                                <label className="text-xs text-muted-foreground">
-                                    Wybierz podkategorie (wiele):
-                                </label>
-                                {categories[selectedMainCategory].map((cat) => (
-                                    <label
-                                        key={cat._id || cat.nazwa}
-                                        className="flex items-center gap-2 p-2 border rounded-md cursor-pointer hover:bg-accent">
-                                        <input
-                                            type="checkbox"
-                                            checked={selectedSubCategories.includes(cat._id || "")}
-                                            onChange={() =>
-                                                handleSubCategoryToggle(cat._id || "")
-                                            }
-                                            className="w-4 h-4"
-                                        />
-                                        <span className="text-sm">{cat.nazwa}</span>
+                        {selectedMainCategory &&
+                            categories[selectedMainCategory] && (
+                                <div className="space-y-1">
+                                    <label className="text-xs text-muted-foreground">
+                                        Wybierz podkategorie (wiele):
                                     </label>
-                                ))}
-                            </div>
-                        )}
+                                    {categories[selectedMainCategory].map(
+                                        (cat) => (
+                                            <label
+                                                key={cat._id || cat.nazwa}
+                                                className="flex items-center gap-2 p-2 border rounded-md cursor-pointer hover:bg-accent">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedSubCategories.includes(
+                                                        cat._id || "",
+                                                    )}
+                                                    onChange={() =>
+                                                        handleSubCategoryToggle(
+                                                            cat._id || "",
+                                                        )
+                                                    }
+                                                    className="w-4 h-4"
+                                                />
+                                                <span className="text-sm">
+                                                    {cat.nazwa}
+                                                </span>
+                                            </label>
+                                        ),
+                                    )}
+                                </div>
+                            )}
                     </div>
                 </div>
 
@@ -414,7 +463,7 @@ export default function NewProductPage() {
                         className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring">
                         <option value="">Wybierz producenta</option>
                         {producents.map((prod) => (
-                            <option key={prod._id || prod.nazwa} value={prod._id || ""}>
+                            <option key={prod.slug} value={prod.slug}>
                                 {prod.nazwa}
                             </option>
                         ))}
@@ -423,7 +472,9 @@ export default function NewProductPage() {
 
                 {/* Media */}
                 <div className="grid gap-2 sm:col-span-2">
-                    <label className="text-sm font-medium">Zdjęcia produktu</label>
+                    <label className="text-sm font-medium">
+                        Zdjęcia produktu
+                    </label>
                     <input
                         type="file"
                         accept="image/*"
@@ -455,7 +506,9 @@ export default function NewProductPage() {
                 {/* Specyfikacja */}
                 <div className="grid gap-2 sm:col-span-2">
                     <div className="flex items-center justify-between">
-                        <label className="text-sm font-medium">Specyfikacja</label>
+                        <label className="text-sm font-medium">
+                            Specyfikacja
+                        </label>
                         <button
                             type="button"
                             onClick={addSpecyfikacja}
@@ -472,7 +525,11 @@ export default function NewProductPage() {
                                     placeholder="Klucz"
                                     value={spec.key}
                                     onChange={(e) =>
-                                        updateSpecyfikacja(index, "key", e.target.value)
+                                        updateSpecyfikacja(
+                                            index,
+                                            "key",
+                                            e.target.value,
+                                        )
                                     }
                                     className="flex-1 rounded-md border bg-background px-3 py-2 text-sm"
                                 />
@@ -481,7 +538,11 @@ export default function NewProductPage() {
                                     placeholder="Wartość"
                                     value={spec.value}
                                     onChange={(e) =>
-                                        updateSpecyfikacja(index, "value", e.target.value)
+                                        updateSpecyfikacja(
+                                            index,
+                                            "value",
+                                            e.target.value,
+                                        )
                                     }
                                     className="flex-1 rounded-md border bg-background px-3 py-2 text-sm"
                                 />
@@ -510,37 +571,58 @@ export default function NewProductPage() {
                     </div>
                     <div className="space-y-4">
                         {warianty.map((wariant, index) => (
-                            <div key={index} className="p-4 border rounded-md space-y-3">
+                            <div
+                                key={index}
+                                className="p-4 border rounded-md space-y-3">
                                 <div className="grid grid-cols-2 gap-2">
                                     <div>
-                                        <label className="text-xs font-medium">Nazwa wariantu *</label>
+                                        <label className="text-xs font-medium">
+                                            Nazwa wariantu *
+                                        </label>
                                         <input
                                             type="text"
                                             value={wariant.nazwa}
                                             onChange={(e) =>
-                                                updateWariant(index, "nazwa", e.target.value)
+                                                updateWariant(
+                                                    index,
+                                                    "nazwa",
+                                                    e.target.value,
+                                                )
                                             }
                                             className="w-full rounded-md border bg-background px-3 py-2 text-sm"
                                             placeholder="Np. Czerwony"
                                         />
                                     </div>
                                     <div>
-                                        <label className="text-xs font-medium">Typ *</label>
+                                        <label className="text-xs font-medium">
+                                            Typ *
+                                        </label>
                                         <select
                                             value={wariant.typ}
                                             onChange={(e) =>
-                                                updateWariant(index, "typ", e.target.value as Warianty["typ"])
+                                                updateWariant(
+                                                    index,
+                                                    "typ",
+                                                    e.target
+                                                        .value as Warianty["typ"],
+                                                )
                                             }
                                             className="w-full rounded-md border bg-background px-3 py-2 text-sm">
                                             <option value="kolor">Kolor</option>
-                                            <option value="rozmiar">Rozmiar</option>
-                                            <option value="objetosc">Objętość</option>
-                                            <option value="specjalna">Specjalna</option>
+                                            <option value="rozmiar">
+                                                Rozmiar
+                                            </option>
+                                            <option value="objetosc">
+                                                Objętość
+                                            </option>
+                                            <option value="specjalna">
+                                                Specjalna
+                                            </option>
                                             <option value="hurt">Hurt</option>
                                         </select>
                                     </div>
                                 </div>
-                                
+
                                 {/* Pola zależne od typu */}
                                 {wariant.typ === "kolor" && (
                                     <div className="grid grid-cols-3 gap-2">
@@ -549,12 +631,18 @@ export default function NewProductPage() {
                                             placeholder="Nazwa koloru"
                                             value={wariant.kolory?.name || ""}
                                             onChange={(e) =>
-                                                updateWariant(index, "kolory", {
-                                                    ...wariant.kolory,
-                                                    name: e.target.value,
-                                                    val: e.target.value,
-                                                    hex: wariant.kolory?.hex || null,
-                                                })
+                                                updateWariant(
+                                                    index,
+                                                    "kolory",
+                                                    {
+                                                        ...wariant.kolory,
+                                                        name: e.target.value,
+                                                        val: e.target.value,
+                                                        hex:
+                                                            wariant.kolory
+                                                                ?.hex || null,
+                                                    } + "",
+                                                )
                                             }
                                             className="rounded-md border bg-background px-3 py-2 text-sm"
                                         />
@@ -563,25 +651,43 @@ export default function NewProductPage() {
                                             placeholder="Wartość"
                                             value={wariant.kolory?.val || ""}
                                             onChange={(e) =>
-                                                updateWariant(index, "kolory", {
-                                                    ...wariant.kolory,
-                                                    name: wariant.kolory?.name || "",
-                                                    val: e.target.value,
-                                                    hex: wariant.kolory?.hex || null,
-                                                })
+                                                updateWariant(
+                                                    index,
+                                                    "kolory",
+                                                    {
+                                                        ...wariant.kolory,
+                                                        name:
+                                                            wariant.kolory
+                                                                ?.name || "",
+                                                        val: e.target.value,
+                                                        hex:
+                                                            wariant.kolory
+                                                                ?.hex || null,
+                                                    } + "",
+                                                )
                                             }
                                             className="rounded-md border bg-background px-3 py-2 text-sm"
                                         />
                                         <input
                                             type="color"
-                                            value={wariant.kolory?.hex || "#000000"}
+                                            value={
+                                                wariant.kolory?.hex || "#000000"
+                                            }
                                             onChange={(e) =>
-                                                updateWariant(index, "kolory", {
-                                                    ...wariant.kolory,
-                                                    name: wariant.kolory?.name || "",
-                                                    val: wariant.kolory?.val || "",
-                                                    hex: e.target.value,
-                                                })
+                                                updateWariant(
+                                                    index,
+                                                    "kolory",
+                                                    {
+                                                        ...wariant.kolory,
+                                                        name:
+                                                            wariant.kolory
+                                                                ?.name || "",
+                                                        val:
+                                                            wariant.kolory
+                                                                ?.val || "",
+                                                        hex: e.target.value,
+                                                    } + "",
+                                                )
                                             }
                                             className="rounded-md border bg-background h-10"
                                         />
@@ -594,12 +700,16 @@ export default function NewProductPage() {
                                             placeholder="Nazwa rozmiaru"
                                             value={wariant.rozmiary?.name || ""}
                                             onChange={(e) =>
-                                                updateWariant(index, "rozmiary", {
-                                                    ...wariant.rozmiary,
-                                                    name: e.target.value,
-                                                    val: e.target.value,
-                                                    hex: null,
-                                                })
+                                                updateWariant(
+                                                    index,
+                                                    "rozmiary",
+                                                    {
+                                                        ...wariant.rozmiary,
+                                                        name: e.target.value,
+                                                        val: e.target.value,
+                                                        hex: null,
+                                                    } + "",
+                                                )
                                             }
                                             className="rounded-md border bg-background px-3 py-2 text-sm"
                                         />
@@ -608,12 +718,18 @@ export default function NewProductPage() {
                                             placeholder="Wartość"
                                             value={wariant.rozmiary?.val || ""}
                                             onChange={(e) =>
-                                                updateWariant(index, "rozmiary", {
-                                                    ...wariant.rozmiary,
-                                                    name: wariant.rozmiary?.name || "",
-                                                    val: e.target.value,
-                                                    hex: null,
-                                                })
+                                                updateWariant(
+                                                    index,
+                                                    "rozmiary",
+                                                    {
+                                                        ...wariant.rozmiary,
+                                                        name:
+                                                            wariant.rozmiary
+                                                                ?.name || "",
+                                                        val: e.target.value,
+                                                        hex: null,
+                                                    } + "",
+                                                )
                                             }
                                             className="rounded-md border bg-background px-3 py-2 text-sm"
                                         />
@@ -626,7 +742,13 @@ export default function NewProductPage() {
                                             placeholder="Objętość (ml)"
                                             value={wariant.objetosc || ""}
                                             onChange={(e) =>
-                                                updateWariant(index, "objetosc", parseFloat(e.target.value) || 0)
+                                                updateWariant(
+                                                    index,
+                                                    "objetosc",
+                                                    parseFloat(
+                                                        e.target.value,
+                                                    ) || 0,
+                                                )
                                             }
                                             className="w-full rounded-md border bg-background px-3 py-2 text-sm"
                                         />
@@ -637,13 +759,21 @@ export default function NewProductPage() {
                                 <div className="flex items-center gap-2">
                                     <input
                                         type="checkbox"
-                                        checked={wariant.nadpisuje_cene || false}
+                                        checked={
+                                            wariant.nadpisuje_cene || false
+                                        }
                                         onChange={(e) =>
-                                            updateWariant(index, "nadpisuje_cene", e.target.checked)
+                                            updateWariant(
+                                                index,
+                                                "nadpisuje_cene",
+                                                e.target.checked,
+                                            )
                                         }
                                         className="w-4 h-4"
                                     />
-                                    <label className="text-xs">Nadpisuje cenę</label>
+                                    <label className="text-xs">
+                                        Nadpisuje cenę
+                                    </label>
                                     {wariant.nadpisuje_cene && (
                                         <input
                                             type="number"
@@ -651,7 +781,13 @@ export default function NewProductPage() {
                                             placeholder="Nowa cena"
                                             value={wariant.nowa_cena || ""}
                                             onChange={(e) =>
-                                                updateWariant(index, "nowa_cena", parseFloat(e.target.value) || 0)
+                                                updateWariant(
+                                                    index,
+                                                    "nowa_cena",
+                                                    parseFloat(
+                                                        e.target.value,
+                                                    ) || 0,
+                                                )
                                             }
                                             className="flex-1 rounded-md border bg-background px-3 py-2 text-sm"
                                         />
@@ -662,13 +798,21 @@ export default function NewProductPage() {
                                 <div className="flex items-center gap-2">
                                     <input
                                         type="checkbox"
-                                        checked={wariant.inna_cena_skupu || false}
+                                        checked={
+                                            wariant.inna_cena_skupu || false
+                                        }
                                         onChange={(e) =>
-                                            updateWariant(index, "inna_cena_skupu", e.target.checked)
+                                            updateWariant(
+                                                index,
+                                                "inna_cena_skupu",
+                                                e.target.checked,
+                                            )
                                         }
                                         className="w-4 h-4"
                                     />
-                                    <label className="text-xs">Inna cena skupu (analityka)</label>
+                                    <label className="text-xs">
+                                        Inna cena skupu (analityka)
+                                    </label>
                                     {wariant.inna_cena_skupu && (
                                         <input
                                             type="number"
@@ -676,7 +820,13 @@ export default function NewProductPage() {
                                             placeholder="Cena skupu"
                                             value={wariant.cena_skupu || ""}
                                             onChange={(e) =>
-                                                updateWariant(index, "cena_skupu", parseFloat(e.target.value) || 0)
+                                                updateWariant(
+                                                    index,
+                                                    "cena_skupu",
+                                                    parseFloat(
+                                                        e.target.value,
+                                                    ) || 0,
+                                                )
                                             }
                                             className="flex-1 rounded-md border bg-background px-3 py-2 text-sm"
                                         />
@@ -684,15 +834,23 @@ export default function NewProductPage() {
                                 </div>
 
                                 {/* Permisje */}
-                                {(wariant.typ === "hurt" || wariant.typ === "specjalna") && (
+                                {(wariant.typ === "hurt" ||
+                                    wariant.typ === "specjalna") && (
                                     <div>
-                                        <label className="text-xs font-medium">Permisje (opcjonalnie)</label>
+                                        <label className="text-xs font-medium">
+                                            Permisje (opcjonalnie)
+                                        </label>
                                         <input
                                             type="number"
                                             placeholder="Kod permisji"
                                             value={wariant.permisje || ""}
                                             onChange={(e) =>
-                                                updateWariant(index, "permisje", parseInt(e.target.value) || undefined)
+                                                updateWariant(
+                                                    index,
+                                                    "permisje",
+                                                    parseInt(e.target.value) ||
+                                                        undefined,
+                                                )
                                             }
                                             className="w-full rounded-md border bg-background px-3 py-2 text-sm"
                                         />
@@ -713,18 +871,24 @@ export default function NewProductPage() {
                 {/* Dodatkowe pola */}
                 <div className="grid grid-cols-2 gap-4 sm:col-span-2">
                     <div className="grid gap-2">
-                        <label className="text-sm font-medium">Czas wysyłki (dni) *</label>
+                        <label className="text-sm font-medium">
+                            Czas wysyłki (dni) *
+                        </label>
                         <input
                             type="number"
                             min="1"
                             value={czas_wysylki}
-                            onChange={(e) => setCzas_wysylki(parseInt(e.target.value) || 1)}
+                            onChange={(e) =>
+                                setCzas_wysylki(parseInt(e.target.value) || 1)
+                            }
                             required
                             className="w-full rounded-md border bg-background px-3 py-2 text-sm"
                         />
                     </div>
                     <div className="grid gap-2">
-                        <label className="text-sm font-medium">Kod produkcyjny *</label>
+                        <label className="text-sm font-medium">
+                            Kod produkcyjny *
+                        </label>
                         <input
                             type="text"
                             value={kod_produkcyjny}
@@ -740,7 +904,9 @@ export default function NewProductPage() {
                             min="0"
                             max="100"
                             value={vat}
-                            onChange={(e) => setVat(parseFloat(e.target.value) || 23)}
+                            onChange={(e) =>
+                                setVat(parseFloat(e.target.value) || 23)
+                            }
                             className="w-full rounded-md border bg-background px-3 py-2 text-sm"
                         />
                     </div>
@@ -752,7 +918,9 @@ export default function NewProductPage() {
                             max="5"
                             step="0.1"
                             value={ocena}
-                            onChange={(e) => setOcena(parseFloat(e.target.value) || 0)}
+                            onChange={(e) =>
+                                setOcena(parseFloat(e.target.value) || 0)
+                            }
                             className="w-full rounded-md border bg-background px-3 py-2 text-sm"
                         />
                     </div>
@@ -784,7 +952,9 @@ export default function NewProductPage() {
                         onChange={(e) => setAktywne(e.target.checked)}
                         className="w-4 h-4"
                     />
-                    <label className="text-sm font-medium">Produkt aktywny</label>
+                    <label className="text-sm font-medium">
+                        Produkt aktywny
+                    </label>
                 </div>
 
                 {/* Submit */}

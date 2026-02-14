@@ -3,12 +3,16 @@
 import Image from "next/image";
 import Link from "next/link";
 import "@/app/globals.css";
-import { renderStars } from "@/lib/utils";
+import { finalPrice, renderStars } from "@/lib/utils";
 import { useEffect, useState } from "react";
-import { Products, Promos } from "@/lib/models/Products";
-import { ProductsResponse } from "@/lib/interfaces/ax";
+import { Promos } from "@/lib/types/shared";
+import { Products } from "@/lib/types/productTypes";
 
-export default function Bestsellers({ data }: { data: ProductsResponse }) {
+export default function Bestsellers({
+    data,
+}: {
+    data: { status: number; products?: Products[] };
+}) {
     // Sortuj produkty według oceny (najwyższe na górze) i weź 4 najlepsze
     const [products, setProducts] = useState<Products[] | null>(null);
     useEffect(() => {
@@ -17,7 +21,7 @@ export default function Bestsellers({ data }: { data: ProductsResponse }) {
                 setProducts(
                     [...data.products!]
                         .sort((a, b) => b.ocena - a.ocena)
-                        .slice(0, 4)
+                        .slice(0, 4),
                 );
             } else {
                 return [];
@@ -77,7 +81,7 @@ export default function Bestsellers({ data }: { data: ProductsResponse }) {
                                                 <div className="product-rating">
                                                     {renderStars(
                                                         product.ocena,
-                                                        18
+                                                        18,
                                                     )}
                                                 </div>
                                                 <div className="product-price">
@@ -87,11 +91,11 @@ export default function Bestsellers({ data }: { data: ProductsResponse }) {
                                                             style={{
                                                                 color: "red",
                                                             }}>
-                                                            {product.cena *
-                                                                (100 -
-                                                                    (
-                                                                        product.promocje as Promos
-                                                                    ).procent)}
+                                                            {finalPrice(
+                                                                product.cena,
+                                                                undefined,
+                                                                product.promocje as Promos,
+                                                            )}
                                                         </span>
                                                     ) : (
                                                         <span className="product-original-price-home">

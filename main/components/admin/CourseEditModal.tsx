@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Courses, Categories, Firmy, Media } from "@/lib/types/coursesTypes";
+import { Courses, Firmy } from "@/lib/types/coursesTypes";
+import { Categories, Media } from "@/lib/types/shared";
 import { X, Save, Trash2, Plus, Minus } from "lucide-react";
 import { makeSlugKeys, parseSlugName } from "@/lib/utils_admin";
 
@@ -32,15 +33,20 @@ export default function CourseEditModal({
 }: CourseEditModalProps) {
     const [editedCourse, setEditedCourse] = useState<Courses>(course);
     const [isSaving, setIsSaving] = useState(false);
-    
+
     // Kategorie i firma z API
-    const [categories, setCategories] = useState<Record<string, Categories[]>>({});
+    const [categories, setCategories] = useState<Record<string, Categories[]>>(
+        {},
+    );
     const [categoriesSlug, setCategoriesSlug] = useState<string[]>([]);
     const [firmy, setFirmy] = useState<Firmy[]>([]);
-    
+
     // Wybrane kategorie (główna + podrzędne)
-    const [selectedMainCategory, setSelectedMainCategory] = useState<string>("");
-    const [selectedSubCategories, setSelectedSubCategories] = useState<string[]>([]);
+    const [selectedMainCategory, setSelectedMainCategory] =
+        useState<string>("");
+    const [selectedSubCategories, setSelectedSubCategories] = useState<
+        string[]
+    >([]);
     const [selectedFirma, setSelectedFirma] = useState<string>("");
 
     useEffect(() => {
@@ -69,7 +75,7 @@ export default function CourseEditModal({
                 if (data.status === 0 && data.categories) {
                     setCategories(data.categories);
                     setCategoriesSlug(makeSlugKeys(data.categories));
-                    
+
                     // Ustaw wybrane kategorie na podstawie kursu
                     const courseCategories = getCategories();
                     if (courseCategories.length > 0) {
@@ -79,7 +85,7 @@ export default function CourseEditModal({
                         setSelectedSubCategories(
                             courseCategories
                                 .map((cat) => cat._id || "")
-                                .filter((id) => id)
+                                .filter((id) => id),
                         );
                     }
                 }
@@ -101,11 +107,15 @@ export default function CourseEditModal({
                 const data = await response.json();
                 if (Array.isArray(data)) {
                     setFirmy(data);
-                    
+
                     // Ustaw wybraną firmę na podstawie kursu
                     const courseFirma = getFirma();
-                    if (courseFirma && typeof courseFirma === "object" && "_id" in courseFirma) {
-                        setSelectedFirma((courseFirma as Firmy)._id || "");
+                    if (
+                        courseFirma &&
+                        typeof courseFirma === "object" &&
+                        "_id" in courseFirma
+                    ) {
+                        setSelectedFirma((courseFirma as Firmy).slug || "");
                     }
                 }
             } catch (error) {
@@ -120,13 +130,13 @@ export default function CourseEditModal({
         if (Array.isArray(editedCourse.kategoria)) {
             return editedCourse.kategoria.filter(
                 (cat): cat is Categories =>
-                    typeof cat === "object" && cat !== null && "nazwa" in cat
+                    typeof cat === "object" && cat !== null && "nazwa" in cat,
             ) as Categories[];
         }
         return [];
     };
 
-    const getFirma = (): Firmy | string | null => {
+    const getFirma = () => {
         return editedCourse.firma || null;
     };
 
@@ -145,7 +155,7 @@ export default function CourseEditModal({
             editedCourse.kategoria = selectedCategories;
 
             // Przygotuj firmę
-            const firmaData = firmy.find((f) => f._id === selectedFirma);
+            const firmaData = firmy.find((f) => f.slug === selectedFirma);
             if (firmaData) {
                 editedCourse.firma = firmaData._id || firmaData;
             }
@@ -163,7 +173,10 @@ export default function CourseEditModal({
             if (result.status === 0 || response.ok) {
                 onUpdate(editedCourse);
             } else {
-                alert("Błąd podczas zapisywania: " + (result.error || "Nieznany błąd"));
+                alert(
+                    "Błąd podczas zapisywania: " +
+                        (result.error || "Nieznany błąd"),
+                );
             }
         } catch (error) {
             console.error("Błąd podczas zapisywania kursu:", error);
@@ -175,21 +188,24 @@ export default function CourseEditModal({
 
     const handleDelete = async () => {
         if (!confirm("Czy na pewno chcesz usunąć ten kurs?")) return;
-        
+
         try {
             const response = await fetch(
                 `/admin/api/v1/courses?slug=${editedCourse.slug}`,
                 {
                     method: "DELETE",
                     credentials: "include",
-                }
+                },
             );
 
             const result = await response.json();
             if (result.status === 0 || response.ok) {
                 onDelete(editedCourse.slug);
             } else {
-                alert("Błąd podczas usuwania kursu: " + (result.error || "Nieznany błąd"));
+                alert(
+                    "Błąd podczas usuwania kursu: " +
+                        (result.error || "Nieznany błąd"),
+                );
             }
         } catch (error) {
             console.error("Błąd podczas usuwania kursu:", error);
@@ -199,7 +215,7 @@ export default function CourseEditModal({
 
     const updateField = <K extends keyof Courses>(
         field: K,
-        value: Courses[K]
+        value: Courses[K],
     ) => {
         setEditedCourse((prev) => ({ ...prev, [field]: value }));
     };
@@ -217,21 +233,21 @@ export default function CourseEditModal({
             const newSelected = prev.includes(subCategoryId)
                 ? prev.filter((id) => id !== subCategoryId)
                 : [...prev, subCategoryId];
-            
+
             if (selectedMainCategory && categories[selectedMainCategory]) {
                 const selectedCats = categories[selectedMainCategory].filter(
-                    (cat) => newSelected.includes(cat._id || "")
+                    (cat) => newSelected.includes(cat._id || ""),
                 );
                 updateField("kategoria", selectedCats);
             }
-            
+
             return newSelected;
         });
     };
 
     const handleFirmaChange = (firmaId: string) => {
         setSelectedFirma(firmaId);
-        const firmaData = firmy.find((f) => f._id === firmaId);
+        const firmaData = firmy.find((f) => f.slug === firmaId);
         if (firmaData) {
             updateField("firma", firmaData._id || firmaData);
         }
@@ -255,9 +271,11 @@ export default function CourseEditModal({
 
     const removeMedia = (index: number) => {
         const media = editedCourse.media || [];
-        updateField("media", media.filter((_, i) => i !== index));
+        updateField(
+            "media",
+            media.filter((_, i) => i !== index),
+        );
     };
-
 
     if (!isOpen) return null;
 
@@ -278,7 +296,9 @@ export default function CourseEditModal({
                 <div className="flex-1 overflow-y-auto p-6 space-y-6">
                     {/* Basic Info */}
                     <div className="space-y-4">
-                        <h3 className="text-lg font-semibold">Podstawowe informacje</h3>
+                        <h3 className="text-lg font-semibold">
+                            Podstawowe informacje
+                        </h3>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-sm font-medium mb-1">
@@ -287,7 +307,9 @@ export default function CourseEditModal({
                                 <input
                                     type="text"
                                     value={editedCourse.nazwa || ""}
-                                    onChange={(e) => updateField("nazwa", e.target.value)}
+                                    onChange={(e) =>
+                                        updateField("nazwa", e.target.value)
+                                    }
                                     className="w-full px-3 py-2 border rounded-md"
                                 />
                             </div>
@@ -298,7 +320,9 @@ export default function CourseEditModal({
                                 <input
                                     type="text"
                                     value={editedCourse.slug || ""}
-                                    onChange={(e) => updateField("slug", e.target.value)}
+                                    onChange={(e) =>
+                                        updateField("slug", e.target.value)
+                                    }
                                     className="w-full px-3 py-2 border rounded-md"
                                     readOnly
                                 />
@@ -312,7 +336,10 @@ export default function CourseEditModal({
                                     step="0.01"
                                     value={editedCourse.cena || 0}
                                     onChange={(e) =>
-                                        updateField("cena", parseFloat(e.target.value) || 0)
+                                        updateField(
+                                            "cena",
+                                            parseFloat(e.target.value) || 0,
+                                        )
                                     }
                                     className="w-full px-3 py-2 border rounded-md"
                                 />
@@ -327,7 +354,10 @@ export default function CourseEditModal({
                                     max="100"
                                     value={editedCourse.vat || 23}
                                     onChange={(e) =>
-                                        updateField("vat", parseFloat(e.target.value) || 23)
+                                        updateField(
+                                            "vat",
+                                            parseFloat(e.target.value) || 23,
+                                        )
                                     }
                                     className="w-full px-3 py-2 border rounded-md"
                                 />
@@ -343,7 +373,10 @@ export default function CourseEditModal({
                                     max="5"
                                     value={editedCourse.ocena || 0}
                                     onChange={(e) =>
-                                        updateField("ocena", parseFloat(e.target.value) || 0)
+                                        updateField(
+                                            "ocena",
+                                            parseFloat(e.target.value) || 0,
+                                        )
                                     }
                                     className="w-full px-3 py-2 border rounded-md"
                                 />
@@ -355,7 +388,9 @@ export default function CourseEditModal({
                                 <input
                                     type="text"
                                     value={editedCourse.sku || ""}
-                                    onChange={(e) => updateField("sku", e.target.value)}
+                                    onChange={(e) =>
+                                        updateField("sku", e.target.value)
+                                    }
                                     className="w-full px-3 py-2 border rounded-md"
                                 />
                             </div>
@@ -363,10 +398,14 @@ export default function CourseEditModal({
                                 <input
                                     type="checkbox"
                                     checked={editedCourse.aktywne !== false}
-                                    onChange={(e) => updateField("aktywne", e.target.checked)}
+                                    onChange={(e) =>
+                                        updateField("aktywne", e.target.checked)
+                                    }
                                     className="w-4 h-4"
                                 />
-                                <label className="text-sm font-medium">Aktywny</label>
+                                <label className="text-sm font-medium">
+                                    Aktywny
+                                </label>
                             </div>
                         </div>
                         <div>
@@ -376,7 +415,9 @@ export default function CourseEditModal({
                             <textarea
                                 rows={4}
                                 value={editedCourse.opis || ""}
-                                onChange={(e) => updateField("opis", e.target.value)}
+                                onChange={(e) =>
+                                    updateField("opis", e.target.value)
+                                }
                                 className="w-full px-3 py-2 border rounded-md"
                             />
                         </div>
@@ -388,37 +429,50 @@ export default function CourseEditModal({
                         <div className="space-y-2">
                             <select
                                 value={selectedMainCategory}
-                                onChange={(e) => handleMainCategoryChange(e.target.value)}
+                                onChange={(e) =>
+                                    handleMainCategoryChange(e.target.value)
+                                }
                                 className="w-full px-3 py-2 border rounded-md">
-                                <option value="">Wybierz główną kategorię</option>
+                                <option value="">
+                                    Wybierz główną kategorię
+                                </option>
                                 {categoriesSlug.map((slug) => (
                                     <option key={slug} value={slug}>
                                         {parseSlugName(slug)}
                                     </option>
                                 ))}
                             </select>
-                            {selectedMainCategory && categories[selectedMainCategory] && (
-                                <div className="space-y-1">
-                                    <label className="text-xs text-muted-foreground">
-                                        Wybierz podkategorie (wiele):
-                                    </label>
-                                    {categories[selectedMainCategory].map((cat) => (
-                                        <label
-                                            key={cat._id || cat.nazwa}
-                                            className="flex items-center gap-2 p-2 border rounded-md cursor-pointer hover:bg-accent">
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedSubCategories.includes(cat._id || "")}
-                                                onChange={() =>
-                                                    handleSubCategoryToggle(cat._id || "")
-                                                }
-                                                className="w-4 h-4"
-                                            />
-                                            <span className="text-sm">{cat.nazwa}</span>
+                            {selectedMainCategory &&
+                                categories[selectedMainCategory] && (
+                                    <div className="space-y-1">
+                                        <label className="text-xs text-muted-foreground">
+                                            Wybierz podkategorie (wiele):
                                         </label>
-                                    ))}
-                                </div>
-                            )}
+                                        {categories[selectedMainCategory].map(
+                                            (cat) => (
+                                                <label
+                                                    key={cat._id || cat.nazwa}
+                                                    className="flex items-center gap-2 p-2 border rounded-md cursor-pointer hover:bg-accent">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={selectedSubCategories.includes(
+                                                            cat._id || "",
+                                                        )}
+                                                        onChange={() =>
+                                                            handleSubCategoryToggle(
+                                                                cat._id || "",
+                                                            )
+                                                        }
+                                                        className="w-4 h-4"
+                                                    />
+                                                    <span className="text-sm">
+                                                        {cat.nazwa}
+                                                    </span>
+                                                </label>
+                                            ),
+                                        )}
+                                    </div>
+                                )}
                         </div>
                     </div>
 
@@ -431,7 +485,7 @@ export default function CourseEditModal({
                             className="w-full px-3 py-2 border rounded-md">
                             <option value="">Wybierz firmę</option>
                             {firmy.map((firma) => (
-                                <option key={firma._id || firma.nazwa} value={firma._id || ""}>
+                                <option key={firma.nazwa} value={firma.slug}>
                                     {firma.nazwa}
                                 </option>
                             ))}
@@ -451,19 +505,33 @@ export default function CourseEditModal({
                         </div>
                         <div className="space-y-2">
                             {(editedCourse.media || []).map((media, index) => (
-                                <div key={index} className="flex gap-2 items-center p-2 border rounded-md">
+                                <div
+                                    key={index}
+                                    className="flex gap-2 items-center p-2 border rounded-md">
                                     <input
                                         type="text"
                                         placeholder="Ścieżka do zdjęcia"
                                         value={media.path || ""}
-                                        onChange={(e) => updateMedia(index, "path", e.target.value)}
+                                        onChange={(e) =>
+                                            updateMedia(
+                                                index,
+                                                "path",
+                                                e.target.value,
+                                            )
+                                        }
                                         className="flex-1 px-3 py-2 border rounded-md"
                                     />
                                     <input
                                         type="text"
                                         placeholder="Alt text"
                                         value={media.alt || ""}
-                                        onChange={(e) => updateMedia(index, "alt", e.target.value)}
+                                        onChange={(e) =>
+                                            updateMedia(
+                                                index,
+                                                "alt",
+                                                e.target.value,
+                                            )
+                                        }
                                         className="flex-1 px-3 py-2 border rounded-md"
                                     />
                                     <button
@@ -475,7 +543,6 @@ export default function CourseEditModal({
                             ))}
                         </div>
                     </div>
-
                 </div>
 
                 {/* Footer */}

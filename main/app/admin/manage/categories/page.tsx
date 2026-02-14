@@ -1,7 +1,7 @@
 "use client";
 
 import { makeSlugKeys, parseSlugName } from "@/lib/utils_admin";
-import { Categories } from "@/lib/models/Products";
+import { Categories } from "@/lib/types/shared";
 import { useEffect, useState } from "react";
 import AdminCategoryCard from "@/components/admin/AdminCategoryCard";
 

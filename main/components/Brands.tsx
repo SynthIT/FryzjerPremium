@@ -1,9 +1,12 @@
 import "@/app/globals.css";
-import { ProductsResponse } from "@/lib/interfaces/ax";
-import { Producents } from "@/lib/models/Products";
+import { Producents, Products } from "@/lib/types/productTypes";
 import Link from "next/link";
 
-export default function Brands({ data }: { data: ProductsResponse }) {
+export default function Brands({
+    data,
+}: {
+    data: { products: Products[]; producents: Producents[] };
+}) {
     const brands = () => {
         const brandSet = new Set<string>();
         data.products?.forEach((product) => {
@@ -14,7 +17,7 @@ export default function Brands({ data }: { data: ProductsResponse }) {
                         strona:
                             (product.producent as Producents)
                                 .strona_internetowa || "",
-                    })
+                    }),
                 );
             }
         });
