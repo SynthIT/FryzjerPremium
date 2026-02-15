@@ -8,19 +8,8 @@ import React, {
     useEffect,
 } from "react";
 import { Products, Warianty } from "@/lib/types/productTypes";
+import { CartItem, Cart } from "@/lib/types/cartTypes";
 
-export interface CartItem {
-    id: string;
-    product: Partial<Products>;
-    quantity: number;
-    price: number;
-    wariant?: Warianty;
-}
-
-interface Cart {
-    id: string;
-    items: CartItem[];
-}
 
 interface CartContextType {
     getCart: () => Cart;
@@ -43,7 +32,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 // Funkcja pomocnicza do generowania ID (poza komponentem, aby była dostępna wszędzie)
 const getItemId = (product: string, wariant?: Warianty): string => {
-    return `${product}_${wariant ? wariant.nazwa : "0"}`;
+    return `${product}_${wariant ? wariant.nazwa.replace(" ", "_") : "0"}`;
 };
 
 export function CartProvider({ children }: { children: React.ReactNode }) {

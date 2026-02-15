@@ -7,8 +7,7 @@ import {
 import { NextRequest, NextResponse } from "next/server";
 import { checkRequestAuth } from "@/lib/admin_utils";
 import { LogService } from "@/lib/log_service";
-import { User } from "@/lib/models/Users";
-import mongoose from "mongoose";
+
 
 export async function GET(req: NextRequest) {
     // Dla GET requestów sprawdzamy tylko, czy użytkownik jest zalogowany (ma ważny JWT)
@@ -20,7 +19,7 @@ export async function GET(req: NextRequest) {
             { status: 401 }
         );
     }
-    
+
     try {
         const products = await collectProducts();
         const parsedProducts = JSON.parse(products);
@@ -50,13 +49,19 @@ export async function DELETE(req: NextRequest) {
     }
     try {
         const doc = await deleteProductBySlug(slug);
+        if (typeof doc === "object" && "error" in doc) {
+            return NextResponse.json(
+                { status: 1, error: doc.error },
+                { status: 500 }
+            );
+        }
         new LogService({
             path: req.url,
             kind: "log",
             position: "admin",
             http: req.method,
-        }).log(`Produkt: ${doc?._id} - (${doc?.nazwa}) został usunięty`);
-        return NextResponse.json({ status: 0, message: "Produkt usunięty" });
+        }).log(`Produkt: ${doc?._id} - (${doc?.nazwa}) został usunięty pomyślnie`);
+        return NextResponse.json({ status: 0, message: "Produkt usunięty pomyślnie" });
     } catch (e) {
         new LogService({
             path: req.url,
@@ -84,12 +89,18 @@ export async function PUT(req: NextRequest) {
     console.log("Otrzymane dane produktu do aktualizacji:", productData);
     try {
         const res = await updateProduct(productData);
+        if (typeof res === "object" && "error" in res) {
+            return NextResponse.json(
+                { status: 1, error: res.error },
+                { status: 500 }
+            );
+        }
         new LogService({
             path: req.url,
             kind: "log",
             position: "admin",
             http: req.method,
-        }).log(`Produkt: ${res?._id} - (${res?.nazwa}) został zedytowany`);
+        }).log(`Produkt: ${res?._id} - (${res?.nazwa}) został zedytowany pomyślnie`);
         return NextResponse.json({
             status: 0,
             message: `Produkt (${res?.nazwa}) zaktualizowany`,
@@ -121,21 +132,25 @@ export async function POST(req: NextRequest) {
     const productData = await req.json();
     try {
         const res = await createProduct(productData);
+        if (typeof res === "object" && "error" in res) {
+            return NextResponse.json(
+                { status: 1, error: res.error },
+                { status: 500 }
+            );
+        }
         new LogService({
             path: req.url,
-
             kind: "log",
             position: "admin",
             http: req.method,
-        }).log(`Produkt: ${res?._id} został dodany`);
+        }).log(`Produkt: ${res?._id} - (${res?.nazwa}) został dodany pomyślnie`);
         return NextResponse.json(
-            { status: 201, error: "Produkt został dodany" },
+            { status: 0, message: "Produkt został dodany pomyślnie" },
             { status: 201 }
         );
     } catch (e) {
         new LogService({
             path: req.url,
-
             kind: "error",
             position: "admin",
             http: req.method,

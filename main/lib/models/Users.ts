@@ -6,8 +6,8 @@ function createOrderNumber() {
     const h = randomBytes(2 ** 3).toString("hex");
     const a = new Date();
     const d =
-        `${h}-${a.getDate() < 10 ? `0${a.getDate()}` : a.getDate()}` +
-        `${a.getMonth() < 10 ? `0${a.getMonth()}` : a.getMonth()}` +
+        `${h}-${a.getDate() < 9 ? `0${a.getDate() + 1}` : a.getDate() + 1}` +
+        `${a.getMonth() < 9 ? `0${a.getMonth()}` : a.getMonth() + 1}` +
         `${a.getFullYear()}`;
     return d;
 }
@@ -16,14 +16,17 @@ export const schemaOrderList = new Schema<OrderList>(
     {
         numer_zamowienia: {
             type: String,
-            // IMPORTANT: pass the function reference so each document gets a fresh value
-            default: createOrderNumber,
+            default: createOrderNumber(),
             unique: true,
         },
+        status: { type: String, default: "w_koszyku" },
         sposob_dostawy: { type: Types.ObjectId, ref: "delivery" },
         produkty: { type: [Types.ObjectId], ref: "products", default: [] },
         suma: { type: Number },
-        data_wykonania: { type: Date, default: new Date() },
+        data_zamowienia: { type: Date },
+        data_wyslania: { type: Date },
+        data_zrealizowania: { type: Date },
+        data_anulowania: { type: Date },
     },
     { timestamps: true, autoIndex: false },
 );

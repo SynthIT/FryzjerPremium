@@ -1,16 +1,38 @@
 import zod from "zod";
 import { adminPermission, userPermission } from "../auth/permissions";
-import { orderListSchema } from "./deliveryTypes";
+import { zodDeliveryMethods } from "./deliveryTypes";
+import { Types } from "mongoose";
+
+export const orderListSchema = zod.object({
+    _id: zod.instanceof(Types.ObjectId).optional(),
+    status: zod
+        .enum(["w_koszyku", "nowe", "w_realizacji", "wyslane", "zrealizowane", "anulowane"])
+        .default("nowe"),
+    numer_zamowienia: zod.string(),
+    sposob_dostawy: zod.union([
+        zod.lazy(() => zodDeliveryMethods),
+        zod.string(),
+    ]),
+    produkty: zod.array(zod.union([zod.string(), zod.string()])),
+    suma: zod.number(),
+    data_zamowienia: zod.date(),
+    data_wyslania: zod.date().optional(),
+    data_zrealizowania: zod.date().optional(),
+    data_anulowania: zod.date().optional(),
+    createdAt: zod.date().optional(),
+    updatedAt: zod.date().optional(),
+    __v: zod.number().optional(),
+});
 
 export const roleSchema = zod.object({
-    _id: zod.string().nullable(),
+    _id: zod.instanceof(Types.ObjectId).optional(),
     nazwa: zod.string(),
     admin: adminPermission.optional(),
     uzytkownik: userPermission.optional(),
 });
 
 export const userSchema = zod.object({
-    _id: zod.string().optional(),
+    _id: zod.instanceof(Types.ObjectId).optional(),
     imie: zod.string(),
     nazwisko: zod.string(),
     email: zod.email(),
@@ -24,11 +46,11 @@ export const userSchema = zod.object({
     telefon: zod.string(),
     osoba_prywatna: zod.boolean().default(true).optional(),
     zamowienia: zod
-        .array(zod.union([zod.string(), orderListSchema]))
+        .array(zod.union([zod.instanceof(Types.ObjectId), orderListSchema]))
         .optional(),
     nip: zod.string().optional(),
     faktura: zod.boolean().optional(),
-    role: zod.array(zod.union([roleSchema, zod.string()])).optional(),
+    role: zod.array(zod.union([roleSchema, zod.instanceof(Types.ObjectId)])).optional(),
     stripe_id: zod.string().optional(),
 });
 

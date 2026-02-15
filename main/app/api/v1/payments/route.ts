@@ -1,4 +1,4 @@
-import { CartItem } from "@/contexts/CartContext";
+import { CartItem } from "@/lib/types/cartTypes";
 import { verifyJWT } from "@/lib/admin_utils";
 import {
     createPaymentIntent,

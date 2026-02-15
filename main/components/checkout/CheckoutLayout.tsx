@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
-import { CartItem, useCart } from "@/contexts/CartContext";
+import { useCart } from "@/contexts/CartContext";
+import {CartItem } from "@/lib/types/cartTypes";
 import Image from "next/image";
 import Link from "next/link";
 import { CheckoutForm } from "@/components/checkout/Payments";

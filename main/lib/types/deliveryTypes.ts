@@ -16,17 +16,6 @@ export const zodDeliveryMethods = z.object({
     strona_internetowa: z.string(),
 });
 
-export const orderListSchema = z.object({
-    numer_zamowienia: z.string(),
-    sposob_dostawy: z.union([
-        z.string(),
-        z.lazy(() => zodDeliveryMethods),
-        z.string(),
-    ]),
-    produkty: z.array(z.union([z.string(), z.string()])),
-    suma: z.number(),
-    data_wykonania: z.date(),
-});
 
 export type DeliveryMethods = z.infer<typeof zodDeliveryMethods>;
 export type DeliveryMethodsSizes = z.infer<typeof zodDeliveryMethodsSizes>;

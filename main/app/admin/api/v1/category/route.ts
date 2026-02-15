@@ -20,10 +20,9 @@ export async function GET(req: NextRequest) {
 
     try {
         const cat = await collectCategories();
-        const parsedCategories = JSON.parse(cat);
         return NextResponse.json({
             status: 0,
-            categories: parsedCategories || {},
+            categories: cat,
         });
     } catch (error) {
         console.error("Błąd podczas pobierania kategorii:", error);
@@ -150,16 +149,22 @@ export async function POST(req: NextRequest) {
     const catData = await req.json();
     try {
         const res = await createCategory(catData);
+        if (typeof res === "object" && "error" in res) {
+            return NextResponse.json(
+                { status: 1, error: res.error },
+                { status: 500 },
+            );
+        }
         new LogService({
             path: req.url,
             kind: "log",
             position: "admin",
             http: req.method,
         }).log(`Kategoria: ${res?._id} - (${res.nazwa}) została dodana`);
-        return NextResponse.json(
-            { status: 201, error: "Błąd podczas aktualizacji produktu" },
-            { status: 201 },
-        );
+        return NextResponse.json({
+            status: 200,
+            message: `Kategoria (${res?.nazwa}) została dodana`,
+        });
     } catch (e) {
         new LogService({
             path: req.url,

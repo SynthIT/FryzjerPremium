@@ -19,11 +19,15 @@ export async function collectCategories() {
     return JSON.stringify(cats);
 }
 
-export async function createCategory(catData: Categories) {
-    zodCategories.parse(catData);
+export async function createCategory(catData: Categories): Promise<Categories | { error: string }> {
+    const ok = zodCategories.safeParse(catData);
+    if (!ok.success) {
+        return { error: ok.error.message };
+    }
     await db();
-    const cat = await Category.create(catData);
-    return cat;
+    const newCat = await Category.create(ok.data);
+    return newCat;
+
 }
 
 export async function deleteCatBySlug(slug: string) {

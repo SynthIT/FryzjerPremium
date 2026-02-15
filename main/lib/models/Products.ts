@@ -25,7 +25,7 @@ const wariantPropsSchema = new Schema<props>(
     { _id: false, optimisticConcurrency: true },
 );
 
-const wariantySchema = new Schema<Warianty>(
+export const wariantySchema = new Schema<Warianty>(
     {
         nazwa: { type: String, required: true },
         slug: { type: String, required: true },
@@ -70,8 +70,8 @@ export const productSchema = new Schema<Products>(
         opinie: { type: [reviewProductSchema], default: [] },
         vat: { type: Number, required: true, default: 23 },
         wariant: { type: [wariantySchema] },
+        sku: { type: String, required: true, unique: true },
         kod_ean: String,
-        sku: String,
         aktywne: Boolean,
     },
     { timestamps: true, autoIndex: false, optimisticConcurrency: true },

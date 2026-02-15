@@ -11,6 +11,7 @@ export const zodWariantyProps = z.object({
 export type props = z.infer<typeof zodWariantyProps>;
 
 export const zodWarianty = z.object({
+    _id: z.instanceof(Types.ObjectId).optional(),
     nazwa: z.string(),
     slug: z.string(),
     typ: z.enum(["kolor", "rozmiar", "objetosc", "specjalna", "hurt"]),
@@ -42,6 +43,7 @@ export const zodSpecyfikacja = z.object({
 });
 
 export const zodProducts = z.object({
+    _id: z.instanceof(Types.ObjectId).optional(),
     slug: z.string(),
     nazwa: z.string(),
     cena_skupu: z.number(),
@@ -66,12 +68,14 @@ export const zodProducts = z.object({
     kod_produkcyjny: z.string(),
     ocena: z.number(),
     opinie: z.array(zodOpinie).nullable(),
-    createdAt: z.date().optional(),
     vat: z.number().default(23),
     wariant: z.array(zodWarianty).optional(),
     kod_ean: z.string().nullable(),
     sku: z.string().nullable(),
     aktywne: z.boolean().nullable(),
+    __v: z.number().optional(),
+    createdAt: z.date().optional(),
+    updatedAt: z.date().optional(),
 });
 
 export type Products = z.infer<typeof zodProducts>;
