@@ -1,5 +1,7 @@
-import { Products, Promos } from "@/lib/models/Products";
-import { renderStars } from "@/lib/utils";
+import { Products } from "@/lib/types/productTypes";
+import { Promos } from "@/lib/types/shared";
+
+import { finalPrice, renderStars } from "@/lib/utils";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -23,7 +25,7 @@ export default function ProductElement({
                         -{(product.promocje as Promos).procent}%
                     </div>
                 )}
-                {product.media ? (
+                {product.media && product.media.length > 0 ? (
                     <Image
                         src={product.media[0].path}
                         alt={product.media[0].alt}
@@ -45,21 +47,17 @@ export default function ProductElement({
                     {product.promocje ? (
                         <>
                             <span className="product-original-price">
-                                {product.cena} zł
+                                {finalPrice(product.cena, product.vat, undefined, undefined)} zł
                             </span>
                             <span className="product-current-price">
-                                {(
-                                    product.cena *
-                                    ((100 -
-                                        (product.promocje as Promos).procent) /
-                                        100)
-                                ).toFixed(2)}{" "}
-                                zł
+                                {finalPrice(product.cena, product.vat, undefined, product.promocje as Promos)}
+                                zł<sub>Z VAT</sub>
                             </span>
                         </>
                     ) : (
                         <span className="product-current-price">
-                            {product.cena} zł
+                            {finalPrice(product.cena, product.vat, undefined, undefined)} zł
+                            <sub>Z VAT</sub>
                         </span>
                     )}
                 </div>

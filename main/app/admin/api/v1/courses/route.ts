@@ -16,16 +16,16 @@ export async function GET(req: NextRequest) {
             { status: 401 }
         );
     }
-    
+
     try {
         const courses = await collectCourses();
         const parsedCourses = JSON.parse(courses);
         console.log("Pobrano kursów:", Array.isArray(parsedCourses) ? parsedCourses.length : 0);
-        return NextResponse.json(Array.isArray(parsedCourses) ? parsedCourses : []);
+        return NextResponse.json({ status: 0, courses: parsedCourses || [] });
     } catch (error) {
         console.error("Błąd podczas pobierania kursów:", error);
         // Zwróć pustą tablicę zamiast błędu, żeby strona się załadowała
-        return NextResponse.json([], { status: 200 });
+        return NextResponse.json({ status: 1, error: "Błąd podczas pobierania kursów" }, { status: 200 });
     }
 }
 

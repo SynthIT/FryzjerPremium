@@ -539,8 +539,8 @@ export default function NewCoursePage() {
                                 <option value="">Wybierz firmę</option>
                                 {firmy.map((firma) => (
                                     <option
-                                        key={firma.slug}
-                                        value={firma.nazwa}>
+                                        key={firma.nazwa}
+                                        value={firma.slug}>
                                         {firma.nazwa}
                                     </option>
                                 ))}

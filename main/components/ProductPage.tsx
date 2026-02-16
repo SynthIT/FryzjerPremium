@@ -141,16 +141,15 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
     const handleWariantChange = (w: Warianty) => {
         if (!product) return;
         if (!product.promocje) {
-            const cena = finalPrice(product.cena, w);
-            console.log(cena);
+            const cena = finalPrice(product.cena, product.vat, w);
             setSelectedPrice(Number(cena));
         } else {
             const cena = finalPrice(
                 product.cena,
+                product.vat,
                 w,
                 product.promocje as Promos,
-            );
-            console.log(cena);
+            );  
             setSelectedPrice(Number(cena));
         }
     };

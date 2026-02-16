@@ -1,10 +1,8 @@
 import zod from "zod";
 import { adminPermission, userPermission } from "../auth/permissions";
 import { zodDeliveryMethods } from "./deliveryTypes";
-import { Types } from "mongoose";
 
 export const orderListSchema = zod.object({
-    _id: zod.instanceof(Types.ObjectId).optional(),
     status: zod
         .enum(["w_koszyku", "nowe", "w_realizacji", "wyslane", "zrealizowane", "anulowane"])
         .default("nowe"),
@@ -25,14 +23,13 @@ export const orderListSchema = zod.object({
 });
 
 export const roleSchema = zod.object({
-    _id: zod.instanceof(Types.ObjectId).optional(),
     nazwa: zod.string(),
     admin: adminPermission.optional(),
     uzytkownik: userPermission.optional(),
 });
 
 export const userSchema = zod.object({
-    _id: zod.instanceof(Types.ObjectId).optional(),
+    _id: zod.string().optional(),
     imie: zod.string(),
     nazwisko: zod.string(),
     email: zod.email(),
@@ -46,11 +43,11 @@ export const userSchema = zod.object({
     telefon: zod.string(),
     osoba_prywatna: zod.boolean().default(true).optional(),
     zamowienia: zod
-        .array(zod.union([zod.instanceof(Types.ObjectId), orderListSchema]))
+        .array(zod.union([zod.string(), orderListSchema]))
         .optional(),
     nip: zod.string().optional(),
     faktura: zod.boolean().optional(),
-    role: zod.array(zod.union([roleSchema, zod.instanceof(Types.ObjectId)])).optional(),
+    role: zod.array(zod.union([roleSchema, zod.string()])).optional(),
     stripe_id: zod.string().optional(),
 });
 

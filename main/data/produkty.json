@@ -536,5 +536,69 @@
     "createdAt": "2026-01-01T20:05:47.922Z",
     "updatedAt": "2026-01-01T20:05:47.922Z",
     "__v": 0
+  },
+  {
+    "slug": "szampon-wyg-adzajacy-zepsute-w-osy",
+    "nazwa": "Szampon wygładzający zepsute włosy",
+    "cena_skupu": 32.99,
+    "cena": 59.99,
+    "dostepnosc": "duza",
+    "kategoria": [
+      {
+        "_id": "6956d39b4bd2901e7aefad27",
+        "nazwa": "Szampon",
+        "slug": "Kosmetyki",
+        "image": "anb",
+        "__v": 0
+      }
+    ],
+    "producent": "6956d39b4bd2901e7aefad33",
+    "media": [],
+    "promocje": null,
+    "specyfikacja": [
+      {
+        "key": "Waga",
+        "value": "750g"
+      }
+    ],
+    "opis": "mklubiyvucykfjxdm ,v./'h; glkfg,j gj hkn",
+    "ilosc": 400,
+    "czas_wysylki": 13,
+    "kod_produkcyjny": "wSN-09111",
+    "ocena": 0,
+    "opinie": null,
+    "vat": 23,
+    "wariant": [
+      {
+        "nazwa": "750ml",
+        "slug": "750ml",
+        "typ": "objetosc",
+        "objetosc": 750,
+        "nadpisuje_cene": false,
+        "inna_cena_skupu": false
+      },
+      {
+        "nazwa": "1250",
+        "slug": "1250",
+        "typ": "objetosc",
+        "objetosc": 1250,
+        "nadpisuje_cene": true,
+        "inna_cena_skupu": true,
+        "cena_skupu": 67.69,
+        "nowa_cena": 99.99
+      },
+      {
+        "nazwa": "750ml - hurt",
+        "slug": "750ml-hurt",
+        "typ": "hurt",
+        "nadpisuje_cene": true,
+        "inna_cena_skupu": false,
+        "permisje": 1,
+        "nowa_cena": 49.99
+      }
+    ],
+    "kod_ean": "590091239991",
+    "sku": "ABV-12333",
+    "aktywne": true
   }
 ]

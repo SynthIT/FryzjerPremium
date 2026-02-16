@@ -6,7 +6,7 @@ import Link from "next/link";
 import "@/app/globals.css";
 import { getCourses, renderStars } from "@/lib/utils";
 import { useCart } from "@/contexts/CartContext";
-import { Courses } from "@/lib/types/coursesTypes";
+import { Courses, Firmy } from "@/lib/types/coursesTypes";
 import { Promos, Opinie } from "@/lib/types/shared";
 import ReviewTabs from "./productComponents/ReviewTabs";
 import { Clock, Users, Award, Globe, CheckCircle, PlayCircle } from "lucide-react";
@@ -41,15 +41,15 @@ export default function CoursePage({ courseSlug }: CoursePageProps) {
                 console.log("Pobieranie kursu dla slug:", slug);
                 const data = await fetchCourse(slug);
                 console.log("Otrzymane dane:", data);
-                
+
                 if (data && data.status === 0 && data.course) {
                     setCourse(data.course);
                     let basePrice = data.course.cena;
-                    
+
                     if (data.course.promocje) {
                         basePrice = basePrice * ((100 - (data.course.promocje as Promos).procent!) / 100);
                     }
-                    
+
                     setSelectedPrice(basePrice);
                 } else if (data && data.status === 1) {
                     setError(data.error || "Kurs nie został znaleziony");
@@ -80,7 +80,7 @@ export default function CoursePage({ courseSlug }: CoursePageProps) {
             // TODO: Implementacja dodawania szkolenia do koszyka
             // addToCart(course, quantity, selectedPrice);
         }
-    }, [course, quantity, selectedPrice]);
+    }, [course]);
 
     if (!course && !error) {
         return (
@@ -100,7 +100,7 @@ export default function CoursePage({ courseSlug }: CoursePageProps) {
                     <div className="text-6xl mb-4">❌</div>
                     <h2 className="text-2xl font-bold mb-2">Błąd</h2>
                     <p className="text-muted-foreground mb-4">{error}</p>
-                    <Link 
+                    <Link
                         href="/products/szkolenia"
                         className="text-primary hover:underline">
                         Wróć do listy szkoleń
@@ -109,6 +109,19 @@ export default function CoursePage({ courseSlug }: CoursePageProps) {
             </div>
         );
     }
+
+    if (!course) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="text-center">
+                    <div className="text-6xl mb-4">❌</div>
+                    <h2 className="text-2xl font-bold mb-2">Błąd</h2>
+                    <p className="text-muted-foreground mb-4">Kurs nie został znaleziony</p>
+                </div>
+            </div>
+        );
+    }
+
 
     const images = course.media && Array.isArray(course.media) ? course.media : [];
     const mainImage = images[0]?.path || "";
@@ -133,11 +146,11 @@ export default function CoursePage({ courseSlug }: CoursePageProps) {
                     {/* Left Column - Course Info */}
                     <div className="course-info-column">
                         <h1 className="course-title">{course.nazwa}</h1>
-                        
+
                         {/* Subtitle */}
                         <p className="course-subtitle">
-                            {course.krotkiOpis || (course.opis && course.opis.length > 150 
-                                ? `${course.opis.substring(0, 150)}...` 
+                            {course.krotkiOpis || (course.opis && course.opis.length > 150
+                                ? `${course.opis.substring(0, 150)}...`
                                 : course.opis)}
                         </p>
 
@@ -168,7 +181,7 @@ export default function CoursePage({ courseSlug }: CoursePageProps) {
                                 <>
                                     {course.instruktor && <span className="mx-2">•</span>}
                                     <span className="course-instructor-label">Firma:</span>
-                                    <span className="course-instructor-name">{(course.firma as any).nazwa}</span>
+                                    <span className="course-instructor-name">{(course.firma as Firmy).nazwa}</span>
                                 </>
                             )}
                         </div>
@@ -195,10 +208,10 @@ export default function CoursePage({ courseSlug }: CoursePageProps) {
                                     <div className="course-stat-label">Poziom</div>
                                     <div className="course-stat-value">
                                         {course.poziom === "poczatkujacy" ? "Początkujący" :
-                                         course.poziom === "sredniozaawansowany" ? "Średniozaawansowany" :
-                                         course.poziom === "zaawansowany" ? "Zaawansowany" :
-                                         course.poziom === "wszystkie" ? "Wszystkie poziomy" :
-                                         course.poziom || "Nie określono"}
+                                            course.poziom === "sredniozaawansowany" ? "Średniozaawansowany" :
+                                                course.poziom === "zaawansowany" ? "Zaawansowany" :
+                                                    course.poziom === "wszystkie" ? "Wszystkie poziomy" :
+                                                        course.poziom || "Nie określono"}
                                     </div>
                                 </div>
                             </div>
@@ -363,11 +376,11 @@ export default function CoursePage({ courseSlug }: CoursePageProps) {
                             <div className="course-overview-content">
                                 <h3>O tym szkoleniu</h3>
                                 <p>{course.opis}</p>
-                                
+
                                 {course.firma && typeof course.firma === "object" && "nazwa" in course.firma && (
                                     <div className="course-instructor-details">
                                         <h4>Instruktor</h4>
-                                        <p>{(course.firma as any).nazwa}</p>
+                                        <p>{(course.firma as Firmy).nazwa}</p>
                                     </div>
                                 )}
                             </div>
@@ -396,15 +409,11 @@ export default function CoursePage({ courseSlug }: CoursePageProps) {
                             </div>
                         )}
 
-                        {activeTab === "reviews" && (
-                            <ReviewTabs
-                                product={course as any}
-                                showReviewModal={showReviewModal}
-                                setShowReviewModal={setShowReviewModal}
-                                reviewForm={reviewForm}
-                                setReviewForm={setReviewForm}
-                            />
-                        )}
+                        <ReviewTabs
+                            activeTab={activeTab}
+                            product={course as Courses}
+                            setShowReviewModal={setShowReviewModal}
+                        />
                     </div>
                 </div>
             </div>

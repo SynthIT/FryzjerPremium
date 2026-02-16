@@ -65,7 +65,7 @@ export async function addAndUpdateOrderToUser(userId: string, order: OrderList) 
 export async function getUserOrders(userId: string) {
     try {
         await db();
-        const user = await User.findOne({ _id: userId }).populate("zamowienia").orFail();
+        const user = await User.findOne({ _id: userId, "zamowienia.status": { $ne: "w_koszyku" } }).populate("zamowienia").orFail();
         return user.zamowienia;
     } catch (error) {
         console.error(error);

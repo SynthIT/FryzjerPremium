@@ -1,1 +1,52 @@
-[]
+[
+  {
+    "_id": "699260ec2660d35a8058f2c9",
+    "slug": "kurs-z-strzyzenia-meskiego-i-damskiego",
+    "nazwa": "Kurs z strzyżenia męskiego i damskiego",
+    "cena": 5998.97,
+    "kategoria": [
+      {
+        "_id": "6956d39b4bd2901e7aefad2a",
+        "nazwa": "Krzesło fryzjerskie",
+        "slug": "Sprzęty",
+        "image": "acd",
+        "__v": 0
+      }
+    ],
+    "firma": {
+      "_id": "698cfcccd6adb4bc463e939d",
+      "nazwa": "Akademia Pana Kleksa",
+      "logo": {
+        "nazwa": "asddd",
+        "slug": "asddd",
+        "typ": "image",
+        "alt": "asddd",
+        "path": "cwel.jpg",
+        "_id": "698cfcccd6adb4bc463e939e",
+        "createdAt": "2026-02-11T22:03:56.415Z",
+        "updatedAt": "2026-02-11T22:03:56.415Z"
+      },
+      "opis": "No ogólnie to kleks czy coś",
+      "slug": "akademia-pana-kleksa",
+      "strona_internetowa": "https://auschwitz.org",
+      "__v": 0
+    },
+    "media": [],
+    "promocje": null,
+    "opis": ",.",
+    "ocena": 0,
+    "opinie": null,
+    "vat": 23,
+    "sku": null,
+    "aktywne": true,
+    "czasTrwania": "Około 30godzin",
+    "poziom": "wszystkie",
+    "liczbaLekcji": 15,
+    "instruktor": "mgr. inż. Michał Janikowskie",
+    "jezyk": "polski",
+    "certyfikat": true,
+    "krotkiOpis": "asdadadad",
+    "wariant": [],
+    "__v": 0
+  }
+]

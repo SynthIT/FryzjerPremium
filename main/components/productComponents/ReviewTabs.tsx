@@ -2,10 +2,11 @@ import { Products } from "@/lib/types/productTypes";
 import { Opinie } from "@/lib/types/shared";
 import { renderStars } from "@/lib/utils";
 import { useState } from "react";
+import { Courses } from "@/lib/types/coursesTypes";
 
 interface ReviewTabsProps {
     activeTab: string;
-    product: Products;
+    product: Products | Courses;
     setShowReviewModal: (o: boolean) => void;
 }
 

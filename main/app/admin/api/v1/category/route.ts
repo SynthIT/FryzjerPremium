@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
         const cat = await collectCategories();
         return NextResponse.json({
             status: 0,
-            categories: cat,
+            categories: JSON.parse(cat),
         });
     } catch (error) {
         console.error("Błąd podczas pobierania kategorii:", error);

@@ -45,12 +45,12 @@ export const getCourses = async (slug?: string) => {
         const data = await response.json();
         console.log("Otrzymane dane z API:", data);
         console.log("Typ danych:", typeof data);
-        console.log("Czy ma courses:", "courses" in data);
+        console.log("Czy ma course:", "course" in data);
         console.log("Czy ma status:", "status" in data);
         
         // Upewnij się, że zwracamy poprawny format
-        if (data && data.courses) {
-            console.log("✅ Zwracam kursy:", data.courses.length);
+        if (data && data.course) {
+            console.log("✅ Zwracam kursy:", data.course.length);
             return data;
         } else if (data && Array.isArray(data)) {
             console.log("✅ Zwracam tablicę kursów:", data.length);
@@ -143,6 +143,7 @@ const getCategories = async () => {
 
 export const finalPrice = (
     cena: number,
+    vat:number,
     selectedWariant?: Warianty,
     promocje?: Promos,
 ) => {
@@ -153,6 +154,7 @@ export const finalPrice = (
     if (promocje && promocje.procent) {
         basePrice = basePrice * ((100 - promocje.procent) / 100);
     }
+    basePrice = basePrice + (basePrice * vat) / 100;
     return basePrice.toFixed(2);
 };
 

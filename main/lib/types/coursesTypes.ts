@@ -1,6 +1,5 @@
 import z from "zod";
 import { zodPromocje, zodMedia, zodCategories, zodOpinie } from "./shared";
-import { Types } from "mongoose";
 
 export const zodKursWarianty = z.object({
     nazwa: z.string(),
@@ -12,7 +11,7 @@ export const zodKursWarianty = z.object({
 export type KursWarianty = z.infer<typeof zodKursWarianty>;
 
 export const zodFirmy = z.object({
-    _id: z.instanceof(Types.ObjectId).optional(),
+    _id: z.string().optional(),
     nazwa: z.string(),
     logo: zodMedia,
     slug: z.string(),
@@ -27,12 +26,12 @@ export const zodCourses = z.object({
     nazwa: z.string(),
     cena: z.number(),
     kategoria: z.array(
-        z.union([z.instanceof(Types.ObjectId), zodCategories, z.string()]),
+        z.union([z.string(), zodCategories]),
     ),
-    firma: z.union([z.instanceof(Types.ObjectId), zodFirmy, z.string()]),
+    firma: z.union([z.string(), zodFirmy]),
     media: z.array(zodMedia),
     promocje: z
-        .union([z.instanceof(Types.ObjectId), zodPromocje, z.string()])
+        .union([z.string(), zodPromocje])
         .nullable(),
     opis: z.string(),
     ocena: z.number(),
