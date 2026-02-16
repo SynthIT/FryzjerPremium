@@ -105,6 +105,17 @@ export async function makeInstantSummary() {
     }
 }
 
+export async function getAnalistBySku(sku: string) {
+    await db();
+    const analist = await Analistics.find({ sku: sku });
+    const object: { [sku: string]: Analist[] } = {};
+    for (const entry of analist) {
+        object[sku].push(entry);
+    }
+    return object;
+}
+
+
 
 export async function deleteAnalistEntry(sku: string) {
     try {

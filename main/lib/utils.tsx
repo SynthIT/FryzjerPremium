@@ -17,46 +17,33 @@ export const getProducts = async (slug?: string) => {
 export const getCourses = async (slug?: string) => {
     try {
         // Użyj względnego URL zamiast hardcoded localhost
-        const baseUrl = typeof window !== "undefined" 
-            ? window.location.origin 
+        const baseUrl = typeof window !== "undefined"
+            ? window.location.origin
             : process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
-        
+
         const url = new URL(`${baseUrl}/api/v1/courses`);
         if (slug) {
             url.searchParams.append("slug", slug);
         }
-        
-        console.log("Fetching courses from:", url.toString());
-        
+
+
         const response = await fetch(url, {
             cache: "no-store", // Nie cache'uj, żeby zawsze mieć świeże dane
             credentials: "include",
         });
-        
-        console.log("Response status:", response.status);
-        
+
+
         if (!response.ok) {
-            console.error("Błąd HTTP:", response.status, response.statusText);
             const errorData = await response.json().catch(() => ({}));
-            console.error("Szczegóły błędu:", errorData);
             return errorData; // Zwróć błąd zamiast rzucać wyjątek
         }
-        
+
         const data = await response.json();
-        console.log("Otrzymane dane z API:", data);
-        console.log("Typ danych:", typeof data);
-        console.log("Czy ma course:", "course" in data);
-        console.log("Czy ma status:", "status" in data);
-        
+
         // Upewnij się, że zwracamy poprawny format
-        if (data && data.course) {
-            console.log("✅ Zwracam kursy:", data.course.length);
+        if (data && data.courses) {
             return data;
-        } else if (data && Array.isArray(data)) {
-            console.log("✅ Zwracam tablicę kursów:", data.length);
-            return { status: 200, courses: data };
         } else {
-            console.warn("⚠️ Nieoczekiwany format danych:", data);
             return { status: 200, courses: [] };
         }
     } catch (error) {
@@ -143,7 +130,7 @@ const getCategories = async () => {
 
 export const finalPrice = (
     cena: number,
-    vat:number,
+    vat: number,
     selectedWariant?: Warianty,
     promocje?: Promos,
 ) => {

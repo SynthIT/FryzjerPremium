@@ -21,6 +21,7 @@ export const zodAnalist = z.object({
     cena_skupu: z.number(),
     cena: z.number(),
     ilosc: z.number(),
+    nr_zam: z.string(),
     createdAt: z.date().optional(),
     updatedAt: z.date().optional(),
     __V: z.number().optional(),
