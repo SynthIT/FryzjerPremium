@@ -33,8 +33,12 @@ export default function CoursesPage() {
                 }
                 const data = await res.json();
                 console.log("Otrzymane dane z API:", data);
-                console.log("Liczba kursów:", Array.isArray(data) ? data.length : 0);
-                setCourses(Array.isArray(data) ? data : []);
+                // API zwraca { status: 0, courses: [...] } lub { status: 200, courses: [...] }
+                const coursesArray = (data && data.courses && Array.isArray(data.courses)) 
+                    ? data.courses 
+                    : (Array.isArray(data) ? data : []);
+                console.log("Liczba kursów:", coursesArray.length);
+                setCourses(coursesArray);
             } catch (error) {
                 console.error("Błąd podczas ładowania kursów:", error);
                 setCourses([]);
@@ -79,7 +83,11 @@ export default function CoursesPage() {
             });
             if (res.ok) {
                 const data = await res.json();
-                setCourses(Array.isArray(data) ? data : []);
+                // API zwraca { status: 0, courses: [...] } lub { status: 200, courses: [...] }
+                const coursesArray = (data && data.courses && Array.isArray(data.courses)) 
+                    ? data.courses 
+                    : (Array.isArray(data) ? data : []);
+                setCourses(coursesArray);
             } else {
                 throw new Error(`HTTP ${res.status}`);
             }
@@ -102,7 +110,11 @@ export default function CoursesPage() {
             });
             if (res.ok) {
                 const data = await res.json();
-                setCourses(Array.isArray(data) ? data : []);
+                // API zwraca { status: 0, courses: [...] } lub { status: 200, courses: [...] }
+                const coursesArray = (data && data.courses && Array.isArray(data.courses)) 
+                    ? data.courses 
+                    : (Array.isArray(data) ? data : []);
+                setCourses(coursesArray);
             } else {
                 throw new Error(`HTTP ${res.status}`);
             }

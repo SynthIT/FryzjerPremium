@@ -52,15 +52,13 @@ export default function Bestsellers({
                                         className="product-card-link">
                                         <div className="product-card-listing">
                                             <div className="product-image-wrapper">
-                                                {product.media ? (
+                                                {product.media && 
+                                                 Array.isArray(product.media) && 
+                                                 product.media.length > 0 && 
+                                                 product.media[0]?.path ? (
                                                     <Image
-                                                        src={
-                                                            product.media[0]
-                                                                .path
-                                                        }
-                                                        alt={
-                                                            product.media[0].alt
-                                                        }
+                                                        src={product.media[0].path}
+                                                        alt={product.media[0]?.alt || product.nazwa}
                                                         width={300}
                                                         height={300}
                                                         className="product-image"
@@ -93,6 +91,7 @@ export default function Bestsellers({
                                                             }}>
                                                             {finalPrice(
                                                                 product.cena,
+                                                                product.vat || 0,
                                                                 undefined,
                                                                 product.promocje as Promos,
                                                             )}

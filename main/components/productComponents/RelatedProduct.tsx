@@ -23,10 +23,13 @@ export default function RelatedProduct({
                             {(relatedProduct.promocje as Promos).procent}%
                         </div>
                     )}
-                    {relatedProduct.media ? (
+                    {relatedProduct.media && 
+                     Array.isArray(relatedProduct.media) && 
+                     relatedProduct.media.length > 0 && 
+                     relatedProduct.media[0]?.path ? (
                         <Image
                             src={relatedProduct.media[0].path}
-                            alt={relatedProduct.media[0].alt}
+                            alt={relatedProduct.media[0]?.alt || relatedProduct.nazwa}
                             width={300}
                             height={300}
                             className="related-product-image"

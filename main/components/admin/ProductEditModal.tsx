@@ -51,7 +51,16 @@ export default function ProductEditModal({
     const [selectedProducent, setSelectedProducent] = useState<string>("");
 
     useEffect(() => {
-        setEditedProduct(product);
+        // Konwertuj wartości 0 na undefined dla pól numerycznych
+        const normalizedProduct = {
+            ...product,
+            cena: product.cena === 0 ? undefined : product.cena,
+            cena_skupu: product.cena_skupu === 0 ? undefined : product.cena_skupu,
+            ilosc: product.ilosc === 0 ? undefined : product.ilosc,
+            czas_wysylki: product.czas_wysylki === 0 ? undefined : product.czas_wysylki,
+            ocena: product.ocena === 0 ? undefined : product.ocena,
+        };
+        setEditedProduct(normalizedProduct);
     }, [product]);
 
     // Auto-generuj slug z nazwy
@@ -391,14 +400,25 @@ export default function ProductEditModal({
                                 <input
                                     type="number"
                                     step="0.01"
-                                    value={editedProduct.cena || 0}
-                                    onChange={(e) =>
-                                        updateField(
-                                            "cena",
-                                            parseFloat(e.target.value) || 0,
-                                        )
-                                    }
+                                    value={editedProduct.cena && editedProduct.cena !== 0 ? editedProduct.cena : ""}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        if (val === "" || val === null || val === undefined) {
+                                            updateField("cena", undefined);
+                                        } else {
+                                            const numVal = parseFloat(val);
+                                            if (!isNaN(numVal)) {
+                                                updateField("cena", numVal);
+                                            }
+                                        }
+                                    }}
+                                    onFocus={(e) => {
+                                        if (e.target.value === "0" || e.target.value === "") {
+                                            e.target.select();
+                                        }
+                                    }}
                                     className="w-full px-3 py-2 border rounded-md"
+                                    placeholder="0.00"
                                 />
                             </div>
                             <div>
@@ -408,14 +428,16 @@ export default function ProductEditModal({
                                 <input
                                     type="number"
                                     step="0.01"
-                                    value={editedProduct.cena_skupu || 0}
-                                    onChange={(e) =>
+                                    value={editedProduct.cena_skupu === 0 || editedProduct.cena_skupu === undefined || editedProduct.cena_skupu === null ? "" : editedProduct.cena_skupu}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
                                         updateField(
                                             "cena_skupu",
-                                            parseFloat(e.target.value) || 0,
-                                        )
-                                    }
+                                            val === "" ? undefined : parseFloat(val) || undefined,
+                                        );
+                                    }}
                                     className="w-full px-3 py-2 border rounded-md"
+                                    placeholder="0.00"
                                 />
                             </div>
                             <div>
@@ -424,14 +446,16 @@ export default function ProductEditModal({
                                 </label>
                                 <input
                                     type="number"
-                                    value={editedProduct.ilosc || 0}
-                                    onChange={(e) =>
+                                    value={editedProduct.ilosc === 0 || editedProduct.ilosc === undefined || editedProduct.ilosc === null ? "" : editedProduct.ilosc}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
                                         updateField(
                                             "ilosc",
-                                            parseInt(e.target.value) || 0,
-                                        )
-                                    }
+                                            val === "" ? undefined : parseInt(val) || undefined,
+                                        );
+                                    }}
                                     className="w-full px-3 py-2 border rounded-md"
+                                    placeholder="0"
                                 />
                             </div>
                             <div>
@@ -463,14 +487,16 @@ export default function ProductEditModal({
                                 </label>
                                 <input
                                     type="number"
-                                    value={editedProduct.czas_wysylki || 1}
-                                    onChange={(e) =>
+                                    value={editedProduct.czas_wysylki === 0 || editedProduct.czas_wysylki === undefined || editedProduct.czas_wysylki === null ? "" : editedProduct.czas_wysylki}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
                                         updateField(
                                             "czas_wysylki",
-                                            parseInt(e.target.value) || 1,
-                                        )
-                                    }
+                                            val === "" ? undefined : parseInt(val) || undefined,
+                                        );
+                                    }}
                                     className="w-full px-3 py-2 border rounded-md"
+                                    placeholder="1"
                                 />
                             </div>
                             <div>
@@ -498,14 +524,16 @@ export default function ProductEditModal({
                                     step="0.1"
                                     min="0"
                                     max="5"
-                                    value={editedProduct.ocena || 0}
-                                    onChange={(e) =>
+                                    value={editedProduct.ocena === 0 || editedProduct.ocena === undefined || editedProduct.ocena === null ? "" : editedProduct.ocena}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
                                         updateField(
                                             "ocena",
-                                            parseFloat(e.target.value) || 0,
-                                        )
-                                    }
+                                            val === "" ? undefined : parseFloat(val) || undefined,
+                                        );
+                                    }}
                                     className="w-full px-3 py-2 border rounded-md"
+                                    placeholder="0.0"
                                 />
                             </div>
                             <div>
@@ -899,16 +927,15 @@ export default function ProductEditModal({
                                             <input
                                                 type="number"
                                                 placeholder="Objętość (ml)"
-                                                value={wariant.objetosc || ""}
-                                                onChange={(e) =>
+                                                value={wariant.objetosc === 0 || wariant.objetosc === undefined || wariant.objetosc === null ? "" : wariant.objetosc}
+                                                onChange={(e) => {
+                                                    const val = e.target.value;
                                                     updateWariant(
                                                         index,
                                                         "objetosc",
-                                                        parseFloat(
-                                                            e.target.value,
-                                                        ) || 0,
-                                                    )
-                                                }
+                                                        val === "" ? undefined : parseFloat(val) || undefined,
+                                                    );
+                                                }}
                                                 className="w-full px-3 py-2 border rounded-md text-sm"
                                             />
                                         </div>
@@ -938,16 +965,15 @@ export default function ProductEditModal({
                                                 type="number"
                                                 step="0.01"
                                                 placeholder="Nowa cena"
-                                                value={wariant.nowa_cena || ""}
-                                                onChange={(e) =>
+                                                value={wariant.nowa_cena === 0 || wariant.nowa_cena === undefined || wariant.nowa_cena === null ? "" : wariant.nowa_cena}
+                                                onChange={(e) => {
+                                                    const val = e.target.value;
                                                     updateWariant(
                                                         index,
                                                         "nowa_cena",
-                                                        parseFloat(
-                                                            e.target.value,
-                                                        ) || 0,
-                                                    )
-                                                }
+                                                        val === "" ? undefined : parseFloat(val) || undefined,
+                                                    );
+                                                }}
                                                 className="flex-1 px-3 py-2 border rounded-md text-sm"
                                             />
                                         )}
@@ -977,16 +1003,15 @@ export default function ProductEditModal({
                                                 type="number"
                                                 step="0.01"
                                                 placeholder="Cena skupu"
-                                                value={wariant.cena_skupu || ""}
-                                                onChange={(e) =>
+                                                value={wariant.cena_skupu === 0 || wariant.cena_skupu === undefined || wariant.cena_skupu === null ? "" : wariant.cena_skupu}
+                                                onChange={(e) => {
+                                                    const val = e.target.value;
                                                     updateWariant(
                                                         index,
                                                         "cena_skupu",
-                                                        parseFloat(
-                                                            e.target.value,
-                                                        ) || 0,
-                                                    )
-                                                }
+                                                        val === "" ? undefined : parseFloat(val) || undefined,
+                                                    );
+                                                }}
                                                 className="flex-1 px-3 py-2 border rounded-md text-sm"
                                             />
                                         )}

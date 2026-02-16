@@ -600,5 +600,63 @@
     "kod_ean": "590091239991",
     "sku": "ABV-12333",
     "aktywne": true
+  },
+  {
+    "slug": "sdfsdf",
+    "nazwa": "sdfsdf",
+    "cena_skupu": 2134,
+    "cena": 234,
+    "dostepnosc": "duza",
+    "kategoria": [
+      {
+        "_id": "697a8e046f07ba005344f452",
+        "nazwa": "Krzesło fryzjerskie",
+        "slug": "Sprzęty",
+        "image": "acd",
+        "__v": 0
+      }
+    ],
+    "producent": "697a8e046f07ba005344f45e",
+    "media": [],
+    "promocje": null,
+    "opis": "wefwefwef",
+    "ilosc": 100,
+    "czas_wysylki": 1,
+    "kod_produkcyjny": "345345",
+    "ocena": 4,
+    "opinie": null,
+    "vat": 23,
+    "kod_ean": null,
+    "sku": null,
+    "aktywne": true
+  },
+  {
+    "slug": "sdfsdf",
+    "nazwa": "sdfsdf",
+    "cena_skupu": 2134,
+    "cena": 234,
+    "dostepnosc": "duza",
+    "kategoria": [
+      {
+        "_id": "697a8e046f07ba005344f452",
+        "nazwa": "Krzesło fryzjerskie",
+        "slug": "Sprzęty",
+        "image": "acd",
+        "__v": 0
+      }
+    ],
+    "producent": "697a8e046f07ba005344f45e",
+    "media": [],
+    "promocje": null,
+    "opis": "wefwefwef",
+    "ilosc": 100,
+    "czas_wysylki": 1,
+    "kod_produkcyjny": "345345",
+    "ocena": 4,
+    "opinie": null,
+    "vat": 23,
+    "kod_ean": null,
+    "sku": "345345345",
+    "aktywne": true
   }
 ]

@@ -25,10 +25,13 @@ export default function ProductElement({
                         -{(product.promocje as Promos).procent}%
                     </div>
                 )}
-                {product.media && product.media.length > 0 ? (
+                {product.media && 
+                 Array.isArray(product.media) && 
+                 product.media.length > 0 && 
+                 product.media[0]?.path ? (
                     <Image
                         src={product.media[0].path}
-                        alt={product.media[0].alt}
+                        alt={product.media[0]?.alt || product.nazwa}
                         width={300}
                         height={300}
                         className="product-image-listing"

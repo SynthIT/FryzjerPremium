@@ -48,17 +48,18 @@ export const getCourses = async (slug?: string) => {
         console.log("Czy ma course:", "course" in data);
         console.log("Czy ma status:", "status" in data);
         
-        // Upewnij się, że zwracamy poprawny format
-        if (data && data.course) {
-            console.log("✅ Zwracam kursy:", data.course.length);
+        // Jeśli jest slug, API zwraca { status: 0, course: ... }
+        if (slug && data && data.course) {
             return data;
-        } else if (data && Array.isArray(data)) {
-            console.log("✅ Zwracam tablicę kursów:", data.length);
-            return { status: 200, courses: data };
-        } else {
-            console.warn("⚠️ Nieoczekiwany format danych:", data);
-            return { status: 200, courses: [] };
         }
+        
+        // Jeśli nie ma slug, API zwraca { status: 200, courses: [...] }
+        if (data && data.courses) {
+            return data;
+        }
+        
+        // Fallback - zwróć pustą tablicę kursów
+        return { status: 200, courses: [] };
     } catch (error) {
         console.error("Błąd w getCourses:", error);
         return { status: 1, error: "Błąd podczas pobierania danych" };
