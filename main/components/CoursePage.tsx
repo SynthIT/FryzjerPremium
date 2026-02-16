@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import "@/app/globals.css";
-import { getCourses, renderStars } from "@/lib/utils";
+import { finalPrice, getCourses, renderStars } from "@/lib/utils";
 import { useCart } from "@/contexts/CartContext";
 import { Courses, Firmy } from "@/lib/types/coursesTypes";
 import { Promos, Opinie } from "@/lib/types/shared";
@@ -17,7 +17,7 @@ interface CoursePageProps {
 
 export default function CoursePage({ courseSlug }: CoursePageProps) {
     const [course, setCourse] = useState<Courses | null>(null);
-    const [selectedPrice, setSelectedPrice] = useState(0);
+    const [selectedPrice, setSelectedPrice] = useState("");
     const [quantity, setQuantity] = useState(1);
     const [activeTab, setActiveTab] = useState<"overview" | "curriculum" | "reviews">("overview");
     const [showReviewModal, setShowReviewModal] = useState(false);
@@ -41,22 +41,11 @@ export default function CoursePage({ courseSlug }: CoursePageProps) {
                 console.log("Pobieranie kursu dla slug:", slug);
                 const data = await fetchCourse(slug);
                 console.log("Otrzymane dane:", data);
-
-                if (data && data.status === 0 && data.course) {
-                    setCourse(data.course);
-                    let basePrice = data.course.cena;
-
-                    if (data.course.promocje) {
-                        basePrice = basePrice * ((100 - (data.course.promocje as Promos).procent!) / 100);
-                    }
-
-                    setSelectedPrice(basePrice);
-                } else if (data && data.status === 1) {
-                    setError(data.error || "Kurs nie został znaleziony");
-                    console.error("Błąd z API:", data.error);
+                if (data) {
+                    setCourse(data);
+                    setSelectedPrice(finalPrice(data.cena, data.vat, data.promocje as Promos));
                 } else {
-                    setError("Nie udało się pobrać danych kursu");
-                    console.error("Brak danych kursu w odpowiedzi:", data);
+                    setError("Kurs nie został znaleziony");
                 }
             } catch (error) {
                 console.error("Błąd podczas pobierania kursu:", error);
@@ -309,7 +298,7 @@ export default function CoursePage({ courseSlug }: CoursePageProps) {
                             {hasPromo ? (
                                 <>
                                     <div className="course-price-original">{course.cena.toFixed(2)} zł</div>
-                                    <div className="course-price-current">{selectedPrice.toFixed(2)} zł</div>
+                                    <div className="course-price-current">{selectedPrice} zł</div>
                                 </>
                             ) : (
                                 <div className="course-price-current-large">{course.cena.toFixed(2)} zł</div>

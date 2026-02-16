@@ -14,7 +14,7 @@ export async function collectCourses() {
             .lean();
         return JSON.stringify(cours || []);
     } catch (error) {
-        return JSON.stringify([]);
+        return error;
     }
 }
 
@@ -38,7 +38,7 @@ export async function updateCourse(courseData: Courses) {
     courseData.kategoria = [];
     for (const kategoria of kategorie) {
         courseData.kategoria.push(
-            new Types.ObjectId((kategoria as Categories)._id),
+            new Types.ObjectId((kategoria as Categories)._id) as unknown as string,
         );
     }
 

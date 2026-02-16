@@ -40,6 +40,9 @@ export const getCourses = async (slug?: string) => {
 
         const data = await response.json();
 
+        if (slug) {
+            return data.course || [];
+        }
         // Upewnij się, że zwracamy poprawny format
         if (data && data.courses) {
             return data;
