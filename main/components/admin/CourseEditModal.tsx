@@ -50,7 +50,13 @@ export default function CourseEditModal({
     const [selectedFirma, setSelectedFirma] = useState<string>("");
 
     useEffect(() => {
-        setEditedCourse(course);
+        // Konwertuj wartości 0 na undefined dla pól numerycznych
+        const normalizedCourse = {
+            ...course,
+            cena: course.cena === 0 ? undefined : course.cena,
+            ocena: course.ocena === 0 ? undefined : course.ocena,
+        };
+        setEditedCourse(normalizedCourse);
     }, [course]);
 
     // Auto-generuj slug z nazwy
@@ -334,14 +340,25 @@ export default function CourseEditModal({
                                 <input
                                     type="number"
                                     step="0.01"
-                                    value={editedCourse.cena || 0}
-                                    onChange={(e) =>
-                                        updateField(
-                                            "cena",
-                                            parseFloat(e.target.value) || 0,
-                                        )
-                                    }
+                                    value={editedCourse.cena && editedCourse.cena !== 0 ? editedCourse.cena : ""}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        if (val === "" || val === null || val === undefined) {
+                                            updateField("cena", undefined);
+                                        } else {
+                                            const numVal = parseFloat(val);
+                                            if (!isNaN(numVal)) {
+                                                updateField("cena", numVal);
+                                            }
+                                        }
+                                    }}
+                                    onFocus={(e) => {
+                                        if (e.target.value === "0" || e.target.value === "") {
+                                            e.target.select();
+                                        }
+                                    }}
                                     className="w-full px-3 py-2 border rounded-md"
+                                    placeholder="0.00"
                                 />
                             </div>
                             <div>
@@ -352,14 +369,16 @@ export default function CourseEditModal({
                                     type="number"
                                     min="0"
                                     max="100"
-                                    value={editedCourse.vat || 23}
-                                    onChange={(e) =>
+                                    value={editedCourse.vat === 0 || editedCourse.vat === undefined || editedCourse.vat === null ? "" : editedCourse.vat}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
                                         updateField(
                                             "vat",
-                                            parseFloat(e.target.value) || 23,
-                                        )
-                                    }
+                                            val === "" ? undefined : parseFloat(val) || undefined,
+                                        );
+                                    }}
                                     className="w-full px-3 py-2 border rounded-md"
+                                    placeholder="23"
                                 />
                             </div>
                             <div>
@@ -371,14 +390,16 @@ export default function CourseEditModal({
                                     step="0.1"
                                     min="0"
                                     max="5"
-                                    value={editedCourse.ocena || 0}
-                                    onChange={(e) =>
+                                    value={editedCourse.ocena === 0 || editedCourse.ocena === undefined || editedCourse.ocena === null ? "" : editedCourse.ocena}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
                                         updateField(
                                             "ocena",
-                                            parseFloat(e.target.value) || 0,
-                                        )
-                                    }
+                                            val === "" ? undefined : parseFloat(val) || undefined,
+                                        );
+                                    }}
                                     className="w-full px-3 py-2 border rounded-md"
+                                    placeholder="0.0"
                                 />
                             </div>
                             <div>

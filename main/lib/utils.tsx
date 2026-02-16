@@ -49,6 +49,14 @@ export const getCourses = async (slug?: string) => {
         } else {
             return { status: 200, courses: [] };
         }
+        
+        // Jeśli nie ma slug, API zwraca { status: 200, courses: [...] }
+        if (data && data.courses) {
+            return data;
+        }
+        
+        // Fallback - zwróć pustą tablicę kursów
+        return { status: 200, courses: [] };
     } catch (error) {
         console.error("Błąd w getCourses:", error);
         return { status: 1, error: "Błąd podczas pobierania danych" };

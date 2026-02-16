@@ -220,10 +220,10 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                                         onClick={() =>
                                             handleImageSelect(index)
                                         }>
-                                        {image ? (
+                                        {image && image.path ? (
                                             <Image
                                                 src={image.path}
-                                                alt={`${product.nazwa} - ${image.alt}`}
+                                                alt={image.alt || `${product.nazwa} - ${index + 1}`}
                                                 width={100}
                                                 height={100}
                                                 className="thumbnail-image"
@@ -247,10 +247,12 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                                     </div>
                                 )}
                                 {product.media &&
-                                product.media[selectedImage] ? (
+                                Array.isArray(product.media) &&
+                                product.media[selectedImage] &&
+                                product.media[selectedImage]?.path ? (
                                     <Image
                                         src={product.media[selectedImage].path}
-                                        alt={product.media[selectedImage].alt}
+                                        alt={product.media[selectedImage]?.alt || product.nazwa}
                                         width={600}
                                         height={600}
                                         className="product-image-main"
