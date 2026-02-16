@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { useCart } from "@/contexts/CartContext";
-import {CartItem } from "@/lib/types/cartTypes";
+import { CartItem } from "@/lib/types/cartTypes";
 import Image from "next/image";
 import Link from "next/link";
 import { CheckoutForm } from "@/components/checkout/Payments";
@@ -9,6 +9,8 @@ import { DeliveryMethods } from "@/lib/types/deliveryTypes";
 import DeliveryMethod from "@/components/checkout/DeliveryMethods";
 import { EmptyCart } from "@/components/cart/EmptyCard";
 import { Stripe } from "@stripe/stripe-js";
+import { createPortal } from "react-dom";
+import { useUser } from "@/contexts/UserContext";
 
 interface Props {
     stripePromise: Promise<Stripe | null>;
@@ -19,6 +21,7 @@ export function Checkout({ stripePromise }: Props) {
     const [{ id, items }, _] = useState<{ id: string; items: CartItem[] }>(
         getCart(),
     );
+    const [handlePayment, setHandlePayment] = useState<boolean>(false);
     const [cs, setCs] = useState<string | null>(null);
     const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethods[]>();
     const [selectedDeliveryMethod, setSelectDeliveryMethod] =
@@ -36,6 +39,8 @@ export function Checkout({ stripePromise }: Props) {
         postalCode: "",
         country: "Polska",
     });
+
+    const { userData, getUser } = useUser();
     useEffect(() => {
         async function as() {
             const response = await fetch("/api/v1/products/delivery", {
@@ -47,6 +52,13 @@ export function Checkout({ stripePromise }: Props) {
         }
         as();
     }, []);
+
+    useEffect(() => {
+        if (userData) {
+            return setFormData((prev) => ({ ...prev, firstName: userData.imie, lastName: userData.nazwisko, email: userData.email, phone: userData.telefon, street: userData.ulica, city: userData.miasto, postalCode: userData.kod_pocztowy, country: userData.kraj }));
+        }
+        getUser();
+    }, [userData, getUser]);
 
     useEffect(() => {
         async function getClientSecret() {
@@ -265,23 +277,6 @@ export function Checkout({ stripePromise }: Props) {
                                 </div>
                             </section>
                         </form>
-
-                        {/* Metoda płatności */}
-                        <section className="checkout-section">
-                            <h2 className="checkout-section-title">
-                                Metoda płatności
-                            </h2>
-                            {cs ? (
-                                <Elements
-                                    stripe={stripePromise}
-                                    options={{
-                                        clientSecret: cs,
-                                        appearance: { theme: "flat" },
-                                    }}>
-                                    <CheckoutForm></CheckoutForm>
-                                </Elements>
-                            ) : null}
-                        </section>
                     </div>
 
                     {/* Sidebar z podsumowaniem */}
@@ -304,15 +299,15 @@ export function Checkout({ stripePromise }: Props) {
                                             key={item.id}
                                             className="checkout-item">
                                             <div className="checkout-item-image">
-                                                {item.product.media ? (
+                                                {item.product.media && item.product.media.length > 0 ? (
                                                     <Image
                                                         src={
                                                             item.product
-                                                                .media[0].path
+                                                                .media[0]?.path
                                                         }
                                                         alt={
                                                             item.product
-                                                                .media[0].nazwa
+                                                                .media[0]?.alt
                                                         }
                                                         width={60}
                                                         height={60}
@@ -357,8 +352,8 @@ export function Checkout({ stripePromise }: Props) {
                             </div>
 
                             <button
+                                onClick={() => setHandlePayment(true)}
                                 type="submit"
-                                form="checkout-form"
                                 className="checkout-submit-button">
                                 Złóż zamówienie
                             </button>
@@ -370,7 +365,18 @@ export function Checkout({ stripePromise }: Props) {
                     </aside>
                 </div>
             </div>
+            {handlePayment && (
+                <div className="checkout-payment-container">
+                    <Elements
+                        stripe={stripePromise}
+                        options={{
+                            clientSecret: cs,
+                            appearance: { theme: "flat" },
+                        }}>
+                        <CheckoutForm></CheckoutForm>
+                    </Elements>
+                </div>
+            )}
         </div>
     );
 }
-

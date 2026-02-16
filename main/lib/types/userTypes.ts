@@ -1,8 +1,11 @@
 import zod from "zod";
 import { adminPermission, userPermission } from "../auth/permissions";
 import { zodDeliveryMethods } from "./deliveryTypes";
+import { zodCartItem } from "./cartTypes";
+
 
 export const orderListSchema = zod.object({
+    _id: zod.string().optional(),
     status: zod
         .enum(["w_koszyku", "nowe", "w_realizacji", "wyslane", "zrealizowane", "anulowane"])
         .default("nowe"),
@@ -11,9 +14,9 @@ export const orderListSchema = zod.object({
         zod.lazy(() => zodDeliveryMethods),
         zod.string(),
     ]),
-    produkty: zod.array(zod.union([zod.string(), zod.string()])),
+    produkty: zod.array(zod.union([zod.string(), zodCartItem])),
     suma: zod.number(),
-    data_zamowienia: zod.date(),
+    data_zamowienia: zod.date().optional(),
     data_wyslania: zod.date().optional(),
     data_zrealizowania: zod.date().optional(),
     data_anulowania: zod.date().optional(),

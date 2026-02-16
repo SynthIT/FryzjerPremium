@@ -1,7 +1,7 @@
 import { User } from "@/lib/models/Users";
 import { Users, Roles as Role, OrderList } from "@/lib/types/userTypes";
 import { db } from "@/lib/db/init";
-import { Product } from "@/lib/models/Products";
+import { Orders } from "@/lib/models/Users";
 export async function collectUsers() {
     await db();
     const uzytkownicy = await User.find({}).populate("role");
@@ -33,32 +33,41 @@ export async function addAdmin(user: Users) {
     }
 }
 
-
-export async function addAndUpdateOrderToUser(userId: string, order: OrderList) {
+export async function createOrder(order: OrderList) {
     try {
-
         await db();
-        const user = await User.findOne({ _id: userId }).populate("zamowienia").orFail();
-        const zamowienia = user.zamowienia;
-        if (zamowienia && zamowienia.length === 0) {
-            const result = await User.findOneAndUpdate(
-                { _id: userId, "zamowienia.numer_zamowienia": { $ne: order.numer_zamowienia } }, // tylko jeśli element nie istnieje
-                { $push: { zamowienia: order } }, { new: false }
-            );
-            if (result) {
-                return true;
-            } else {
-                const exists = zamowienia.findIndex((o) => (o as OrderList).numer_zamowienia === order.numer_zamowienia);
-                zamowienia.splice(exists, 1);
-                zamowienia[exists] = order;
-                await user.save();
-                return true
-            }
-        } else {
-            await User.findOneAndUpdate({ _id: userId }, { $set: { zamowienia: zamowienia } });
-        }
+        const res = await Orders.create(order);
+        return res;
     } catch (error) {
         console.error(error);
+    }
+}
+export async function addAndUpdateOrderToUser(userId: string, order: OrderList) {
+    try {
+        await db();
+        if (!userId) {
+            const res = await Orders.create(order);
+            return res;
+        }
+        const user = await User.findOne({ _id: userId }).populate("zamowienia").orFail();
+        const zamowienia = user.zamowienia as OrderList[];
+        if (zamowienia && zamowienia.length > 0) {
+            const existingOrder = zamowienia.find((o) => o.numer_zamowienia === order.numer_zamowienia);
+            if (existingOrder) {
+                const res = await Orders.findOneAndUpdate({ _id: existingOrder._id }, { $set: { ...order } }, { new: false });
+                return res;
+            } else {
+                const res = await Orders.create(order);
+                await User.findOneAndUpdate({ _id: userId }, { $push: { zamowienia: res._id } });
+                return res;
+            }
+        } else {
+            const res = await Orders.create(order);
+            await User.findOneAndUpdate({ _id: userId }, { $push: { zamowienia: res._id } });
+            return res;
+        }
+    } catch (error) {
+        console.error(new Error(`${error}`));
     }
 }
 
@@ -72,26 +81,13 @@ export async function getUserOrders(userId: string) {
     }
 }
 
-export async function calculateUserOrdersSum(userId: string) {
+export async function retriveUserCartOrders(userId: string) {
     try {
         await db();
-        const user = await User
-            .findOne({ _id: userId, "zamowienia.status": { $eq: "w_koszyku" } })
-            .populate({ path: "zamowienia", populate: { path: "produkty", model: "Products" } })
-            .orFail();
-        const zamowienia: OrderList[] | undefined = user.zamowienia as OrderList[] | undefined;
-        if (!zamowienia) return 0;
-        let suma = 0;
-        for (const zamowienie of zamowienia) {
-            const produkty = zamowienie.produkty;
-            if (!produkty) continue;
-            for (const produkt of produkty) {
-                const product = await Product.findOne({ _id: produkt }).orFail();
-                suma += product.cena;
-            }
-        }
-        return suma;
+        const user = await User.findOne({ _id: userId, "zamowienia.status": { $eq: "w_koszyku" } }).populate("zamowienia");
+        return user ?? null;
     } catch (error) {
         console.error(error);
     }
 }
+

@@ -139,6 +139,20 @@ export default function ProductPage() {
                         Dodawaj, edytuj i organizuj produkty.
                     </p>
                 </div>
+                <button
+                    onClick={() => {
+                        fetch("/admin/api/v1/products/cache", {
+                            credentials: "include",
+                        }).then(res => res.json()).then(data => {
+                            if (data.status === 0) {
+                                alert("Plik cache naprawiony");
+                            } else {
+                                alert("Błąd podczas naprawiania pliku cache: " + data.error);
+                            }
+                        });
+                    }}
+                    className="w-full rounded-md border px-3 py-2 text-sm transition-colors hover:bg-accent sm:w-auto"
+                >Napraw plik cache</button>
                 <Link
                     href="/admin/manage/products/new"
                     className="w-full rounded-md border px-3 py-2 text-sm transition-colors hover:bg-accent sm:w-auto">
@@ -164,115 +178,118 @@ export default function ProductPage() {
             </div>
 
             {/* Products Grid */}
-            {displayedProducts.length === 0 ? (
-                <div className="flex flex-col items-center justify-center min-h-[400px] border-2 border-dashed rounded-lg">
-                    <div className="text-center space-y-4">
-                        <div className="text-6xl">📦</div>
-                        <div>
-                            <h3 className="text-xl font-semibold">
-                                {searchQuery
-                                    ? "Nie znaleziono produktów"
-                                    : "Brak produktów"}
-                            </h3>
-                            <p className="text-muted-foreground mt-2">
-                                {searchQuery
-                                    ? "Spróbuj zmienić kryteria wyszukiwania"
-                                    : "Dodaj pierwszy produkt, aby rozpocząć"}
-                            </p>
+            {
+                displayedProducts.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center min-h-[400px] border-2 border-dashed rounded-lg">
+                        <div className="text-center space-y-4">
+                            <div className="text-6xl">📦</div>
+                            <div>
+                                <h3 className="text-xl font-semibold">
+                                    {searchQuery
+                                        ? "Nie znaleziono produktów"
+                                        : "Brak produktów"}
+                                </h3>
+                                <p className="text-muted-foreground mt-2">
+                                    {searchQuery
+                                        ? "Spróbuj zmienić kryteria wyszukiwania"
+                                        : "Dodaj pierwszy produkt, aby rozpocząć"}
+                                </p>
+                            </div>
                         </div>
                     </div>
-                </div>
-            ) : (
-                <>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                        {displayedProducts.map((product) => (
-                            <AdminProductCard
-                                key={product.slug}
-                                product={product}
-                                onClick={() => handleProductClick(product)}
-                            />
-                        ))}
-                    </div>
+                ) : (
+                    <>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                            {displayedProducts.map((product) => (
+                                <AdminProductCard
+                                    key={product.slug}
+                                    product={product}
+                                    onClick={() => handleProductClick(product)}
+                                />
+                            ))}
+                        </div>
 
-                    {/* Pagination */}
-                    {totalPages > 1 && (
-                        <div className="flex items-center justify-center gap-2 mt-6">
-                            <button
-                                onClick={() =>
-                                    setCurrentPage((prev) =>
-                                        Math.max(1, prev - 1)
-                                    )
-                                }
-                                disabled={currentPage === 1}
-                                className="px-4 py-2 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-accent transition-colors">
-                                Poprzednia
-                            </button>
-                            <div className="flex items-center gap-1">
-                                {Array.from(
-                                    { length: totalPages },
-                                    (_, i) => i + 1
-                                ).map((page) => {
-                                    if (
-                                        page === 1 ||
-                                        page === totalPages ||
-                                        (page >= currentPage - 1 &&
-                                            page <= currentPage + 1)
-                                    ) {
-                                        return (
-                                            <button
-                                                key={page}
-                                                onClick={() =>
-                                                    setCurrentPage(page)
-                                                }
-                                                className={`px-3 py-2 border rounded-md min-w-[40px] ${
-                                                    currentPage === page
+                        {/* Pagination */}
+                        {totalPages > 1 && (
+                            <div className="flex items-center justify-center gap-2 mt-6">
+                                <button
+                                    onClick={() =>
+                                        setCurrentPage((prev) =>
+                                            Math.max(1, prev - 1)
+                                        )
+                                    }
+                                    disabled={currentPage === 1}
+                                    className="px-4 py-2 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-accent transition-colors">
+                                    Poprzednia
+                                </button>
+                                <div className="flex items-center gap-1">
+                                    {Array.from(
+                                        { length: totalPages },
+                                        (_, i) => i + 1
+                                    ).map((page) => {
+                                        if (
+                                            page === 1 ||
+                                            page === totalPages ||
+                                            (page >= currentPage - 1 &&
+                                                page <= currentPage + 1)
+                                        ) {
+                                            return (
+                                                <button
+                                                    key={page}
+                                                    onClick={() =>
+                                                        setCurrentPage(page)
+                                                    }
+                                                    className={`px-3 py-2 border rounded-md min-w-[40px] ${currentPage === page
                                                         ? "bg-primary text-primary-foreground"
                                                         : "hover:bg-accent"
-                                                } transition-colors`}>
-                                                {page}
-                                            </button>
-                                        );
-                                    } else if (
-                                        page === currentPage - 2 ||
-                                        page === currentPage + 2
-                                    ) {
-                                        return (
-                                            <span key={page} className="px-2">
-                                                ...
-                                            </span>
-                                        );
+                                                        } transition-colors`}>
+                                                    {page}
+                                                </button>
+                                            );
+                                        } else if (
+                                            page === currentPage - 2 ||
+                                            page === currentPage + 2
+                                        ) {
+                                            return (
+                                                <span key={page} className="px-2">
+                                                    ...
+                                                </span>
+                                            );
+                                        }
+                                        return null;
+                                    })}
+                                </div>
+                                <button
+                                    onClick={() =>
+                                        setCurrentPage((prev) =>
+                                            Math.min(totalPages, prev + 1)
+                                        )
                                     }
-                                    return null;
-                                })}
+                                    disabled={currentPage === totalPages}
+                                    className="px-4 py-2 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-accent transition-colors">
+                                    Następna
+                                </button>
                             </div>
-                            <button
-                                onClick={() =>
-                                    setCurrentPage((prev) =>
-                                        Math.min(totalPages, prev + 1)
-                                    )
-                                }
-                                disabled={currentPage === totalPages}
-                                className="px-4 py-2 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-accent transition-colors">
-                                Następna
-                            </button>
-                        </div>
-                    )}
-                </>
-            )}
+                        )}
+                    </>
+                )
+            }
 
             {/* Edit Modal */}
-            {selectedProduct && (
-                <ProductEditModal
-                    product={selectedProduct}
-                    isOpen={isEditModalOpen}
-                    onClose={() => {
-                        setIsEditModalOpen(false);
-                        setSelectedProduct(null);
-                    }}
-                    onUpdate={handleProductUpdate}
-                    onDelete={handleProductDelete}
-                />
-            )}
-        </div>
+            {
+                selectedProduct && (
+                    <ProductEditModal
+                        product={selectedProduct}
+                        isOpen={isEditModalOpen}
+                        onClose={() => {
+                            setIsEditModalOpen(false);
+                            setSelectedProduct(null);
+                        }}
+                        onUpdate={handleProductUpdate}
+                        onDelete={handleProductDelete}
+                    />
+                )
+            }
+        </div >
     );
 }

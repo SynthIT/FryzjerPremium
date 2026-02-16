@@ -26,6 +26,7 @@ interface CartContextType {
     getTotalPrice: () => number;
     getTotalItems: () => number;
     clearLastAddedItem: () => void;
+    refreshCart: (entry: Cart) => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -110,6 +111,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                             nazwa: product.nazwa,
                             media: product.media,
                             cena: product.cena,
+                            sku: product.sku,
                         },
                         quantity,
                         price,
@@ -125,6 +127,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                     nazwa: product.nazwa,
                     media: product.media,
                     cena: product.cena,
+                    sku: product.sku,
                 },
                 quantity,
                 price,
@@ -168,6 +171,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }, [cart.items]);
 
     const getTotalItems = useCallback(() => {
+        console.log(cart.items);
         return cart.items.reduce((total, item) => total + item.quantity, 0);
     }, [cart.items]);
 
@@ -191,6 +195,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         }
     }, []);
 
+    const refreshCart = useCallback(async (entry: Cart) => {
+        console.log(entry);
+        setCart(entry);
+    }, []);
+
     return (
         <CartContext.Provider
             value={{
@@ -203,6 +212,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                 getTotalPrice,
                 getTotalItems,
                 clearLastAddedItem,
+                refreshCart,
             }}>
             {children}
         </CartContext.Provider>

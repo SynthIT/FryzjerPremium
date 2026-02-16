@@ -175,6 +175,7 @@ export default function NewProductPage() {
                 nazwa: "",
                 slug: "",
                 typ: "kolor",
+                ilosc: 0,
                 nadpisuje_cene: false,
                 inna_cena_skupu: false,
             },
@@ -213,14 +214,14 @@ export default function NewProductPage() {
             if (selectedMainCategory && categories[selectedMainCategory]) {
                 categories[selectedMainCategory].forEach((cat) => {
                     if (selectedSubCategories.includes(cat._id || "")) {
-                        selectedCategories.push(cat);
+                        selectedCategories.push(cat._id as string);
                     }
                 });
             }
 
             // Przygotuj producent - musi być ObjectId lub pełny obiekt
             const producentData = producents.find(
-                (p) => p.slug === selectedProducent,
+                (p) => p._id === selectedProducent,
             );
             if (!producentData) {
                 alert("Wybierz producenta");
@@ -236,7 +237,8 @@ export default function NewProductPage() {
                 alt: file.name,
                 path: "", // Będzie wypełnione po uploadzie
             }));
-
+            console.log(warianty);
+            console.log(typeof warianty);
             // Przygotuj produkt zgodny ze schematem
             const productData: Products = {
                 slug,
@@ -255,9 +257,9 @@ export default function NewProductPage() {
                 opinie: null,
                 vat,
                 promocje: null,
-                wariant: warianty.length > 0 ? warianty : undefined,
+                wariant: warianty.length > 0 ? warianty as Warianty[] : undefined,
                 kod_ean: kod_ean || null,
-                sku: sku || null,
+                sku: sku,
                 aktywne: aktywne,
                 specyfikacja:
                     specyfikacja.length > 0 ? specyfikacja : undefined,
@@ -280,7 +282,7 @@ export default function NewProductPage() {
             } else {
                 alert(
                     "Błąd podczas dodawania produktu: " +
-                        (result.error || "Nieznany błąd"),
+                    (result.error || "Nieznany błąd"),
                 );
             }
         } catch (error) {
@@ -463,7 +465,7 @@ export default function NewProductPage() {
                         className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring">
                         <option value="">Wybierz producenta</option>
                         {producents.map((prod) => (
-                            <option key={prod.slug} value={prod.slug}>
+                            <option key={prod.slug} value={prod._id}>
                                 {prod.nazwa}
                             </option>
                         ))}
@@ -637,11 +639,8 @@ export default function NewProductPage() {
                                                     {
                                                         ...wariant.kolory,
                                                         name: e.target.value,
-                                                        val: e.target.value,
-                                                        hex:
-                                                            wariant.kolory
-                                                                ?.hex || null,
-                                                    } + "",
+
+                                                    },
                                                 )
                                             }
                                             className="rounded-md border bg-background px-3 py-2 text-sm"
@@ -649,23 +648,8 @@ export default function NewProductPage() {
                                         <input
                                             type="text"
                                             placeholder="Wartość"
-                                            value={wariant.kolory?.val || ""}
-                                            onChange={(e) =>
-                                                updateWariant(
-                                                    index,
-                                                    "kolory",
-                                                    {
-                                                        ...wariant.kolory,
-                                                        name:
-                                                            wariant.kolory
-                                                                ?.name || "",
-                                                        val: e.target.value,
-                                                        hex:
-                                                            wariant.kolory
-                                                                ?.hex || null,
-                                                    } + "",
-                                                )
-                                            }
+                                            value={wariant.kolory?.hex || "#000000"}
+                                            disabled={true}
                                             className="rounded-md border bg-background px-3 py-2 text-sm"
                                         />
                                         <input
@@ -679,14 +663,9 @@ export default function NewProductPage() {
                                                     "kolory",
                                                     {
                                                         ...wariant.kolory,
-                                                        name:
-                                                            wariant.kolory
-                                                                ?.name || "",
-                                                        val:
-                                                            wariant.kolory
-                                                                ?.val || "",
                                                         hex: e.target.value,
-                                                    } + "",
+                                                        val: e.target.value,
+                                                    },
                                                 )
                                             }
                                             className="rounded-md border bg-background h-10"
@@ -707,8 +686,7 @@ export default function NewProductPage() {
                                                         ...wariant.rozmiary,
                                                         name: e.target.value,
                                                         val: e.target.value,
-                                                        hex: null,
-                                                    } + "",
+                                                    },
                                                 )
                                             }
                                             className="rounded-md border bg-background px-3 py-2 text-sm"
@@ -723,12 +701,8 @@ export default function NewProductPage() {
                                                     "rozmiary",
                                                     {
                                                         ...wariant.rozmiary,
-                                                        name:
-                                                            wariant.rozmiary
-                                                                ?.name || "",
                                                         val: e.target.value,
-                                                        hex: null,
-                                                    } + "",
+                                                    },
                                                 )
                                             }
                                             className="rounded-md border bg-background px-3 py-2 text-sm"
@@ -836,26 +810,26 @@ export default function NewProductPage() {
                                 {/* Permisje */}
                                 {(wariant.typ === "hurt" ||
                                     wariant.typ === "specjalna") && (
-                                    <div>
-                                        <label className="text-xs font-medium">
-                                            Permisje (opcjonalnie)
-                                        </label>
-                                        <input
-                                            type="number"
-                                            placeholder="Kod permisji"
-                                            value={wariant.permisje || ""}
-                                            onChange={(e) =>
-                                                updateWariant(
-                                                    index,
-                                                    "permisje",
-                                                    parseInt(e.target.value) ||
+                                        <div>
+                                            <label className="text-xs font-medium">
+                                                Permisje (opcjonalnie)
+                                            </label>
+                                            <input
+                                                type="number"
+                                                placeholder="Kod permisji"
+                                                value={wariant.permisje || ""}
+                                                onChange={(e) =>
+                                                    updateWariant(
+                                                        index,
+                                                        "permisje",
+                                                        parseInt(e.target.value) ||
                                                         undefined,
-                                                )
-                                            }
-                                            className="w-full rounded-md border bg-background px-3 py-2 text-sm"
-                                        />
-                                    </div>
-                                )}
+                                                    )
+                                                }
+                                                className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+                                            />
+                                        </div>
+                                    )}
 
                                 <button
                                     type="button"

@@ -269,7 +269,7 @@ export async function addNewUser(payload: Users) {
                 osoba_prywatna: true,
                 zamowienia: [],
                 faktura: false,
-                role: [rola._id!],
+                role: [rola._id! as unknown as string],
             };
             const u = await User.create(upayload);
             return u;
@@ -290,7 +290,7 @@ export async function addNewUser(payload: Users) {
                 osoba_prywatna: true,
                 zamowienia: [],
                 faktura: false,
-                role: [jest._id!],
+                role: [jest._id! as unknown as string],
             };
             const u = await User.create(upayload);
             return u;

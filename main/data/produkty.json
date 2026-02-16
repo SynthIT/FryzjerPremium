@@ -1,11 +1,11 @@
 [
   {
-    "_id": "6956d39b4bd2901e7aefad3e",
-    "slug": "bielenda-szampon-do-wlosow-zniszczonych",
-    "nazwa": "Bielenda szampon do włosów zniszczonych",
-    "cena_skupu": 38.12,
+    "_id": "69937af9a2439686bfb2fec9",
+    "slug": "szampon-do-w-osow-zniszczonych",
+    "nazwa": "Szampon do włosów zniszczonych",
+    "cena_skupu": 21.99,
     "cena": 49.99,
-    "dostepnosc": "Duża",
+    "dostepnosc": "ograniczona",
     "kategoria": [
       {
         "_id": "6956d39b4bd2901e7aefad27",
@@ -16,253 +16,36 @@
       }
     ],
     "producent": {
-      "_id": "6956d39b4bd2901e7aefad36",
-      "nazwa": "Bielenda",
-      "slug": "Bielenda",
-      "strona_internetowa": "bielenda.pl",
+      "_id": "6956d39b4bd2901e7aefad33",
+      "nazwa": "Marka własna",
+      "slug": "Własna",
+      "strona_internetowa": "/",
       "__v": 0
     },
-    "media": [
-      {
-        "nazwa": "baner",
-        "slug": "zdjeciebaner",
-        "typ": "image",
-        "alt": "baner",
-        "path": "/public/media/baner.jpg",
-        "_id": "6956d39b4bd2901e7aefad3f",
-        "createdAt": "2026-01-01T20:05:47.798Z",
-        "updatedAt": "2026-01-01T20:05:47.798Z"
-      }
-    ],
+    "media": [],
     "promocje": null,
-    "opis": "No se jest taki szampoon, nie wiem co więcej na ten temat napisać, ale potrzebuje coś żeby było widać i czaił temat potem na stornei mimo tego żę robię to offstrona bo przecież nie mogę wstawić sobie normalnie wpisać to do\nstrony bo komuś się nie chciało kurwa jeszcze zrobić tego jebanego admin panelu",
-    "ilosc": 100,
+    "opis": "No jestem se taki szamponik do włosków",
+    "ilosc": 10,
     "czas_wysylki": 5,
-    "kod_produkcyjny": "BND-9122231",
-    "ocena": 3,
-    "opinie": [
-      {
-        "uzytkownik": "asdadd",
-        "tresc": "asdddd",
-        "ocena": 3,
-        "zweryfikowane": false,
-        "_id": "69811cbea830ddd86fc1b98d",
-        "createdAt": "2026-02-02T21:53:02.196Z",
-        "updatedAt": "2026-02-02T21:53:02.196Z"
-      },
-      {
-        "uzytkownik": "asdadd",
-        "tresc": "asdddd",
-        "ocena": 3,
-        "zweryfikowane": false,
-        "_id": "69811cbea830ddd86fc1b99b",
-        "createdAt": "2026-02-02T21:53:02.473Z",
-        "updatedAt": "2026-02-02T21:53:02.473Z"
-      }
-    ],
+    "kod_produkcyjny": "WSN-1923431",
+    "ocena": 0,
+    "opinie": null,
     "vat": 23,
-    "wariant": [
-      {
-        "nazwa": "180ml",
-        "slug": "180ml",
-        "typ": "objetosc",
-        "kolory": null,
-        "rozmiary": null,
-        "objetosc": 180,
-        "nadpisuje_cene": false,
-        "inna_cena_skupu": false,
-        "_id": "6956d39b4bd2901e7aefad40"
-      },
-      {
-        "nazwa": "180ml - hurt",
-        "slug": "180ml - hurt",
-        "typ": "objetosc",
-        "kolory": null,
-        "rozmiary": null,
-        "objetosc": 180,
-        "nadpisuje_cene": true,
-        "inna_cena_skupu": false,
-        "permisje": 1,
-        "nowa_cena": 34.99,
-        "_id": "6956d39b4bd2901e7aefad41"
-      },
-      {
-        "nazwa": "280ml",
-        "slug": "280ml",
-        "typ": "objetosc",
-        "kolory": null,
-        "rozmiary": null,
-        "objetosc": 280,
-        "nadpisuje_cene": true,
-        "inna_cena_skupu": true,
-        "cena_skupu": 38.32,
-        "nowa_cena": 69.99,
-        "_id": "6956d39b4bd2901e7aefad42"
-      },
-      {
-        "nazwa": "280ml - hurt",
-        "slug": "280ml - hurt",
-        "typ": "objetosc",
-        "kolory": null,
-        "rozmiary": null,
-        "objetosc": 280,
-        "nadpisuje_cene": true,
-        "inna_cena_skupu": true,
-        "cena_skupu": 28.32,
-        "permisje": 3,
-        "nowa_cena": 32.17,
-        "_id": "6956d39b4bd2901e7aefad43"
-      },
-      {
-        "nazwa": "520ml",
-        "slug": "520ml",
-        "typ": "objetosc",
-        "kolory": null,
-        "rozmiary": null,
-        "objetosc": 520,
-        "nadpisuje_cene": true,
-        "inna_cena_skupu": true,
-        "cena_skupu": 40.21,
-        "nowa_cena": 99.99,
-        "_id": "6956d39b4bd2901e7aefad44"
-      }
-    ],
-    "kod_ean": null,
-    "sku": null,
+    "sku": "SDWZ/12333",
+    "kod_ean": "59001233312",
     "aktywne": true,
-    "createdAt": "2026-01-01T20:05:47.798Z",
-    "updatedAt": "2026-01-01T20:05:47.798Z",
+    "wariant": [],
+    "createdAt": "2026-02-16T20:15:53.070Z",
+    "updatedAt": "2026-02-16T20:15:53.070Z",
     "__v": 0
   },
   {
-    "_id": "6956d39b4bd2901e7aefad49",
-    "slug": "bielenda-szampon-odzywiajacy",
-    "nazwa": "Bielenda szampon odżywiający",
-    "cena_skupu": 42.12,
-    "cena": 59.99,
-    "dostepnosc": "Duża",
-    "kategoria": [
-      {
-        "_id": "6956d39b4bd2901e7aefad27",
-        "nazwa": "Szampon",
-        "slug": "Kosmetyki",
-        "image": "anb",
-        "__v": 0
-      }
-    ],
-    "producent": {
-      "_id": "6956d39b4bd2901e7aefad36",
-      "nazwa": "Bielenda",
-      "slug": "Bielenda",
-      "strona_internetowa": "bielenda.pl",
-      "__v": 0
-    },
-    "media": [
-      {
-        "nazwa": "baner",
-        "slug": "zdjeciebaner",
-        "typ": "image",
-        "alt": "baner",
-        "path": "/public/media/baner.jpg",
-        "_id": "6956d39b4bd2901e7aefad4a",
-        "createdAt": "2026-01-01T20:05:47.820Z",
-        "updatedAt": "2026-01-01T20:05:47.820Z"
-      }
-    ],
-    "promocje": null,
-    "opis": "No se jest taki szampoon, nie wiem co więcej na ten temat napisać, ale potrzebuje coś żeby było widać i czaił temat potem na stornei mimo tego żę robię to offstrona bo przecież nie mogę wstawić sobie normalnie wpisać to do\nstrony bo komuś się nie chciało kurwa jeszcze zrobić tego jebanego admin panelu",
-    "ilosc": 100,
-    "czas_wysylki": 5,
-    "kod_produkcyjny": "BND-9122331",
-    "ocena": 4.5,
-    "opinie": [
-      {
-        "uzytkownik": "asdad",
-        "tresc": "qwe",
-        "ocena": 4,
-        "zweryfikowane": false,
-        "_id": "69811e94227b9293bbda1bf3",
-        "createdAt": "2026-02-02T22:00:52.176Z",
-        "updatedAt": "2026-02-02T22:00:52.176Z"
-      },
-      {
-        "uzytkownik": "asddda",
-        "tresc": "123aadsaded",
-        "ocena": 5,
-        "zweryfikowane": false,
-        "_id": "698121af227b9293bbda1c02",
-        "createdAt": "2026-02-02T22:14:07.938Z",
-        "updatedAt": "2026-02-02T22:14:07.938Z"
-      }
-    ],
-    "vat": 23,
-    "wariant": [
-      {
-        "nazwa": "180ml",
-        "slug": "180ml",
-        "typ": "objetosc",
-        "kolory": null,
-        "rozmiary": null,
-        "objetosc": 180,
-        "nadpisuje_cene": false,
-        "inna_cena_skupu": false,
-        "_id": "6956d39b4bd2901e7aefad4b"
-      },
-      {
-        "nazwa": "180ml - hurt",
-        "slug": "180ml - hurt",
-        "typ": "objetosc",
-        "kolory": null,
-        "rozmiary": null,
-        "objetosc": 180,
-        "nadpisuje_cene": true,
-        "inna_cena_skupu": false,
-        "permisje": 1,
-        "nowa_cena": 34.99,
-        "_id": "6956d39b4bd2901e7aefad4c"
-      },
-      {
-        "nazwa": "280ml",
-        "slug": "280ml",
-        "typ": "objetosc",
-        "kolory": null,
-        "rozmiary": null,
-        "objetosc": 280,
-        "nadpisuje_cene": true,
-        "inna_cena_skupu": true,
-        "cena_skupu": 38.32,
-        "nowa_cena": 69.99,
-        "_id": "6956d39b4bd2901e7aefad4d"
-      },
-      {
-        "nazwa": "520ml - hurt",
-        "slug": "520ml - hurt",
-        "typ": "objetosc",
-        "kolory": null,
-        "rozmiary": null,
-        "objetosc": 520,
-        "nadpisuje_cene": true,
-        "inna_cena_skupu": true,
-        "cena_skupu": 40.21,
-        "permisje": 5,
-        "nowa_cena": 49.74,
-        "_id": "6956d39b4bd2901e7aefad4e"
-      }
-    ],
-    "kod_ean": null,
-    "sku": null,
-    "aktywne": true,
-    "createdAt": "2026-01-01T20:05:47.820Z",
-    "updatedAt": "2026-01-01T20:05:47.820Z",
-    "__v": 0
-  },
-  {
-    "_id": "6956d39b4bd2901e7aefad54",
-    "slug": "krzeslo-damskie-do-strzyzenia",
-    "nazwa": "Krzesło damskie do strzyżenia",
-    "cena_skupu": 1239.12,
-    "cena": 1849.99,
-    "dostepnosc": "Duża",
+    "_id": "6993824ecd2a0b4a2641dfef",
+    "slug": "krzes-o-do-strzyzenia-meskiego",
+    "nazwa": "Krzesło do strzyżenia męskiego",
+    "cena_skupu": 1899.99,
+    "cena": 2399.99,
+    "dostepnosc": "mała",
     "kategoria": [
       {
         "_id": "6956d39b4bd2901e7aefad2a",
@@ -279,174 +62,58 @@
       "strona_internetowa": "/",
       "__v": 0
     },
-    "media": [
-      {
-        "nazwa": "baner",
-        "slug": "zdjeciebaner",
-        "typ": "image",
-        "alt": "baner",
-        "path": "/public/media/baner.jpg",
-        "_id": "6956d39b4bd2901e7aefad55",
-        "createdAt": "2026-01-01T20:05:47.840Z",
-        "updatedAt": "2026-01-01T20:05:47.840Z"
-      }
-    ],
-    "promocje": {
-      "_id": "6956d3367418f70052a374d6",
-      "nazwa": "Black Friday",
-      "procent": 10,
-      "rozpoczecie": "2026-01-01T20:04:06.236Z",
-      "wygasa": "2026-01-04T20:04:06.236Z",
-      "aktywna": true,
-      "__v": 0
-    },
-    "opis": "No se jest taki krzeseł",
-    "ilosc": 100,
-    "czas_wysylki": 5,
-    "kod_produkcyjny": "WSN-9331231",
-    "ocena": 0,
-    "opinie": null,
-    "vat": 23,
-    "wariant": [
-      {
-        "nazwa": "Czarny",
-        "slug": "czarny",
-        "typ": "kolor",
-        "kolory": null,
-        "rozmiary": null,
-        "objetosc": null,
-        "nadpisuje_cene": false,
-        "inna_cena_skupu": false,
-        "_id": "6956d39b4bd2901e7aefad56"
-      },
-      {
-        "nazwa": "Czerwony",
-        "slug": "czerwony",
-        "typ": "kolor",
-        "kolory": null,
-        "rozmiary": null,
-        "objetosc": null,
-        "nadpisuje_cene": true,
-        "inna_cena_skupu": false,
-        "nowa_cena": 2149.99,
-        "_id": "6956d39b4bd2901e7aefad57"
-      },
-      {
-        "nazwa": "Żółty",
-        "slug": "zolty",
-        "typ": "kolor",
-        "kolory": null,
-        "rozmiary": null,
-        "objetosc": null,
-        "nadpisuje_cene": true,
-        "inna_cena_skupu": true,
-        "cena_skupu": 1678.32,
-        "nowa_cena": 2151.99,
-        "_id": "6956d39b4bd2901e7aefad58"
-      }
-    ],
-    "kod_ean": null,
-    "sku": null,
-    "aktywne": true,
-    "createdAt": "2026-01-01T20:05:47.840Z",
-    "updatedAt": "2026-01-01T20:05:47.840Z",
-    "__v": 0
-  },
-  {
-    "_id": "6956d39b4bd2901e7aefad5d",
-    "slug": "krzeslo-meskie-do-strzyzenia",
-    "nazwa": "Krzesło męskie do strzyżenia",
-    "cena_skupu": 1239.12,
-    "cena": 1819.99,
-    "dostepnosc": "Duża",
-    "kategoria": [
-      {
-        "_id": "6956d39b4bd2901e7aefad2a",
-        "nazwa": "Krzesło fryzjerskie",
-        "slug": "Sprzęty",
-        "image": "acd",
-        "__v": 0
-      }
-    ],
-    "producent": {
-      "_id": "6956d39b4bd2901e7aefad33",
-      "nazwa": "Marka własna",
-      "slug": "Własna",
-      "strona_internetowa": "/",
-      "__v": 0
-    },
-    "media": [
-      {
-        "nazwa": "baner",
-        "slug": "zdjeciebaner",
-        "typ": "image",
-        "alt": "baner",
-        "path": "/public/media/baner.jpg",
-        "_id": "6956d39b4bd2901e7aefad5e",
-        "createdAt": "2026-01-01T20:05:47.854Z",
-        "updatedAt": "2026-01-01T20:05:47.854Z"
-      }
-    ],
+    "media": [],
     "promocje": null,
-    "opis": "No se jest taki krzeseł",
-    "ilosc": 100,
-    "czas_wysylki": 5,
-    "kod_produkcyjny": "WSN-9031231",
+    "opis": "xcvb",
+    "ilosc": 5,
+    "czas_wysylki": 15,
+    "kod_produkcyjny": "KRZS-1231",
     "ocena": 0,
     "opinie": null,
     "vat": 23,
     "wariant": [
       {
-        "nazwa": "Czarny",
-        "slug": "czarny",
+        "nazwa": "Czerwone akcenty",
+        "slug": "czerwone-akcenty",
         "typ": "kolor",
-        "kolory": null,
-        "rozmiary": null,
-        "objetosc": null,
+        "kolory": {
+          "name": "czerwone",
+          "val": "#ff0000",
+          "hex": "#ff0000"
+        },
         "nadpisuje_cene": false,
         "inna_cena_skupu": false,
-        "_id": "6956d39b4bd2901e7aefad5f"
+        "_id": "6993824ecd2a0b4a2641dff0"
       },
       {
-        "nazwa": "Czerwony",
-        "slug": "czerwony",
+        "nazwa": "Zielone akcenty",
+        "slug": "zielone-akcenty",
         "typ": "kolor",
-        "kolory": null,
-        "rozmiary": null,
-        "objetosc": null,
+        "kolory": {
+          "name": "zielone",
+          "val": "#37ff00",
+          "hex": "#37ff00"
+        },
         "nadpisuje_cene": true,
         "inna_cena_skupu": false,
-        "nowa_cena": 2149.99,
-        "_id": "6956d39b4bd2901e7aefad60"
-      },
-      {
-        "nazwa": "Żółty",
-        "slug": "zolty",
-        "typ": "kolor",
-        "kolory": null,
-        "rozmiary": null,
-        "objetosc": null,
-        "nadpisuje_cene": true,
-        "inna_cena_skupu": true,
-        "cena_skupu": 1678.32,
-        "nowa_cena": 2151.99,
-        "_id": "6956d39b4bd2901e7aefad61"
+        "nowa_cena": 2499.99,
+        "_id": "6993824ecd2a0b4a2641dff1"
       }
     ],
+    "sku": "KRZESLO/00012",
     "kod_ean": null,
-    "sku": null,
     "aktywne": true,
-    "createdAt": "2026-01-01T20:05:47.854Z",
-    "updatedAt": "2026-01-01T20:05:47.854Z",
+    "createdAt": "2026-02-16T20:47:10.901Z",
+    "updatedAt": "2026-02-16T20:47:10.901Z",
     "__v": 0
   },
   {
-    "_id": "6956d39b4bd2901e7aefad67",
-    "slug": "narzuta-do-strzyzenia",
-    "nazwa": "Narzuta do strzyżenia",
-    "cena_skupu": 39.12,
-    "cena": 78.99,
-    "dostepnosc": "Duża",
+    "_id": "69938379cd2a0b4a2641dffd",
+    "slug": "piornik-do-narzedzi-techniki-fryzjerskiej",
+    "nazwa": "Piórnik do narzędzi techniki fryzjerskiej",
+    "cena_skupu": 399,
+    "cena": 499.99,
+    "dostepnosc": "duza",
     "kategoria": [
       {
         "_id": "6956d39b4bd2901e7aefad2d",
@@ -463,85 +130,43 @@
       "strona_internetowa": "/",
       "__v": 0
     },
-    "media": [
-      {
-        "nazwa": "baner",
-        "slug": "zdjeciebaner",
-        "typ": "image",
-        "alt": "baner",
-        "path": "/public/media/baner.jpg",
-        "_id": "6956d39b4bd2901e7aefad68",
-        "createdAt": "2026-01-01T20:05:47.921Z",
-        "updatedAt": "2026-01-01T20:05:47.921Z"
-      }
-    ],
-    "promocje": {
-      "_id": "6956d3367418f70052a374dc",
-      "nazwa": "Wyprzedaż marki",
-      "procent": 30,
-      "rozpoczecie": "2026-01-04T20:04:06.236Z",
-      "wygasa": "2026-01-08T20:04:06.236Z",
-      "aktywna": false,
-      "__v": 0
-    },
-    "opis": "No se narzuta do strzyżenia żeby te jebane włochy nie były na kliencie",
-    "ilosc": 100,
-    "czas_wysylki": 5,
-    "kod_produkcyjny": "CCH-1331231",
+    "media": [],
+    "promocje": null,
+    "opis": "zsdvf ",
+    "ilosc": 299,
+    "czas_wysylki": 1,
+    "kod_produkcyjny": "PIR-12333",
     "ocena": 0,
     "opinie": null,
     "vat": 23,
     "wariant": [
       {
-        "nazwa": "L",
-        "slug": "large",
-        "typ": "rozmiar",
-        "kolory": null,
-        "rozmiary": null,
-        "objetosc": null,
+        "nazwa": "Zielony",
+        "slug": "zielony",
+        "typ": "kolor",
+        "kolory": {
+          "name": "zielony",
+          "val": "#00ff11",
+          "hex": "#00ff11"
+        },
         "nadpisuje_cene": false,
         "inna_cena_skupu": false,
-        "_id": "6956d39b4bd2901e7aefad69"
-      },
-      {
-        "nazwa": "L - hurt",
-        "slug": "large",
-        "typ": "rozmiar",
-        "kolory": null,
-        "rozmiary": null,
-        "objetosc": null,
-        "nadpisuje_cene": true,
-        "inna_cena_skupu": false,
-        "permisje": 3,
-        "nowa_cena": 54.33,
-        "_id": "6956d39b4bd2901e7aefad6a"
-      },
-      {
-        "nazwa": "XS",
-        "slug": "extreslim",
-        "typ": "rozmiar",
-        "kolory": null,
-        "rozmiary": null,
-        "objetosc": null,
-        "nadpisuje_cene": true,
-        "inna_cena_skupu": true,
-        "cena_skupu": 39.12,
-        "nowa_cena": 83.49,
-        "_id": "6956d39b4bd2901e7aefad6b"
+        "_id": "69938379cd2a0b4a2641dffe"
       }
     ],
-    "kod_ean": null,
-    "sku": null,
+    "sku": "PIORNIK/00023",
+    "kod_ean": "59000123311",
     "aktywne": true,
-    "createdAt": "2026-01-01T20:05:47.922Z",
-    "updatedAt": "2026-01-01T20:05:47.922Z",
+    "createdAt": "2026-02-16T20:52:09.720Z",
+    "updatedAt": "2026-02-16T20:52:09.720Z",
     "__v": 0
   },
   {
-    "slug": "szampon-wyg-adzajacy-zepsute-w-osy",
-    "nazwa": "Szampon wygładzający zepsute włosy",
+    "_id": "6993845bcd2a0b4a2641e00a",
+    "slug": "szampon-do-w-osow-zniszczonych",
+    "nazwa": "Szampon do włosów zniszczonych",
     "cena_skupu": 32.99,
-    "cena": 59.99,
+    "cena": 47.99,
     "dostepnosc": "duza",
     "kategoria": [
       {
@@ -552,111 +177,177 @@
         "__v": 0
       }
     ],
-    "producent": "6956d39b4bd2901e7aefad33",
+    "producent": {
+      "_id": "6956d39b4bd2901e7aefad36",
+      "nazwa": "Bielenda",
+      "slug": "Bielenda",
+      "strona_internetowa": "bielenda.pl",
+      "__v": 0
+    },
     "media": [],
     "promocje": null,
-    "specyfikacja": [
-      {
-        "key": "Waga",
-        "value": "750g"
-      }
-    ],
-    "opis": "mklubiyvucykfjxdm ,v./'h; glkfg,j gj hkn",
-    "ilosc": 400,
-    "czas_wysylki": 13,
-    "kod_produkcyjny": "wSN-09111",
+    "opis": "axfzadsf afd",
+    "ilosc": 200,
+    "czas_wysylki": 3,
+    "kod_produkcyjny": "SZPM-12311",
     "ocena": 0,
     "opinie": null,
     "vat": 23,
     "wariant": [
       {
-        "nazwa": "750ml",
-        "slug": "750ml",
+        "nazwa": "500ml",
+        "slug": "500ml",
         "typ": "objetosc",
-        "objetosc": 750,
+        "objetosc": 500,
         "nadpisuje_cene": false,
-        "inna_cena_skupu": false
+        "inna_cena_skupu": false,
+        "_id": "6993845bcd2a0b4a2641e00b"
       },
       {
-        "nazwa": "1250",
-        "slug": "1250",
+        "nazwa": "720ml",
+        "slug": "720ml",
         "typ": "objetosc",
-        "objetosc": 1250,
+        "objetosc": 720,
         "nadpisuje_cene": true,
         "inna_cena_skupu": true,
-        "cena_skupu": 67.69,
-        "nowa_cena": 99.99
+        "cena_skupu": 35.09,
+        "nowa_cena": 53.99,
+        "_id": "6993845bcd2a0b4a2641e00c"
       },
       {
-        "nazwa": "750ml - hurt",
-        "slug": "750ml-hurt",
+        "nazwa": "890ml",
+        "slug": "890ml",
+        "typ": "objetosc",
+        "objetosc": 890,
+        "nadpisuje_cene": true,
+        "inna_cena_skupu": true,
+        "cena_skupu": 45.09,
+        "nowa_cena": 59.99,
+        "_id": "6993845bcd2a0b4a2641e00d"
+      },
+      {
+        "nazwa": "720ml - hurt",
+        "slug": "720ml-hurt",
         "typ": "hurt",
         "nadpisuje_cene": true,
-        "inna_cena_skupu": false,
+        "inna_cena_skupu": true,
+        "cena_skupu": 35.09,
         "permisje": 1,
-        "nowa_cena": 49.99
+        "nowa_cena": 43.99,
+        "_id": "6993845bcd2a0b4a2641e00e"
+      },
+      {
+        "nazwa": "890ml - hurt",
+        "slug": "890ml-hurt",
+        "typ": "hurt",
+        "nadpisuje_cene": true,
+        "inna_cena_skupu": true,
+        "cena_skupu": 45.09,
+        "permisje": 2,
+        "nowa_cena": 48.99,
+        "_id": "6993845bcd2a0b4a2641e00f"
       }
     ],
-    "kod_ean": "590091239991",
-    "sku": "ABV-12333",
-    "aktywne": true
+    "sku": "BIESZM/00012",
+    "kod_ean": "5900012331",
+    "aktywne": true,
+    "createdAt": "2026-02-16T20:55:55.110Z",
+    "updatedAt": "2026-02-16T20:55:55.110Z",
+    "__v": 0
   },
   {
-    "slug": "sdfsdf",
-    "nazwa": "sdfsdf",
-    "cena_skupu": 2134,
-    "cena": 234,
+    "_id": "69938592cd2a0b4a2641e01b",
+    "slug": "szampon-odzywiajacy-do-w-osow-farbowanych",
+    "nazwa": "Szampon odżywiający do włosów farbowanych",
+    "cena_skupu": 43.99,
+    "cena": 60.99,
     "dostepnosc": "duza",
     "kategoria": [
       {
-        "_id": "697a8e046f07ba005344f452",
-        "nazwa": "Krzesło fryzjerskie",
-        "slug": "Sprzęty",
-        "image": "acd",
+        "_id": "6956d39b4bd2901e7aefad27",
+        "nazwa": "Szampon",
+        "slug": "Kosmetyki",
+        "image": "anb",
         "__v": 0
       }
     ],
-    "producent": "697a8e046f07ba005344f45e",
+    "producent": {
+      "_id": "6956d39b4bd2901e7aefad36",
+      "nazwa": "Bielenda",
+      "slug": "Bielenda",
+      "strona_internetowa": "bielenda.pl",
+      "__v": 0
+    },
     "media": [],
     "promocje": null,
-    "opis": "wefwefwef",
-    "ilosc": 100,
-    "czas_wysylki": 1,
-    "kod_produkcyjny": "345345",
-    "ocena": 4,
+    "opis": "sadfasf",
+    "ilosc": 450,
+    "czas_wysylki": 2,
+    "kod_produkcyjny": "SZPM-12310",
+    "ocena": 0,
     "opinie": null,
     "vat": 23,
-    "kod_ean": null,
-    "sku": null,
-    "aktywne": true
-  },
-  {
-    "slug": "sdfsdf",
-    "nazwa": "sdfsdf",
-    "cena_skupu": 2134,
-    "cena": 234,
-    "dostepnosc": "duza",
-    "kategoria": [
+    "wariant": [
       {
-        "_id": "697a8e046f07ba005344f452",
-        "nazwa": "Krzesło fryzjerskie",
-        "slug": "Sprzęty",
-        "image": "acd",
-        "__v": 0
+        "nazwa": "620ml",
+        "slug": "620ml",
+        "typ": "objetosc",
+        "objetosc": 620,
+        "nadpisuje_cene": false,
+        "inna_cena_skupu": false,
+        "_id": "69938592cd2a0b4a2641e01c"
+      },
+      {
+        "nazwa": "980ml",
+        "slug": "980ml",
+        "typ": "objetosc",
+        "objetosc": 980,
+        "nadpisuje_cene": true,
+        "inna_cena_skupu": true,
+        "cena_skupu": 59.99,
+        "nowa_cena": 85.69,
+        "_id": "69938592cd2a0b4a2641e01d"
+      },
+      {
+        "nazwa": "1340ml",
+        "slug": "1340ml",
+        "typ": "objetosc",
+        "objetosc": 1340,
+        "nadpisuje_cene": true,
+        "inna_cena_skupu": true,
+        "cena_skupu": 79.54,
+        "nowa_cena": 102.99,
+        "_id": "69938592cd2a0b4a2641e01e"
+      },
+      {
+        "nazwa": "980ml - hurt",
+        "slug": "980ml-hurt",
+        "typ": "hurt",
+        "objetosc": 980,
+        "nadpisuje_cene": true,
+        "inna_cena_skupu": true,
+        "cena_skupu": 59.99,
+        "permisje": 3,
+        "nowa_cena": 75.98,
+        "_id": "69938592cd2a0b4a2641e01f"
+      },
+      {
+        "nazwa": "1340ml - hurt",
+        "slug": "1340ml-hurt",
+        "typ": "hurt",
+        "nadpisuje_cene": true,
+        "inna_cena_skupu": true,
+        "cena_skupu": 79.54,
+        "permisje": 1,
+        "nowa_cena": 99.91,
+        "_id": "69938592cd2a0b4a2641e020"
       }
     ],
-    "producent": "697a8e046f07ba005344f45e",
-    "media": [],
-    "promocje": null,
-    "opis": "wefwefwef",
-    "ilosc": 100,
-    "czas_wysylki": 1,
-    "kod_produkcyjny": "345345",
-    "ocena": 4,
-    "opinie": null,
-    "vat": 23,
-    "kod_ean": null,
-    "sku": "345345345",
-    "aktywne": true
+    "sku": "BIESZM/00101",
+    "kod_ean": "5900091231",
+    "aktywne": true,
+    "createdAt": "2026-02-16T21:01:06.261Z",
+    "updatedAt": "2026-02-16T21:01:06.261Z",
+    "__v": 0
   }
 ]

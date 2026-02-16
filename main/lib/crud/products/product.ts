@@ -2,7 +2,7 @@ import { db } from "@/lib/db/init";
 import { Product } from "@/lib/models/Products";
 import { zodProducts, Products } from "@/lib/types/productTypes";
 import { Categories } from "@/lib/types/shared";
-import { readFileSync, writeFileSync } from "fs";
+import { readFileSync, writeFileSync, access, constants } from "fs";
 import { Types } from "mongoose";
 import path from "path";
 
@@ -24,11 +24,17 @@ export async function createProduct(productData: Products): Promise<Products | {
     try {
         await db();
         const filePath = path.join(process.cwd(), "data", "produkty.json");
+        access(filePath, constants.F_OK, (err) => {
+            if (err) {
+                writeFileSync(filePath, "[]", "utf8");
+            }
+        });
+        const prod = await Product.create(ok.data);
+        const product = await Product.findOne({ _id: prod._id }).populate("kategoria").populate("producent").populate("promocje").lean();
         const file = readFileSync(filePath, "utf8");
         const products: Products[] = JSON.parse(file);
-        products.push(ok.data);
+        products.push(product!);
         writeFileSync(filePath, JSON.stringify(products, null, 2), "utf8");
-        const prod = await Product.create(ok.data);
         return prod;
     } catch (e) {
         return { error: `${e}` };
@@ -57,7 +63,7 @@ export async function updateProduct(productData: Products): Promise<Products | {
     produkt.data.kategoria = [];
     for (const kategoria of kategorie) {
         produkt.data.kategoria.push(
-            new Types.ObjectId((kategoria as Categories)._id),
+            new Types.ObjectId((kategoria as Categories)._id) as unknown as string,
         );
     }
     await db();

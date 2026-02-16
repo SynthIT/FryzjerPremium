@@ -3,8 +3,10 @@
 import { useCart } from "@/contexts/CartContext";
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import "@/app/globals.css";
+import { useUser } from "@/contexts/UserContext";
+import { CartItem } from "@/lib/types/cartTypes";
 
 export default function CartPage() {
     const {
@@ -13,8 +15,40 @@ export default function CartPage() {
         updateQuantity,
         clearCart,
         getTotalPrice,
+        refreshCart,
     } = useCart();
-    const { id, items } = getCart();
+    const { user } = useUser();
+    const [items, setItems] = useState<CartItem[]>([]);
+    const [done, setDone] = useState<boolean>(false);
+    useEffect(() => {
+        async function validate() {
+            await fetch("/api/v1/users/cart", {
+                method: "POST",
+                body: JSON.stringify({ userId: user, koszyk: getCart() }),
+            })
+                .then((res) => res.json())
+                .then((validation) => {
+                    if (validation.status === 0) {
+                        if (validation.changedEntries) {
+                            validation.changedEntries.forEach(
+                                (entry: { reason: string; item: CartItem }) => {
+                                    console.log(entry.reason);
+                                },
+                            );
+                        }
+                        refreshCart(validation.koszyk);
+                        setItems(validation.koszyk.items);
+                    } else {
+                        setItems(getCart().items);
+                    }
+                })
+                .catch(() => setItems(getCart().items));
+        }
+        if(!done) {
+            validate();
+            setDone(true);
+        };
+    }, [user, getCart, refreshCart, done,setDone]);
     const handleQuantityChange = useCallback(
         (itemId: string, delta: number) => {
             const item = items.find((item) => item.id === itemId);
@@ -107,15 +141,15 @@ export default function CartPage() {
                                         <div className="cart-item-image">
                                             <Link
                                                 href={`/product/${item.product.slug}`}>
-                                                {item.product.media ? (
+                                                {item.product.media && item.product.media.length > 0 ? (
                                                     <Image
                                                         src={
                                                             item.product
-                                                                .media[0].path
+                                                                .media[0]?.path
                                                         }
                                                         alt={
                                                             item.product
-                                                                .media[0].alt
+                                                                .media[0]?.alt
                                                         }
                                                         width={124}
                                                         height={124}

@@ -25,7 +25,7 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
         Warianty | undefined
     >();
 
-    const pobierzRazTenPierdolonyProduktTyPierdolonyPedaleZesranyZasrany =
+    const getproduct =
         useCallback(async (slug: string) => {
             const data = await getProducts(slug);
             return data;
@@ -34,7 +34,7 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
     useEffect(() => {
         async function getProduct(p: string) {
             const data =
-                await pobierzRazTenPierdolonyProduktTyPierdolonyPedaleZesranyZasrany(
+                await getproduct(
                     p,
                 );
             console.log(data);
@@ -44,24 +44,13 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                 let basePrice = data.product.cena;
                 if (data.product.wariant) {
                     setSelectedWariant(data.product.wariant[0]);
-                    if (
-                        selectedWariant?.nadpisuje_cene &&
-                        selectedWariant.nowa_cena
-                    ) {
-                        basePrice = selectedWariant.nowa_cena;
-                    }
-                    if (data.product.promocje) {
-                        basePrice =
-                            basePrice *
-                            ((100 -
-                                (data.product.promocje as Promos).procent!) /
-                                100);
-                    }
+                    basePrice = finalPrice(data.product.cena, data.product.vat, data.product.wariant[0]);
                 } else {
                     const wariant: Warianty = {
                         nazwa: "Podstawowy",
                         slug: "pdostw",
                         typ: "kolor",
+                        ilosc: data.product.ilosc,
                         nadpisuje_cene: false,
                         inna_cena_skupu: false,
                     };
@@ -80,7 +69,8 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
         if (productSlug) {
             getProduct(productSlug);
         }
-    }, [pobierzRazTenPierdolonyProduktTyPierdolonyPedaleZesranyZasrany]);
+    }, [getproduct, productSlug]);
+
     useEffect(() => {
         async function getAllProducts() {
             const data = await getProducts();
@@ -107,14 +97,14 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
     // Pobierz produkty z tej samej kategorii (wykluczając aktualny produkt)
     const relatedProducts = Array.isArray(allProducts)
         ? allProducts
-              .filter((p) => {
-                  return product
-                      ? (p.kategoria as Categories[])[0].nazwa ==
-                            (product.kategoria as Categories[])[0].nazwa &&
-                            p.slug != product!.slug
-                      : false;
-              })
-              .slice(0, 4)
+            .filter((p) => {
+                return product
+                    ? (p.kategoria as Categories[])[0].nazwa ==
+                    (product.kategoria as Categories[])[0].nazwa &&
+                    p.slug != product!.slug
+                    : false;
+            })
+            .slice(0, 4)
         : [];
 
     const handleQuantityChange = useCallback((delta: number) => {
@@ -149,7 +139,7 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                 product.vat,
                 w,
                 product.promocje as Promos,
-            );  
+            );
             setSelectedPrice(Number(cena));
         }
     };
@@ -212,11 +202,10 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                                 {product.media.map((image, index) => (
                                     <div
                                         key={index}
-                                        className={`product-thumbnail ${
-                                            selectedImage === index
-                                                ? "active"
-                                                : ""
-                                        }`}
+                                        className={`product-thumbnail ${selectedImage === index
+                                            ? "active"
+                                            : ""
+                                            }`}
                                         onClick={() =>
                                             handleImageSelect(index)
                                         }>
@@ -247,9 +236,9 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                                     </div>
                                 )}
                                 {product.media &&
-                                Array.isArray(product.media) &&
-                                product.media[selectedImage] &&
-                                product.media[selectedImage]?.path ? (
+                                    Array.isArray(product.media) &&
+                                    product.media[selectedImage] &&
+                                    product.media[selectedImage]?.path ? (
                                     <Image
                                         src={product.media[selectedImage].path}
                                         alt={product.media[selectedImage]?.alt || product.nazwa}
@@ -351,8 +340,8 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                             {product.ilosc != 0
                                 ? "Dodaj do koszyka"
                                 : product.aktywne
-                                  ? "Produkt niedostępny"
-                                  : "Produkt niedostępny"}
+                                    ? "Produkt niedostępny"
+                                    : "Produkt niedostępny"}
                         </button>
                     </div>
                 </div>
@@ -374,23 +363,20 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                     {/* Tabs */}
                     <div className="product-tabs">
                         <button
-                            className={`product-tab ${
-                                activeTab === "details" ? "active" : ""
-                            }`}
+                            className={`product-tab ${activeTab === "details" ? "active" : ""
+                                }`}
                             onClick={() => setActiveTab("details")}>
                             Szczegóły produktu
                         </button>
                         <button
-                            className={`product-tab ${
-                                activeTab === "reviews" ? "active" : ""
-                            }`}
+                            className={`product-tab ${activeTab === "reviews" ? "active" : ""
+                                }`}
                             onClick={() => setActiveTab("reviews")}>
                             Oceny i opinie
                         </button>
                         <button
-                            className={`product-tab ${
-                                activeTab === "faqs" ? "active" : ""
-                            }`}
+                            className={`product-tab ${activeTab === "faqs" ? "active" : ""
+                                }`}
                             onClick={() => setActiveTab("faqs")}>
                             FAQ
                         </button>
@@ -491,7 +477,7 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                                     } else {
                                         alert(
                                             data.error ||
-                                                "Wystąpił błąd podczas dodawania opinii",
+                                            "Wystąpił błąd podczas dodawania opinii",
                                         );
                                     }
                                 } catch (error) {
@@ -513,11 +499,10 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                                         <button
                                             key={star}
                                             type="button"
-                                            className={`review-modal-star ${
-                                                reviewForm!.ocena >= star
-                                                    ? "active"
-                                                    : ""
-                                            }`}
+                                            className={`review-modal-star ${reviewForm!.ocena >= star
+                                                ? "active"
+                                                : ""
+                                                }`}
                                             onClick={() =>
                                                 setReviewForm({
                                                     ...reviewForm,

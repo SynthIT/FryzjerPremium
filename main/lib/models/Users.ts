@@ -1,22 +1,12 @@
 import { Model, model, models, Schema, Types } from "mongoose";
 import { Users, Roles, OrderList } from "../types/userTypes";
-import { randomBytes } from "crypto";
 
-function createOrderNumber() {
-    const h = randomBytes(2 ** 3).toString("hex");
-    const a = new Date();
-    const d =
-        `${h}-${a.getDate() < 9 ? `0${a.getDate() + 1}` : a.getDate() + 1}` +
-        `${a.getMonth() < 9 ? `0${a.getMonth()}` : a.getMonth() + 1}` +
-        `${a.getFullYear()}`;
-    return d;
-}
 
 export const schemaOrderList = new Schema<OrderList>(
     {
         numer_zamowienia: {
             type: String,
-            default: createOrderNumber(),
+            required: true,
             unique: true,
         },
         status: { type: String, default: "w_koszyku" },

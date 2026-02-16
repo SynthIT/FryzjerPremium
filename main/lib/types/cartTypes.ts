@@ -9,6 +9,7 @@ export const zodCartItem = z.object({
         slug: z.string(),
         cena: z.number(),
         media: z.array(zodMedia),
+        sku: z.string(),
     }),
     quantity: z.number(),
     price: z.number(),

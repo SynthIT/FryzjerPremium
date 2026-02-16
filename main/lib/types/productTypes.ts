@@ -1,7 +1,6 @@
 import z from "zod";
 import { userPermission } from "../auth/permissions";
 import { zodCategories, zodMedia, zodOpinie, zodPromocje } from "./shared";
-import { Types } from "mongoose";
 
 export const zodWariantyProps = z.object({
     name: z.string(),
@@ -11,10 +10,11 @@ export const zodWariantyProps = z.object({
 export type props = z.infer<typeof zodWariantyProps>;
 
 export const zodWarianty = z.object({
-    _id: z.instanceof(Types.ObjectId).optional(),
+    _id: z.string().optional(),
     nazwa: z.string(),
     slug: z.string(),
     typ: z.enum(["kolor", "rozmiar", "objetosc", "specjalna", "hurt"]),
+    ilosc: z.number(),
     kolory: zodWariantyProps.optional(),
     rozmiary: zodWariantyProps.optional(),
     objetosc: z.number().optional(),
@@ -27,7 +27,7 @@ export const zodWarianty = z.object({
 export type Warianty = z.infer<typeof zodWarianty>;
 
 export const zodProducents = z.object({
-    _id: z.instanceof(Types.ObjectId).optional(),
+    _id: z.string().optional(),
     nazwa: z.string(),
     logo: zodMedia,
     slug: z.string(),
@@ -43,23 +43,22 @@ export const zodSpecyfikacja = z.object({
 });
 
 export const zodProducts = z.object({
-    _id: z.instanceof(Types.ObjectId).optional(),
+    _id: z.string().optional(),
     slug: z.string(),
     nazwa: z.string(),
     cena_skupu: z.number(),
     cena: z.number(),
     dostepnosc: z.string(),
     kategoria: z.array(
-        z.union([z.instanceof(Types.ObjectId), zodCategories, z.string()]),
+        z.union([z.string(), zodCategories]),
     ),
     producent: z.union([
-        z.instanceof(Types.ObjectId),
-        zodProducents,
         z.string(),
+        zodProducents,
     ]),
     media: z.array(zodMedia),
     promocje: z
-        .union([z.instanceof(Types.ObjectId), zodPromocje, z.string()])
+        .union([z.string(), zodPromocje])
         .nullable(),
     specyfikacja: z.array(zodSpecyfikacja).optional(),
     opis: z.string(),
@@ -69,9 +68,9 @@ export const zodProducts = z.object({
     ocena: z.number(),
     opinie: z.array(zodOpinie).nullable(),
     vat: z.number().default(23),
+    sku: z.string(),
     wariant: z.array(zodWarianty).optional(),
     kod_ean: z.string().nullable(),
-    sku: z.string().nullable(),
     aktywne: z.boolean().nullable(),
     __v: z.number().optional(),
     createdAt: z.date().optional(),

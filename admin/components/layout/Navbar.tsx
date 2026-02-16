@@ -6,7 +6,7 @@ import { Bell, Settings, User2, LogOut, User, Sun, Moon, Menu } from "lucide-rea
 import { useTheme } from "next-themes"
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu"
 
-export function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
+export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = React.useState(false)
   React.useEffect(() => { setMounted(true) }, [])

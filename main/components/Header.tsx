@@ -436,15 +436,15 @@ export default function Header() {
 
                                 <div className="cart-dropdown-item">
                                     <div className="cart-dropdown-item-image">
-                                        {lastAddedItem.product.media ? (
+                                        {lastAddedItem.product.media && lastAddedItem.product.media.length > 0 ? (
                                             <Image
                                                 src={
                                                     lastAddedItem.product
-                                                        .media[0].path
+                                                        .media[0]?.path
                                                 }
                                                 alt={
                                                     lastAddedItem.product
-                                                        .media[0].alt
+                                                        .media[0]?.alt
                                                 }
                                                 width={60}
                                                 height={60}
