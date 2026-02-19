@@ -166,6 +166,7 @@ export async function POST(req: NextRequest) {
             message: `Kategoria (${res?.nazwa}) została dodana`,
         });
     } catch (e) {
+        console.log(e);
         new LogService({
             path: req.url,
             kind: "error",
@@ -173,7 +174,7 @@ export async function POST(req: NextRequest) {
             http: req.method,
         }).error(`${e}`);
         return NextResponse.json(
-            { status: 1, error: "Błąd podczas aktualizacji produktu" },
+            { status: 1, error: "Błąd podczas dodawania kategorii" },
             { status: 500 },
         );
     }

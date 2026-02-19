@@ -4,19 +4,11 @@ import { useState, useEffect, useCallback } from "react";
 import "@/app/globals2.css";
 import { Products, Producents, Warianty } from "@/lib/types/productTypes";
 import { Categories } from "@/lib/types/shared";
-import { makeSlugKeys, parseSlugName } from "@/lib/utils_admin";
+import { makeSlugKeys, parseSlugName, generateSlug } from "@/lib/utils_admin";
 import { useRouter } from "next/navigation";
 import { Plus, Minus, X } from "lucide-react";
 
-// Helper do generowania slug
-function generateSlug(text: string): string {
-    return text
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/(^-|-$)/g, "");
-}
+
 
 export default function NewProductPage() {
     const router = useRouter();

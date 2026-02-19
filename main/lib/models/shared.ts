@@ -68,7 +68,9 @@ export const categoriesSchema = new Schema<Categories>(
             unique: true,
         },
         slug: { type: String, required: true },
-        image: { type: String, required: true },
+        type: { type: String, enum: ["product", "course"] },
+        kategoria: { type: String },
+        image: { type: mediaProductSchema, },
     },
     {
         optimisticConcurrency: true,

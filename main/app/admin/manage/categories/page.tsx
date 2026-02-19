@@ -1,15 +1,13 @@
 "use client";
 
-import { makeSlugKeys, parseSlugName } from "@/lib/utils_admin";
 import { Categories } from "@/lib/types/shared";
 import { useEffect, useState } from "react";
 import AdminCategoryCard from "@/components/admin/AdminCategoryCard";
 
 export default function CategoriesPage() {
-    const [categories, setCategories] =
-        useState<Record<string, Categories[]>>();
+    const [categories, setCategories] = useState<Categories[] | null>(null);
+    const [loading, setLoading] = useState(true);
 
-    const [categoriesSlug, setCategoriesSlug] = useState<string[]>();
     useEffect(() => {
         async function fetchProducts() {
             try {
@@ -21,29 +19,32 @@ export default function CategoriesPage() {
                     throw new Error(`HTTP ${response.status}`);
                 }
                 const data = await response.json();
-                const {
-                    status,
-                    categories,
-                }: {
-                    status: number;
-                    categories: Record<string, Categories[]>;
-                } = data;
-                console.log(categories);
-                if (status === 0 && categories) {
-                    setCategories(categories);
-                    setCategoriesSlug(makeSlugKeys(categories));
-                } else {
-                    setCategories({});
-                    setCategoriesSlug([]);
-                }
+                setCategories(data.categories);
+                setLoading(false);
             } catch (error) {
                 console.error("Błąd podczas pobierania kategorii:", error);
-                setCategories({});
-                setCategoriesSlug([]);
+                setCategories(null);
+                setLoading(false);
             }
         }
         fetchProducts();
     }, []);
+
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+                    <p className="mt-4 text-muted-foreground">
+                        Ładowanie kategorii...
+                    </p>
+                </div>
+            </div>
+        );
+    }
+
+
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -61,19 +62,12 @@ export default function CategoriesPage() {
                     Dodaj produkt
                 </a>
             </div>
-            {categories && categoriesSlug && categoriesSlug.length > 0 ? (
-                categoriesSlug.map((val) => (
-                    <div key={val}>
-                        <p className="font-semibold text-lg mb-2">{parseSlugName(val)}</p>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                            {categories[val]?.map((cat, index) => (
-                                <AdminCategoryCard
-                                    key={cat._id || `${val}-${index}`}
-                                    category={cat}
-                                    onClick={() => {}}></AdminCategoryCard>
-                            ))}
-                        </div>
-                    </div>
+            {categories ? (
+                categories.map((val) => (
+                    <AdminCategoryCard
+                        key={val._id}
+                        category={val}
+                        onClick={() => { }}></AdminCategoryCard>
                 ))
             ) : (
                 <div className="rounded-lg border">

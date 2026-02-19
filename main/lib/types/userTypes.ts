@@ -4,9 +4,13 @@ import { zodDeliveryMethods } from "./deliveryTypes";
 import { zodCartItem } from "./cartTypes";
 
 export const roleSchema = zod.object({
+    _id: zod.string().optional(),
     nazwa: zod.string(),
     admin: adminPermission.optional(),
     uzytkownik: userPermission.optional(),
+    createdAt: zod.date().optional(),
+    updatedAt: zod.date().optional(),
+    __v: zod.number().optional(),
 });
 
 export const userSchema = zod.object({

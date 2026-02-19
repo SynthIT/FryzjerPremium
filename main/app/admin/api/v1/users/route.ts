@@ -12,5 +12,5 @@ export async function GET(req: NextRequest) {
         );
     }
     const uzytkownik = await collectUsers();
-    return NextResponse.json({ status: 0, promos: JSON.stringify(uzytkownik) });
+    return NextResponse.json({ status: 0, users: JSON.stringify(uzytkownik) });
 }

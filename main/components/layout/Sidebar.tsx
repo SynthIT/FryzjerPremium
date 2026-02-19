@@ -64,11 +64,6 @@ const navItems: NavItem[] = [
                 label: "Role",
                 icon: <User className="h-4 w-4" />,
             },
-            {
-                href: "/admin/customers/administratorzy",
-                label: "Administratorzy",
-                icon: <Shield className="h-4 w-4" />,
-            },
         ],
     },
     {

@@ -4,7 +4,8 @@ import {
     hasPermission,
     permissionKeys,
     PermissionTable,
-    permissionToNumber,
+    permissionToAdminNumber,
+
 } from "@/lib/auth/permissions";
 import {
     createPrivateKey,
@@ -250,7 +251,7 @@ export async function addNewUser(payload: Users) {
         if (!jest) {
             const rola = await Role.create({
                 nazwa: "admin",
-                admin: permissionToNumber([
+                admin: permissionToAdminNumber([
                     "admin:blog",
                     "admin:categories",
                     "admin:orders",

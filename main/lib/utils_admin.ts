@@ -13,3 +13,13 @@ export function parseSlugName(slug: string) {
 export function makeSlugKeys(categories: Record<string, Categories[]>) {
     return Object.keys(categories) as Array<string>;
 }
+
+// Helper do generowania slug
+export function generateSlug(text: string): string {
+    return text
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "");
+}

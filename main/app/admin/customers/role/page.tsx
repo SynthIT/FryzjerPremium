@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Roles } from "@/lib/types/userTypes";
+import AdminRoleCard from "@/components/admin/AdminRoleCart";
 
 export default function ProductsPage() {
     const [roles, setRoles] = useState<Roles[]>([]);
@@ -12,9 +13,9 @@ export default function ProductsPage() {
                     method: "GET",
                     credentials: "include",
                 });
-                const data: Roles[] = await response.json();
-                console.log("Pobrane produkty:", data);
-                setRoles(data);
+                const data: { roles: Roles[] } = await response.json();
+                console.log("Pobrane role:", data);
+                setRoles(data.roles);
             } catch (error) {
                 console.error("Błąd podczas pobierania produktów:", error);
             }
@@ -33,11 +34,20 @@ export default function ProductsPage() {
                     </p>
                 </div>
                 <a
-                    href="/admin/manage/producents/new"
+                    href="/admin/customers/role/new"
                     className="w-full rounded-md border px-3 py-2 text-sm transition-colors hover:bg-accent sm:w-auto">
                     Dodaj role
                 </a>
             </div>
+            {roles && roles.length > 0 ? (
+                roles.map((val) => (
+                    <AdminRoleCard key={val.nazwa} role={val} onClick={() => { }}></AdminRoleCard>
+                ))
+            ) : (
+                <div className="rounded-lg border p-4 text-sm text-muted-foreground">
+                    Brak ról.
+                </div>
+            )}
         </div>
     );
 }

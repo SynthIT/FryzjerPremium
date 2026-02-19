@@ -22,7 +22,10 @@ export const permissionKeys = Object.keys(PermissionTable) as Array<
     keyof typeof PermissionTable
 >;
 
-export function permissionToNumber(
+export const discountsKeys = Object.keys(DiscountsTable) as Array<
+    keyof typeof DiscountsTable
+>;
+export function permissionToAdminNumber(
     permission: Array<keyof typeof PermissionTable>
 ): number {
     let a: number = 0;
@@ -32,9 +35,25 @@ export function permissionToNumber(
     return a;
 }
 
-export function numberToPermission(code: number) {
+export function permissionToUserNumber(
+    permission: Array<keyof typeof DiscountsTable>
+): number {
+    let a: number = 0;
+    for (const key of permission) {
+        a |= DiscountsTable[key];
+    }
+    return a;
+}
+
+export function numberToAdminPermissions(code: number) {
     return permissionKeys.filter((key) => {
         return code & PermissionTable[key];
+    });
+}
+
+export function numberToUserPermissions(code: number) {
+    return discountsKeys.filter((key) => {
+        return code & DiscountsTable[key];
     });
 }
 

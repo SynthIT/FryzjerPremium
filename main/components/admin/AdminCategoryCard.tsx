@@ -1,6 +1,7 @@
 "use client";
 
 import { Categories } from "@/lib/types/shared";
+import Image from "next/image";
 
 interface AdminCategoryCardProps {
     category: Categories;
@@ -19,14 +20,27 @@ export default function AdminCategoryCard({
             <div className="space-y-2">
                 {/* Title */}
                 <h3 className="font-semibold text-lg line-clamp-2 group-hover:text-primary transition-colors">
-                    {category.nazwa || "Brak nazwy"}
+                    Nazwa: {category.nazwa || "Brak nazwy"}
                 </h3>
 
                 {/* Slug */}
                 <p className="text-sm text-muted-foreground">
-                    {category.slug || "Brak slug"}
+                    Kategoria: {category.kategoria || "Brak kategorii"}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                    Typ: {category.type || "Brak typu"}
                 </p>
             </div>
-        </div>
+            <div className="flex items-center justify-between">
+                {category.image && !category.image.path ? (
+                    <Image src={category.image?.path} alt={category.image?.alt} className="w-10 h-10 rounded-full" />
+                ) : (
+                    <span className="text-muted-foreground">
+                        {category.nazwa}
+                    </span>
+                )}
+
+            </div>
+        </div >
     );
 }
