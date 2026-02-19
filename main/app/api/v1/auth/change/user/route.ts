@@ -28,11 +28,3 @@ export async function PUT(req: NextRequest) {
     }
     return res;
 }
-
-export function GET(req: NextRequest) {
-    const { val, mess, user } = verifyJWT(req);
-    if (val) {
-        return NextResponse.json({ status: 0, user: user }, { status: 200 });
-    }
-    return NextResponse.json({}, { status: 204 });
-}

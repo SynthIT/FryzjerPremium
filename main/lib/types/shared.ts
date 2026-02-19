@@ -18,6 +18,8 @@ export const zodPromocje = z.object({
     rozpoczecie: z.date(),
     wygasa: z.date(),
     aktywna: z.boolean().nullable(),
+    createdAt: z.date().optional(),
+    updatedAt: z.date().optional(),
     __v: z.number().optional(),
 });
 export type Promos = z.infer<typeof zodPromocje>;
@@ -47,8 +49,11 @@ export const zodCategories = z.object({
     _id: z.string().optional(),
     nazwa: z.string(),
     slug: z.string(),
+    type: z.enum(["product", "course"]),
     image: z.string().optional(),
     __v: z.number().optional(),
+    createdAt: z.date().optional(),
+    updatedAt: z.date().optional(),
 });
 
 export type Categories = z.infer<typeof zodCategories>;

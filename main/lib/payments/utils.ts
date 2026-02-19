@@ -22,7 +22,7 @@ const getStripeCustomer = async (customerId: string) => {
         return customer;
     } catch (error) {
         console.error("Error retrieving Stripe customer:", error);
-        throw new Error("Could not retrieve Stripe customer");
+        return false;
     }
 };
 

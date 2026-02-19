@@ -233,11 +233,11 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
                     const dateA =
                         a.createdAt instanceof Date
                             ? a.createdAt.getTime()
-                            : new Date(a.createdAt).getTime();
+                            : new Date(a.createdAt!).getTime();
                     const dateB =
                         b.createdAt instanceof Date
                             ? b.createdAt.getTime()
-                            : new Date(b.createdAt).getTime();
+                            : new Date(b.createdAt!).getTime();
                     return dateB - dateA;
                 default: // 'Najpopularniejsze'
                     return b.ocena - a.ocena;

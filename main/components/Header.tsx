@@ -32,7 +32,7 @@ export default function Header() {
     const [showModalMenu, setShowModalMenu] = useState<boolean>(false);
 
     const { getTotalItems, lastAddedItem, clearLastAddedItem } = useCart();
-    const { addUser, userData, isAdmin, logout, getUser } = useUser();
+    const { addUser, userData, isAdmin, logout } = useUser();
     const { notify } = useNotification();
 
     const cartItemsCount = getTotalItems();
@@ -43,10 +43,8 @@ export default function Header() {
             setMounted(true);
         }
         a();
-        if (!userData) {
-            getUser();
-        }
-    }, [userData, getUser]);
+
+    }, [setMounted]);
 
     // Pokazuj okienko po dodaniu produktu
     useEffect(() => {
@@ -233,9 +231,8 @@ export default function Header() {
                 </div>
 
                 <nav
-                    className={`header-nav ${
-                        isMobileMenuOpen ? "is-open" : ""
-                    }`}>
+                    className={`header-nav ${isMobileMenuOpen ? "is-open" : ""
+                        }`}>
                     <Link
                         href="/"
                         className="nav-link"
@@ -245,9 +242,8 @@ export default function Header() {
                     <div className="nav-dropdown">
                         <button
                             onClick={toggleDropdown}
-                            className={`nav-link-button ${
-                                showDropdown ? "is-open" : ""
-                            }`}
+                            className={`nav-link-button ${showDropdown ? "is-open" : ""
+                                }`}
                             aria-expanded={showDropdown}>
                             <span>Sklep</span>
                             <svg
@@ -333,9 +329,8 @@ export default function Header() {
                 </nav>
 
                 <div
-                    className={`header-search ${
-                        isMobileSearchOpen ? "is-open" : ""
-                    }`}
+                    className={`header-search ${isMobileSearchOpen ? "is-open" : ""
+                        }`}
                     ref={searchContainerRef}>
                     <form
                         onSubmit={handleSearch}
@@ -355,9 +350,8 @@ export default function Header() {
                 <div className="basket-actions">
                     <button
                         type="button"
-                        className={`search-toggle-button ${
-                            isMobileSearchOpen ? "is-active" : ""
-                        }`}
+                        className={`search-toggle-button ${isMobileSearchOpen ? "is-active" : ""
+                            }`}
                         onClick={handleSearchToggle}
                         aria-label={
                             isMobileSearchOpen
@@ -382,15 +376,13 @@ export default function Header() {
                         <Link
                             href="/cart"
                             className="login-button cart-button"
-                            aria-label={`Koszyk${
-                                cartItemsCount > 0
-                                    ? ` (${cartItemsCount} ${
-                                          cartItemsCount === 1
-                                              ? "produkt"
-                                              : "produktów"
-                                      })`
-                                    : ""
-                            }`}>
+                            aria-label={`Koszyk${cartItemsCount > 0
+                                ? ` (${cartItemsCount} ${cartItemsCount === 1
+                                    ? "produkt"
+                                    : "produktów"
+                                })`
+                                : ""
+                                }`}>
                             <svg
                                 fill="none"
                                 stroke="currentColor"
@@ -557,9 +549,8 @@ export default function Header() {
                         </button>
                     )}
                     <button
-                        className={`mobile-menu-toggle ${
-                            isMobileMenuOpen ? "is-active" : ""
-                        }`}
+                        className={`mobile-menu-toggle ${isMobileMenuOpen ? "is-active" : ""
+                            }`}
                         onClick={toggleMobileMenu}
                         aria-label={
                             isMobileMenuOpen ? "Zamknij menu" : "Otwórz menu"
@@ -728,7 +719,7 @@ export default function Header() {
                                                 payload: loginForm,
                                             });
                                             if (response.status == 201) {
-                                                addUser(response.user);
+                                                addUser(response.user, response.orders);
                                                 notify(
                                                     "Zostałeś zalogowany",
                                                     "log",

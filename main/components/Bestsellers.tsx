@@ -1,12 +1,9 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
 import "@/app/globals.css";
-import { finalPrice, renderStars } from "@/lib/utils";
 import { useEffect, useState } from "react";
-import { Promos } from "@/lib/types/shared";
 import { Products } from "@/lib/types/productTypes";
+import ProductElement from "./productsComponents/ProductElement";
 
 export default function Bestsellers({
     data,
@@ -30,81 +27,22 @@ export default function Bestsellers({
         getProductsBest();
     }, [data]);
 
-    // const products = [...allProducts]
-    //     .sort((a, b) => b.rating - a.rating)
-    //     .slice(0, 4);
-
     return (
         <section
             className="new-arrivals-section bestsellers-section"
             id="bestsellers-section">
             <div className="new-arrivals-container">
                 <h2 className="section-title">Bestsellery</h2>
-
                 <div className="products-section-wrapper">
                     <div className="products-section-wrapper-inner">
                         <div className="products-grid">
                             {typeof products != null ? (
                                 products?.map((product, index) => (
-                                    <Link
+                                    <ProductElement
                                         key={index}
-                                        href={`/product/${product.slug}`}
-                                        className="product-card-link">
-                                        <div className="product-card-listing">
-                                            <div className="product-image-wrapper">
-                                                {product.media && 
-                                                 Array.isArray(product.media) && 
-                                                 product.media.length > 0 && 
-                                                 product.media[0]?.path ? (
-                                                    <Image
-                                                        src={product.media[0].path}
-                                                        alt={product.media[0]?.alt || product.nazwa}
-                                                        width={300}
-                                                        height={300}
-                                                        className="product-image"
-                                                    />
-                                                ) : (
-                                                    <div className="product-placeholder">
-                                                        <span>
-                                                            {product.nazwa}
-                                                        </span>
-                                                    </div>
-                                                )}
-                                            </div>
-
-                                            <div className="product-info">
-                                                <h3 className="product-name">
-                                                    {product.nazwa}
-                                                </h3>
-                                                <div className="product-rating">
-                                                    {renderStars(
-                                                        product.ocena,
-                                                        18,
-                                                    )}
-                                                </div>
-                                                <div className="product-price">
-                                                    {product.promocje ? (
-                                                        <span
-                                                            className="product-original-price-home"
-                                                            style={{
-                                                                color: "red",
-                                                            }}>
-                                                            {finalPrice(
-                                                                product.cena,
-                                                                product.vat || 0,
-                                                                undefined,
-                                                                product.promocje as Promos,
-                                                            )}
-                                                        </span>
-                                                    ) : (
-                                                        <span className="product-original-price-home">
-                                                            {product.cena} zł
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </Link>
+                                        product={product}
+                                        index={index}
+                                    />
                                 ))
                             ) : (
                                 <div>

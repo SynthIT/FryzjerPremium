@@ -4,6 +4,8 @@ import { Users, Roles, OrderList } from "../types/userTypes";
 
 export const schemaOrderList = new Schema<OrderList>(
     {
+        user: { type: Types.ObjectId, ref: "Users" },
+        email: { type: String, required: true },
         numer_zamowienia: {
             type: String,
             required: true,
@@ -46,7 +48,6 @@ const userSchemat = new Schema<Users>(
         kod_pocztowy: { type: String, required: true },
         telefon: { type: String, required: true },
         nip: String,
-        zamowienia: { type: [Types.ObjectId], ref: "Orders", default: [] },
         faktura: { type: Boolean, default: false },
         osoba_prywatna: { type: Boolean, default: true },
         role: { type: [Types.ObjectId], ref: "Roles", default: [] },

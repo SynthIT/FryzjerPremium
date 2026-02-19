@@ -5,7 +5,6 @@ import { OrderList } from "@/lib/types/userTypes";
 
 import { randomBytes } from "crypto";
 import { Product } from "@/lib/models/Products";
-import { Products } from "@/lib/types/productTypes";
 import { getDeliveryMethods } from "@/lib/crud/delivery/delivery";
 import { Orders } from "@/lib/models/Users";
 
@@ -102,6 +101,8 @@ export async function POST(request: Request) {
     }
     if (!userId) {
         const order: OrderList = {
+            user: "",
+            email: "",
             numer_zamowienia: createOrderNumber(),
             status: "w_koszyku",
             produkty: updatedCart,
@@ -117,6 +118,8 @@ export async function POST(request: Request) {
     const existingOrders = await retriveUserCartOrders(userId);
     if (!existingOrders) {
         const order: OrderList = {
+            user: "",
+            email: "",
             numer_zamowienia: createOrderNumber(),
             status: "w_koszyku",
             produkty: refProducts,

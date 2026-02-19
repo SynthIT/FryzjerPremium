@@ -1,5 +1,5 @@
-import { Users, Roles } from "@/lib/types/userTypes";
-import { Role, User } from "@/lib/models/Users";
+import { Users, Roles, OrderList } from "@/lib/types/userTypes";
+import { Orders, Role, User } from "@/lib/models/Users";
 import {
     hasPermission,
     permissionKeys,
@@ -15,11 +15,10 @@ import {
 import { JwtPayload, sign, verify } from "jsonwebtoken";
 import { NextRequest } from "next/server";
 import { hash, verify as passverify } from "argon2";
-import { writeFileSync } from "node:fs";
-import path from "node:path";
 import { Products, Warianty } from "./types/productTypes";
 import { Courses, KursWarianty } from "./types/coursesTypes";
 import { db } from "@/lib/db/init";
+import { createStripeCustomer } from "./payments/utils";
 
 
 
@@ -71,21 +70,26 @@ export function checkRequestAuth(
     }
 }
 
-export async function checkExistingUser(email: string, haslo: string) {
+export async function checkExistingUser(email: string, haslo: string): Promise<{
+    error: string | null,
+    user: Users | null,
+    orders: OrderList[] | null
+}> {
     try {
         await db();
         const existingUser: Users = await User.findOne({ email: email })
             .populate("role")
-            .populate("zamowienia")
             .orFail();
-        if (existingUser) {
-            if (!(await passverify(existingUser.haslo.trim(), haslo.trim())))
-                return "Hasła nie są takie same";
-            return existingUser;
+        if (!existingUser) {
+            return { error: "Użytkownik nie istnieje", user: null, orders: null };
         }
+        if (!(await passverify(existingUser.haslo.trim(), haslo.trim())))
+            return { error: "Hasła nie są takie same", user: null, orders: null };
+        const orders = await Orders.find({ user: existingUser._id });
+        return { error: null, user: existingUser, orders: orders };
     } catch (e) {
         console.log(e);
-        return "Użytkownik nie istnieje";
+        return { error: "Użytkownik nie istnieje", user: null, orders: null };
     }
 }
 
@@ -239,6 +243,10 @@ export async function addNewUser(payload: Users) {
         return "Użytkownik o podanym emailu już istnieje.";
     } else {
         const jest = await Role.findOne({ nazwa: "admin" });
+        const stripeCustomer = await createStripeCustomer(payload);
+        if (!stripeCustomer) {
+            return "Błąd podczas tworzenia konta Stripe";
+        }
         if (!jest) {
             const rola = await Role.create({
                 nazwa: "admin",
@@ -267,9 +275,9 @@ export async function addNewUser(payload: Users) {
                 kod_pocztowy: payload.kod_pocztowy,
                 telefon: payload.telefon,
                 osoba_prywatna: true,
-                zamowienia: [],
                 faktura: false,
                 role: [rola._id! as unknown as string],
+                stripe_id: stripeCustomer,
             };
             const u = await User.create(upayload);
             return u;
@@ -288,9 +296,9 @@ export async function addNewUser(payload: Users) {
                 kod_pocztowy: payload.kod_pocztowy,
                 telefon: payload.telefon,
                 osoba_prywatna: true,
-                zamowienia: [],
                 faktura: false,
                 role: [jest._id! as unknown as string],
+                stripe_id: stripeCustomer,
             };
             const u = await User.create(upayload);
             return u;
@@ -346,18 +354,8 @@ export async function deleteUser(
     if (!val || typeof user === "undefined") return { mess: mess! };
     try {
         await db();
-        if (user.zamowienia && user.zamowienia.length > 0) {
-            writeFileSync(
-                path.join(
-                    process.cwd(),
-                    "data",
-                    "uzytkownicy_cache",
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    `${(user as any)._id}.json`,
-                ),
-                JSON.stringify(user.zamowienia),
-            );
-        }
+        await Orders.updateMany({ user: user._id }, { $set: { user: null } });
+
         const o = await User.findOneAndDelete({ email: user.email }).orFail();
         if (user == o) return { mess: "Konto zostało usunięte", deleted: true };
         else return { mess: "Błąd podczas usuwania konta", deleted: false };

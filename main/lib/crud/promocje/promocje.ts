@@ -2,7 +2,7 @@ import { db } from "@/lib/db/init";
 import { Product } from "@/lib/models/Products";
 import { Promo } from "@/lib/models/shared";
 import { Promos, zodPromocje } from "@/lib/types/shared";
-import mongoose from "mongoose";
+import { Types } from "mongoose";
 
 export async function collectPromo() {
     await db();
@@ -11,6 +11,8 @@ export async function collectPromo() {
 }
 
 export async function createPromo(promocja: Promos) {
+    promocja.rozpoczecie = new Date(promocja.rozpoczecie);
+    promocja.wygasa = new Date(promocja.wygasa);
     zodPromocje.parse(promocja);
     await db();
     const promo = await Promo.create(promocja);
@@ -21,7 +23,7 @@ export async function deletePromoBySlug(slug: string) {
     await db();
     const promo = await Promo.findOne({ slug: slug }).orFail();
     const productsWithPromo = await Product.find({
-        promocje: new mongoose.Types.ObjectId(promo._id),
+        promocje: promo._id.toString(),
     }).orFail();
     for (const doc of productsWithPromo) {
         doc.promocje = null;

@@ -15,7 +15,7 @@ interface UserContextType {
     user: string | undefined;
     userData: Users | undefined;
     orders: OrderList[] | undefined;
-    addUser: (user: Users) => void;
+    addUser: (user: Users, orders: OrderList[]) => void;
     changePassword: (
         newPassword: string,
         oldPassword: string,
@@ -25,7 +25,6 @@ interface UserContextType {
     deleteAccount: () => void;
     addNewOrder: (order: OrderList) => Promise<boolean>;
     getOneOrder: (nr_zam: string) => OrderList | undefined;
-    getUser: () => void;
     isAdmin: () => boolean;
 }
 
@@ -57,7 +56,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
                 .then((data) => {
                     if (!data) return;
                     setUser(data.user._id);
-                    if (data.user.zamowienia) {
+                    if (!userData) {
+                        setUserData(data.user);
+                    }
+                    if (data.orders) {
                         setOrders(data.user.zamowienia);
                     }
                 });
@@ -68,11 +70,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
         } catch (err) {
             console.log("Błąd podczas ładowania użytkownika: ", err);
         }
-    }, []);
+    }, [userData]);
 
-    const addUser = useCallback((user: Users) => {
+    const addUser = useCallback((user: Users, orders: OrderList[]) => {
         userSchema.parse(user);
-        const orders = user.zamowienia as OrderList[];
         if (orders.length > 0) {
             setOrders(orders);
             setUser(user._id);
@@ -122,6 +123,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
         },
         [user],
     );
+    
     const logout = useCallback(() => {
         async function out() {
             await fetch("/api/v1/auth/logout", {
@@ -177,36 +179,20 @@ export function UserProvider({ children }: { children: ReactNode }) {
         },
         [orders],
     );
-    const getUser = useCallback(() => {
-        async function getuser() {
-            await fetch("/api/v1/auth/change/user", {
-                method: "GET",
-                credentials: "include",
-            })
-                .then((data) => data.json())
-                .then((res) => {
-                    if (res.status == 0) {
-                        setUserData(res.user);
-                    }
-                });
-        }
-        if (!user) return;
-        getuser();
-    }, [user]);
 
     const isAdmin = useCallback(() => {
+        console.log(userData)
         if (!userData) {
-            getUser();
-            if(!userData!.role) return false;
+            if (!userData!.role) return false;
             console.log(hasAnyAdminPermission(userData!.role as Roles[]));
             return hasAnyAdminPermission(userData!.role as Roles[]);
-            
+
         } else {
             if (!userData.role) return false;
             console.log(hasAnyAdminPermission(userData.role as Roles[]));
             return hasAnyAdminPermission(userData.role as Roles[]);
         }
-    }, [userData, getUser]);
+    }, [userData]);
 
     return (
         <UserContext.Provider
@@ -221,7 +207,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
                 deleteAccount,
                 addNewOrder,
                 getOneOrder,
-                getUser,
                 isAdmin,
             }}>
             {children}
