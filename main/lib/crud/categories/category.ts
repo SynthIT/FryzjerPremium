@@ -5,8 +5,9 @@ import { Categories, zodCategories } from "@/lib/types/shared";
 
 export async function collectCategories() {
     await db();
-    const categories = await Category.find({});
-    return JSON.stringify(categories);
+    const categories = await Category.find({}).lean();
+    
+    return categories;
 }
 
 export async function createCategory(catData: Categories): Promise<Categories | { error: string }> {

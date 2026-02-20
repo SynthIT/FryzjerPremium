@@ -5,8 +5,12 @@ import { Products } from "@/lib/types/productTypes";
 import AdminProductCard from "@/components/admin/AdminProductCard";
 import ProductEditModal from "@/components/admin/ProductEditModal";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
 export default function ProductPage() {
+    const documentQuery = useSearchParams();
+    const stockLt = parseInt(documentQuery.get("stock_lt") || "0");
+    const stock = parseInt(documentQuery.get("stock") || "0");
     const [products, setProducts] = useState<Products[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedProduct, setSelectedProduct] = useState<Products | null>(
@@ -47,6 +51,33 @@ export default function ProductPage() {
         if (!Array.isArray(products)) return [];
         if (!searchQuery) return products;
         const query = searchQuery.toLowerCase();
+        if (stockLt > 0) {
+            console.log("dzialam chyba")
+            return products.filter((product) => {
+                if (product.ilosc < stockLt) {
+                    return true;
+                }
+                product.wariant?.forEach((wariant) => {
+                    if (wariant.ilosc < stockLt) {
+                        return true;
+                    }
+                });
+                return false;
+            });
+        }
+        if (stock > 0) {
+            return products.filter((product) => {
+                if (product.ilosc === 0) {
+                    return true;
+                }
+                product.wariant?.forEach((wariant) => {
+                    if (wariant.ilosc === 0) {
+                        return true;
+                    }
+                });
+                return false;
+            });
+        }
         return products.filter((product) => {
             const nazwa = product.nazwa?.toLowerCase() || "";
             const opis = product.opis?.toLowerCase() || "";
@@ -57,7 +88,7 @@ export default function ProductPage() {
                 kod.includes(query)
             );
         });
-    }, [products, searchQuery]);
+    }, [products, searchQuery, stockLt, stock]);
 
     const totalPages = Math.ceil((Array.isArray(filteredProducts) ? filteredProducts.length : 0) / productsPerPage);
     const startIndex = (currentPage - 1) * productsPerPage;
@@ -174,6 +205,15 @@ export default function ProductPage() {
                 />
                 <div className="text-sm text-muted-foreground whitespace-nowrap">
                     {filteredProducts.length} produktów
+                </div>
+                <div className="text-sm text-muted-foreground whitespace-nowrap">
+                    <button
+                        onClick={() => {
+                            setCurrentPage(1);
+                        }}
+                        className="px-4 py-2 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-accent transition-colors">
+                        Filtruj
+                    </button>
                 </div>
             </div>
 

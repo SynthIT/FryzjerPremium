@@ -26,17 +26,19 @@ export default function NewProductPage() {
                 const response = await fetch("/admin/api/v1/category", {
                     method: "GET",
                 });
-                const {
-                    status,
-                    categories,
-                }: {
-                    status: number;
-                    categories: Record<string, Categories[]>;
-                } = await response.json();
-                console.log(categories);
-                if (status === 0 && categories) {
-                    setExistingCategories(categories);
-                    setCategories(makeSlugKeys(categories));
+                const data = await response.json();
+                const dataParsed = JSON.parse(data.categories) as Categories[];
+                if (data.status === 0 && data.categories) {
+                    setExistingCategories(dataParsed.reduce((acc: Record<string, Categories[]>, cat: Categories) => {
+                        (acc[cat.kategoria] ??= []).push(cat);
+                        return acc;
+                    }, {}));
+                    setCategories(dataParsed.reduce((acc: string[], cat: Categories) => {
+                        if (!acc.includes(cat.kategoria)) {
+                            acc.push(cat.kategoria);
+                        }
+                        return acc;
+                    }, []));
                 } else {
                     throw new Error();
                 }
@@ -103,7 +105,7 @@ export default function NewProductPage() {
                         <option>Wybierz kategorię</option>
                         {categories.map((category) => (
                             <option key={category} value={category}>
-                                {parseSlugName(category)}
+                                {category}
                             </option>
                         ))}
                         <option value={"dodaj-nowa"}>
@@ -126,7 +128,7 @@ export default function NewProductPage() {
                                 <p>Już istniejące kategorie:</p>
                                 {existingCategories![categoryData.kategoria].map(
                                     (cats) => (
-                                        <div key={cats.nazwa}>{cats.nazwa}</div>
+                                        <div key={cats._id}>{cats.nazwa}</div>
                                     )
                                 )}
                             </div>

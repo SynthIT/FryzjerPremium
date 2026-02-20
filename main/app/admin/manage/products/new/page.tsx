@@ -72,8 +72,18 @@ export default function NewProductPage() {
                 });
                 const data = await response.json();
                 if (data.status === 0 && data.categories) {
-                    setCategories(data.categories);
-                    setCategoriesSlug(makeSlugKeys(data.categories));
+                    const catData = JSON.parse(data.categories) as Categories[];
+                    setCategories(catData.reduce((acc: Record<string, Categories[]>, cat: Categories) => {
+                        (acc[cat.kategoria] ??= []).push(cat);
+                        return acc;
+                    }, {}));
+                    console.log(data.categories);
+                    setCategoriesSlug(catData.reduce((acc: string[], cat: Categories) => {
+                        if (!acc.includes(cat.kategoria)) {
+                            acc.push(cat.kategoria);
+                        }
+                        return acc;
+                    }, []));
                 }
             } catch (error) {
                 console.error("Błąd podczas pobierania kategorii:", error);
@@ -209,6 +219,19 @@ export default function NewProductPage() {
                         selectedCategories.push(cat._id as string);
                     }
                 });
+            }
+            for (const media of mediaFiles) {
+                try {
+                    await fetch("/admin/api/v1/media", {
+                        method: "POST",
+                        credentials: "include",
+                        headers: {
+                            "Content-Type": "image/png",
+                        },
+                    });
+                } catch (error) {
+                    console.error("Błąd podczas uploadu mediów:", error);
+                }
             }
 
             // Przygotuj producent - musi być ObjectId lub pełny obiekt
@@ -407,9 +430,9 @@ export default function NewProductPage() {
                             required
                             className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring">
                             <option value="">Wybierz główną kategorię</option>
-                            {categoriesSlug.map((slug) => (
-                                <option key={slug} value={slug}>
-                                    {parseSlugName(slug)}
+                            {categoriesSlug.map((cat) => (
+                                <option key={cat} value={cat}>
+                                    {cat}
                                 </option>
                             ))}
                         </select>

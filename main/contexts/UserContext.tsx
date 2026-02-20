@@ -73,6 +73,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
     }, [userData]);
 
     const addUser = useCallback((user: Users, orders: OrderList[]) => {
+        if (!user.createdAt) return;
+        if (!user.updatedAt) return;
+        user.createdAt = new Date(user.createdAt);
+        user.updatedAt = new Date(user.updatedAt);
         userSchema.parse(user);
         if (orders.length > 0) {
             setOrders(orders);
@@ -123,7 +127,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
         },
         [user],
     );
-    
+
     const logout = useCallback(() => {
         async function out() {
             await fetch("/api/v1/auth/logout", {

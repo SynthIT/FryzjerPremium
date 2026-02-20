@@ -19,7 +19,8 @@ export default function CategoriesPage() {
                     throw new Error(`HTTP ${response.status}`);
                 }
                 const data = await response.json();
-                setCategories(data.categories);
+                setCategories(JSON.parse(data.categories));
+                console.log(data.categories);
                 setLoading(false);
             } catch (error) {
                 console.error("Błąd podczas pobierania kategorii:", error);

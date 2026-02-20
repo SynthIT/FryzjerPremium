@@ -31,6 +31,9 @@ export const userSchema = zod.object({
     faktura: zod.boolean().optional(),
     role: zod.array(zod.union([roleSchema, zod.string()])).optional(),
     stripe_id: zod.string().optional(),
+    createdAt: zod.date().optional(),
+    updatedAt: zod.date().optional(),
+    __v: zod.number().optional(),
 });
 
 export const orderListSchema = zod.object({

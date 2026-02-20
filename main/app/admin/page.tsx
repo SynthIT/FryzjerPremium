@@ -8,8 +8,86 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import "@/app/globals2.css";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Products } from "@/lib/types/productTypes";
+import { OrderList } from "@/lib/types/userTypes";
+import { Analist } from "@/lib/types/analistTypes";
+
 
 export default function AdminPage() {
+    const [products, setProducts] = useState<Products[]>([]);
+    const [orders, setOrders] = useState<OrderList[]>([]);
+    const [analists, setAnalists] = useState<Analist[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [bestProducts, setBestProducts] = useState<{ name: string, income: number }[]>([]);
+
+
+    useEffect(() => {
+        async function fetchData() {
+            const res = await fetch("/admin/api/v1/main", {
+                credentials: "include",
+            });
+            const data = await res.json();
+            setProducts(JSON.parse(data.products));
+            setOrders(JSON.parse(data.orders));
+            setAnalists(JSON.parse(data.analists));
+            setLoading(false);
+            console.log(data);
+        }
+        fetchData();
+    }, []);
+
+    useEffect(() => {
+        const raport = Object.values(analists.reduce((acc: Record<string, { name: string, income: number }>, curr) => {
+            const zysk = curr.cena - curr.cena_skupu;
+            const income = zysk * curr.ilosc;
+            if (!acc[curr.sku]) {
+                acc[curr.sku] = { name: curr.nazwa, income: 0 };
+            }
+            acc[curr.sku].income += income;
+            return acc;
+        }, {}));
+        setBestProducts(raport.sort((a, b) => b.income - a.income).slice(0, 5));
+    }, [analists]);
+
+    const lowStock = useMemo(() => {
+        return products.filter((product) => {
+            if (product.ilosc < 10) {
+                return true;
+            }
+            product.wariant?.forEach((wariant) => {
+                if (wariant.ilosc < 10) {
+                    return true;
+                }
+            });
+            return false;
+        });
+    }, [products]);
+    const noStock = useMemo(() => {
+        return products.filter((product) => {
+            if (product.ilosc === 0) {
+                return true;
+            }
+            product.wariant?.forEach((wariant) => {
+                if (wariant.ilosc === 0) {
+                    return true;
+                }
+            });
+            return false;
+        });
+    }, [products]);
+
+    const income = useMemo(() => {
+        return analists.reduce((acc, curr) => acc + curr.cena * curr.ilosc, 0);
+    }, [analists]);
+    const sales = useMemo(() => {
+        return orders.reduce((acc, curr) => acc + curr.suma, 0);
+    }, [orders]);
+
+
+    if (loading) {
+        return <div>Ładowanie danych...</div>;
+    }
     return (
         <div className="space-y-4 sm:space-y-6">
             <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
@@ -18,25 +96,25 @@ export default function AdminPage() {
             <section className="grid gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <KpiCard
                     title="Wszystkie zamówienia"
-                    value="1 284"
+                    value={orders.length.toString()}
                     delta="12%"
                     icon={<ShoppingBag className="h-5 w-5" />}
                 />
                 <KpiCard
                     title="Liczba produktów"
-                    value="468"
+                    value={products.length.toString()}
                     delta="3%"
                     icon={<Package className="h-5 w-5" />}
                 />
                 <KpiCard
                     title="Przychód"
-                    value="82 140 zł"
+                    value={income.toString()}
                     delta="9%"
                     icon={<DollarSign className="h-5 w-5" />}
                 />
                 <KpiCard
                     title="Sprzedaż"
-                    value="3 721"
+                    value={sales.toString()}
                     delta="6%"
                     icon={<Wallet className="h-5 w-5" />}
                 />
@@ -58,18 +136,22 @@ export default function AdminPage() {
                         Najlepsze produkty
                     </h2>
                     <ul className="space-y-3 text-sm">
-                        {Array.from({ length: 5 }).map((_, i) => (
+                        {bestProducts.length > 0 ? bestProducts.map((product, i) => (
                             <li
                                 key={i}
                                 className="flex items-center justify-between">
                                 <span className="truncate">
-                                    Product #{i + 1}
+                                    {product.name}
                                 </span>
                                 <span className="text-muted-foreground">
-                                    {(1000 - i * 120).toLocaleString()} zł
+                                    {product.income.toLocaleString()} zł
                                 </span>
                             </li>
-                        ))}
+                        )) : <li className="flex items-center justify-between">
+                            <span className="truncate">
+                                Brak danych
+                            </span>
+                        </li>}
                     </ul>
                 </div>
             </section>
@@ -96,10 +178,10 @@ export default function AdminPage() {
                             <div className="mb-1 text-sm font-medium">
                                 Niski stan
                             </div>
-                            <div className="text-2xl font-semibold">17</div>
+                            <div className="text-2xl font-semibold">{lowStock.length}</div>
                             <Link
                                 className="mt-2 inline-flex items-center text-xs text-muted-foreground transition-colors hover:text-foreground"
-                                href="/products?stock_lt=10">
+                                href="/admin/manage/products?stock_lt=10">
                                 Zobacz produkty{" "}
                                 <ArrowUpRight className="ml-1 h-4 w-4" />
                             </Link>
@@ -108,10 +190,10 @@ export default function AdminPage() {
                             <div className="mb-1 text-sm font-medium">
                                 Brak na stanie
                             </div>
-                            <div className="text-2xl font-semibold">5</div>
+                            <div className="text-2xl font-semibold">{noStock.length}</div>
                             <Link
                                 className="mt-2 inline-flex items-center text-xs text-muted-foreground transition-colors hover:text-foreground"
-                                href="/products?stock=0">
+                                href="/admin/manage/products?stock=0">
                                 Zobacz produkty{" "}
                                 <ArrowUpRight className="ml-1 h-4 w-4" />
                             </Link>
