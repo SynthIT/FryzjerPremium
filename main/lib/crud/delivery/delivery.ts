@@ -5,7 +5,7 @@ import mongoose from "mongoose";
 
 export async function getDeliveryMethods() {
     await db();
-    const res = await Delivery.find();
+    const res = await Delivery.find().lean();
     return res;
 }
 
@@ -28,7 +28,8 @@ export async function createDeliveryMethod(data: DeliveryMethods) {
     await db();
     const ok = zodDeliveryMethods.safeParse(data);
     if (!ok.success) {
-        throw new Error("Invalid data");
+        console.error("Invalid data:", ok.error);
+        throw new Error("Invalid data: " + ok.error.message);
     }
     const res = await Delivery.create(ok.data);
     return res;

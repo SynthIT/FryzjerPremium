@@ -10,7 +10,7 @@ export default function UzytkownicyPage() {
     const [currentPage, setCurrentPage] = useState(1);
     const [searchQuery, setSearchQuery] = useState("");
     const [filter, setFilter] = useState<string>("all");
-    const usersPerPage = 12;
+    const [usersPerPage, setUsersPerPage] = useState(12);
     const [totalPages, setTotalPages] = useState(0);
     const [totalUsers, setTotalUsers] = useState(0);
 
@@ -78,6 +78,15 @@ export default function UzytkownicyPage() {
                     <option value="admin">Administratorzy</option>
                     <option value="discount">Zniżki</option>
                 </select>
+                <div className="text-sm text-muted-foreground whitespace-nowrap">
+                    <select value={usersPerPage} className="px-2 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-ring" onChange={(e) => setUsersPerPage(parseInt(e.target.value))}>
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                    użytkowników na stronę
+                </div>
                 <button
                     onClick={() => setCurrentPage(1)}
                     className="px-4 py-2 border rounded-md hover:bg-accent transition-colors">
@@ -97,16 +106,17 @@ export default function UzytkownicyPage() {
                 )}
             </div>
             <div className="text-sm text-muted-foreground whitespace-nowrap">
-                {filteredUsers.length} użytkowników
+                {filteredUsers.length} użytkowników spełniających kryteria
             </div>
             <div className="text-sm text-muted-foreground whitespace-nowrap">
-                {totalPages} stron
+                {totalPages} stron wyników
             </div>
             <div className="text-sm text-muted-foreground whitespace-nowrap">
-                {currentPage} / {totalPages ? totalPages : 1}
+                {currentPage} / {totalPages ? totalPages : 1} strona
             </div>
+
             <div className="text-sm text-muted-foreground whitespace-nowrap">
-                {usersPerPage} użytkowników na stronę
+                {totalUsers} użytkowników w systemie
             </div>
             {totalPages > 1 && (
                 <div className="flex items-center justify-center gap-2 mt-6">

@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import "@/app/globals2.css";
 import { useRouter } from "next/navigation";
 import { Roles } from "@/lib/types/userTypes";
-import { discountsKeys, DiscountsTable, numberToAdminPermissions, numberToUserPermissions, permissionKeys, PermissionTable, permissionToAdminNumber, permissionToUserNumber } from "@/lib/auth/permissions";
+import { discountsKeys, DiscountsTable, permissionKeys, PermissionTable, permissionToAdminNumber, permissionToUserNumber } from "@/lib/auth/permissions";
 
 export default function NewProductPage() {
     const router = useRouter();

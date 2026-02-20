@@ -72,7 +72,7 @@ const navItems: NavItem[] = [
         icon: <Truck className="h-5 w-5" />,
         children: [
             {
-                href: "/admin/delivery/add",
+                href: "/admin/delivery/new",
                 label: "Dodaj nowy sposób wysyłki",
                 icon: <PlusCircle className="h-4 w-4" />,
             },

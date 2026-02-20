@@ -5,6 +5,9 @@ export const schemaDeliverySize = new Schema<DeliveryMethodsSizes>(
     {
         cena: { type: Number, required: true },
         wielkosci: { type: String, required: true },
+        wysokosc: { type: Number, required: true },
+        szerokosc: { type: Number, required: true },
+        dlugosc: { type: Number, required: true },
     },
     { autoIndex: false }
 );
@@ -13,7 +16,7 @@ export const schemaDelivery = new Schema<DeliveryMethods>(
     {
         nazwa: { type: String, required: true, default: "" },
         slug: { type: String },
-        ceny: { type: [schemaDeliverySize], required: true },
+        rozmiary: { type: [schemaDeliverySize], required: true, default: [] },
         czas_dostawy: { type: String, required: true },
         darmowa_dostawa: { type: Boolean, required: true, default: false },
         kwota_darmowa: { type: Number },
