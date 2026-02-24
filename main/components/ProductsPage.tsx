@@ -3,7 +3,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import "@/app/globals.css";
 import FiltersSidebar from "@/components/FiltersSidebar";
 import {
     getCategoryDisplayName,
@@ -556,34 +555,22 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
     }, [totalPages]);
 
     return (
-        <div className="products-listing-page">
-            <div className="products-listing-container">
-                {/* Breadcrumbs */}
-                <div className="breadcrumbs">
-                    <Link href="/" className="breadcrumb-link">
-                        Strona główna
-                    </Link>
-                    <span className="breadcrumb-separator">&gt;</span>
-                    <span className="breadcrumb-current">
-                        {selectedCategory}
-                    </span>
+        <div className="min-h-screen pt-[120px] pb-16 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-[1400px] mx-auto">
+                <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600 mb-6">
+                    <Link href="/" className="text-[#D2B79B] hover:underline">Strona główna</Link>
+                    <span>&gt;</span>
+                    <span className="text-gray-900">{selectedCategory}</span>
                 </div>
-
-                {/* Page Header */}
-                <div className="products-page-header">
-                    <h1 className="products-page-title">{selectedCategory}</h1>
-                    <div className="products-page-info">
-                        <span className="products-count">
-                            Wyświetlanie {startIndex + 1}-
-                            {Math.min(endIndex, totalItems)} z {totalItems}{" "}
-                            {isCoursesPage ? "szkoleń" : "produktów"}
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+                    <h1 className="text-2xl sm:text-3xl font-bold text-black">{selectedCategory}</h1>
+                    <div className="flex flex-wrap items-center gap-4">
+                        <span className="text-sm text-gray-600">
+                            Wyświetlanie {startIndex + 1}-{Math.min(endIndex, totalItems)} z {totalItems} {isCoursesPage ? "szkoleń" : "produktów"}
                         </span>
-                        <div className="sort-dropdown-wrapper">
-                            <label className="sort-label">Sortuj według:</label>
-                            <select
-                                value={sortBy}
-                                onChange={handleSortChange}
-                                className="sort-dropdown">
+                        <div className="flex items-center gap-2">
+                            <label className="text-sm font-medium text-gray-700">Sortuj:</label>
+                            <select value={sortBy} onChange={handleSortChange} className="rounded-lg border border-[rgba(212,196,176,0.5)] bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-[#D2B79B]">
                                 <option>Najpopularniejsze</option>
                                 <option>Cena: od najniższej</option>
                                 <option>Cena: od najwyższej</option>
@@ -593,48 +580,15 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
                         </div>
                     </div>
                 </div>
-
-                {/* Main Content */}
-                <div className="products-listing-content">
-                    {/* Sidebar with Filters */}
-                    <FiltersSidebar
-                        category={urlCategory}
-                        products={allProducts}
-                        filters={filters}
-                        onFiltersChange={setFilters}
-                    />
-
-                    {/* Products/Courses Grid */}
-                    <div className="products-main-content">
-                        {isCoursesPage && (
-                            <div
-                                style={{
-                                    padding: "20px",
-                                    background: "#f0f0f0",
-                                    marginBottom: "20px",
-                                    borderRadius: "8px",
-                                    fontSize: "12px",
-                                }}>
-                                <p>
-                                    <strong>Debug info:</strong>
-                                </p>
-                                <p>
-                                    isCoursesPage:{" "}
-                                    {isCoursesPage ? "true" : "false"}
-                                </p>
-                                <p>allCourses.length: {allCourses.length}</p>
-                                <p>
-                                    filteredCourses.length:{" "}
-                                    {filteredCourses.length}
-                                </p>
-                                <p>
-                                    displayedItems.length:{" "}
-                                    {displayedItems.length}
-                                </p>
-                                <p>totalItems: {totalItems}</p>
+                <div className="flex flex-col lg:flex-row gap-8">
+                    <FiltersSidebar category={urlCategory} products={allProducts} filters={filters} onFiltersChange={setFilters} />
+                    <div className="flex-1 min-w-0">
+                        {isCoursesPage && process.env.NODE_ENV === "development" && (
+                            <div className="p-4 mb-5 rounded-lg bg-gray-100 text-xs text-gray-600">
+                                <p><strong>Debug:</strong> isCoursesPage: {String(isCoursesPage)}, allCourses: {allCourses.length}, filtered: {filteredCourses.length}, displayed: {displayedItems.length}</p>
                             </div>
                         )}
-                        <div className="products-grid-listing">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                             {isCoursesPage ? (
                                 displayedItems.length > 0 ? (
                                     displayedItems.map((course, index) => (
@@ -645,42 +599,9 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
                                         />
                                     ))
                                 ) : (
-                                    <div
-                                        style={{
-                                            padding: "40px",
-                                            textAlign: "center",
-                                            gridColumn: "1 / -1",
-                                        }}>
-                                        <p
-                                            style={{
-                                                fontSize: "18px",
-                                                marginBottom: "10px",
-                                            }}>
-                                            Brak szkoleń do wyświetlenia
-                                        </p>
-                                        <p
-                                            style={{
-                                                fontSize: "14px",
-                                                color: "#666",
-                                            }}>
-                                            allCourses: {allCourses.length}
-                                        </p>
-                                        <p
-                                            style={{
-                                                fontSize: "14px",
-                                                color: "#666",
-                                            }}>
-                                            filteredCourses:{" "}
-                                            {filteredCourses.length}
-                                        </p>
-                                        <p
-                                            style={{
-                                                fontSize: "14px",
-                                                color: "#666",
-                                            }}>
-                                            sortedCourses:{" "}
-                                            {sortedCourses.length}
-                                        </p>
+                                    <div className="col-span-full py-12 text-center">
+                                        <p className="text-lg mb-2">Brak szkoleń do wyświetlenia</p>
+                                        <p className="text-sm text-gray-500">allCourses: {allCourses.length}, filtered: {filteredCourses.length}</p>
                                     </div>
                                 )
                             ) : (
@@ -696,63 +617,23 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
 
                         {/* Pagination */}
                         {totalPages > 1 && (
-                            <div className="pagination">
-                                <button
-                                    className="pagination-button"
-                                    disabled={currentPage === 1}
-                                    onClick={handlePrevPage}>
-                                    ← Poprzednia
-                                </button>
-                                <div className="pagination-numbers">
-                                    {Array.from(
-                                        { length: totalPages },
-                                        (_, i) => {
-                                            const pageNum = i + 1;
-                                            if (
-                                                pageNum === 1 ||
-                                                pageNum === totalPages ||
-                                                (pageNum >= currentPage - 1 &&
-                                                    pageNum <= currentPage + 1)
-                                            ) {
-                                                return (
-                                                    <button
-                                                        key={pageNum}
-                                                        className={`pagination-number ${
-                                                            currentPage ===
-                                                            pageNum
-                                                                ? "active"
-                                                                : ""
-                                                        }`}
-                                                        onClick={() =>
-                                                            handlePageChange(
-                                                                pageNum,
-                                                            )
-                                                        }>
-                                                        {pageNum}
-                                                    </button>
-                                                );
-                                            } else if (
-                                                pageNum === currentPage - 2 ||
-                                                pageNum === currentPage + 2
-                                            ) {
-                                                return (
-                                                    <span
-                                                        key={pageNum}
-                                                        className="pagination-ellipsis">
-                                                        ...
-                                                    </span>
-                                                );
-                                            }
-                                            return null;
-                                        },
-                                    )}
+                            <div className="flex items-center justify-center gap-2 mt-8 flex-wrap">
+                                <button type="button" className="px-4 py-2 rounded-lg border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 transition-colors" disabled={currentPage === 1} onClick={handlePrevPage}>← Poprzednia</button>
+                                <div className="flex items-center gap-1">
+                                    {Array.from({ length: totalPages }, (_, i) => {
+                                        const pageNum = i + 1;
+                                        if (pageNum === 1 || pageNum === totalPages || (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)) {
+                                            return (
+                                                <button key={pageNum} type="button" className={`min-w-[40px] px-3 py-2 rounded-lg border transition-colors ${currentPage === pageNum ? "bg-[#D2B79B] text-black border-[#D2B79B]" : "border-gray-300 hover:bg-gray-100"}`} onClick={() => handlePageChange(pageNum)}>{pageNum}</button>
+                                            );
+                                        }
+                                        if (pageNum === currentPage - 2 || pageNum === currentPage + 2) {
+                                            return <span key={pageNum} className="px-2">...</span>;
+                                        }
+                                        return null;
+                                    })}
                                 </div>
-                                <button
-                                    className="pagination-button"
-                                    disabled={currentPage === totalPages}
-                                    onClick={handleNextPage}>
-                                    Następna →
-                                </button>
+                                <button type="button" className="px-4 py-2 rounded-lg border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 transition-colors" disabled={currentPage === totalPages} onClick={handleNextPage}>Następna →</button>
                             </div>
                         )}
                     </div>

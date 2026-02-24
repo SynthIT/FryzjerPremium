@@ -51,20 +51,20 @@ export default function ReviewTabs({
     return (
         <>
             {activeTab === "reviews" && (
-                <div className="reviews-content">
+                <div className="space-y-6">
                     {/* Header */}
-                    <div className="reviews-header">
-                        <div className="reviews-title-section">
-                            <h2 className="reviews-title">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <div className="space-y-1">
+                            <h2 className="text-xl font-bold text-gray-900">
                                 Oceny naszych klientów
                             </h2>
-                            <span className="reviews-count">
+                            <span className="text-sm text-gray-500">
                                 ({product.opinie?.length})
                             </span>
                         </div>
-                        <div className="reviews-actions">
+                        <div className="flex flex-wrap items-center gap-3">
                             <button
-                                className="reviews-filter-button"
+                                className="px-4 py-2 rounded-lg border border-[rgba(212,196,176,0.5)] bg-white text-sm font-medium hover:bg-[#f0e8dd] transition-colors"
                                 aria-label="Filtr">
                                 <svg
                                     fill="none"
@@ -80,7 +80,7 @@ export default function ReviewTabs({
                                     />
                                 </svg>
                             </button>
-                            <div className="reviews-sort-dropdown">
+                            <div className="flex items-center gap-2">
                                 <select
                                     value={sortOrder}
                                     onChange={(e) =>
@@ -88,7 +88,7 @@ export default function ReviewTabs({
                                             e.target.value as typeof sortOrder,
                                         )
                                     }
-                                    className="sort-select">
+                                    className="rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-[#D2B79B] focus:ring-2 focus:ring-[#D2B79B]/20 outline-none">
                                     <option value="latest">Najnowsze</option>
                                     <option value="oldest">Najstarsze</option>
                                     <option value="highest">
@@ -100,7 +100,7 @@ export default function ReviewTabs({
                                 </select>
                             </div>
                             <button
-                                className="write-review-button"
+                                className="px-4 py-2 rounded-lg bg-[#D2B79B] text-black font-semibold hover:bg-[#b89a7f] transition-colors"
                                 onClick={() => setShowReviewModal(true)}>
                                 Napisz opinię
                             </button>
@@ -109,15 +109,15 @@ export default function ReviewTabs({
 
                     {/* Reviews Grid */}
                     {displayedReviews.length > 0 ? (
-                        <div className="reviews-grid">
+                        <div className="grid gap-4">
                             {displayedReviews.map((review, index) => (
-                                <div key={index} className="review-card">
-                                    <div className="review-card-header">
-                                        <div className="review-rating">
+                                <div key={index} className="rounded-xl border border-[rgba(212,196,176,0.3)] bg-white/60 p-4">
+                                    <div className="flex items-start justify-between gap-2 mb-2">
+                                        <div className="flex items-center gap-1">
                                             {renderStars(review.ocena, 18)}
                                         </div>
                                         <button
-                                            className="review-more-button"
+                                            className="text-sm text-[#D2B79B] hover:underline"
                                             aria-label="Więcej opcji">
                                             <svg
                                                 fill="none"
@@ -134,13 +134,13 @@ export default function ReviewTabs({
                                             </svg>
                                         </button>
                                     </div>
-                                    <div className="review-reviewer">
-                                        <span className="reviewer-name">
+                                    <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
+                                        <span className="font-medium text-gray-800">
                                             {review.uzytkownik}
                                         </span>
                                         {review.zweryfikowane && (
                                             <span
-                                                className="verified-badge"
+                                                className="text-xs text-green-600"
                                                 title="Zweryfikowany zakup">
                                                 <svg
                                                     viewBox="0 0 24 24"
@@ -158,10 +158,10 @@ export default function ReviewTabs({
                                             </span>
                                         )}
                                     </div>
-                                    <p className="review-text">
+                                    <p className="text-gray-700 text-sm leading-relaxed">
                                         {review.tresc}
                                     </p>
-                                    <div className="review-date">
+                                    <div className="text-xs text-gray-400 mt-2">
                                         Opublikowano{" "}
                                         {/* {review.createdAt!.toDateString()} */}
                                     </div>
@@ -169,7 +169,7 @@ export default function ReviewTabs({
                             ))}
                         </div>
                     ) : (
-                        <div className="no-reviews-message">
+                        <div className="text-center py-8 text-gray-500">
                             <p>
                                 Brak recenzji dla tego produktu. Bądź pierwszy i
                                 napisz recenzję!
@@ -179,9 +179,9 @@ export default function ReviewTabs({
 
                     {/* Load More Button */}
                     {visibleReviews < sortedReviews.length && (
-                        <div className="load-more-reviews-container">
+                        <div className="flex justify-center pt-4">
                             <button
-                                className="load-more-reviews-button"
+                                className="px-4 py-2 rounded-lg border border-[#D2B79B] text-[#D2B79B] font-medium hover:bg-[#D2B79B]/10 transition-colors"
                                 onClick={() =>
                                     setVisibleReviews((prev) => prev + 4)
                                 }>
@@ -194,8 +194,8 @@ export default function ReviewTabs({
 
             {/* Product Details Tab */}
             {activeTab === "details" && (
-                <div className="product-details-tab">
-                    <div className="product-details-content">
+                <div className="rounded-xl border border-[rgba(212,196,176,0.3)] bg-white/60 p-6">
+                    <div className="prose prose-gray max-w-none text-gray-700">
                         <h3>Szczegóły produktu</h3>
                         <p>Brak dodatkowych szczegółów produktu</p>
                     </div>
@@ -204,8 +204,8 @@ export default function ReviewTabs({
 
             {/* FAQs Tab */}
             {activeTab === "faqs" && (
-                <div className="product-faqs-tab">
-                    <div className="product-faqs-content">
+                <div className="rounded-xl border border-[rgba(212,196,176,0.3)] bg-white/60 p-6">
+                    <div className="space-y-4 text-gray-700">
                         <h3>Często zadawane pytania</h3>
                         <p>
                             Brak dostępnych pytań i odpowiedzi dla tego

@@ -8,13 +8,7 @@ export default function RegistrationPage() {
     return (
         <>
             <Header />
-            <div style={{ 
-                minHeight: "calc(100vh - 200px)",
-                padding: "60px 20px",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "flex-start"
-            }}>
+            <div className="min-h-[calc(100vh-200px)] py-16 px-5 flex justify-center items-start pt-[140px]">
                 <RegisterPage />
             </div>
             <Footer />

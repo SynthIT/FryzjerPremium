@@ -2,7 +2,6 @@
 
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import "@/app/globals.css";
 import { loadStripe } from "@stripe/stripe-js";
 import { Checkout } from "@/components/checkout/CheckoutLayout";
 

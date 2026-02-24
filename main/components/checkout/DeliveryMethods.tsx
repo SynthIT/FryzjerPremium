@@ -16,8 +16,10 @@ export default function DeliveryMethod({
 }: DeliveryMethodsProps) {
     return (
         <label
-            className={`checkout-delivery-option ${
-                selectedWariant?.nazwa === deliver.nazwa ? "active" : ""
+            className={`flex cursor-pointer gap-3 rounded-xl border-2 p-4 transition-all ${
+                selectedWariant?.nazwa === deliver.nazwa
+                    ? "border-[#D2B79B] bg-[#f0e8dd]/50"
+                    : "border-gray-200 hover:border-gray-300 bg-white"
             }`}>
             <input
                 type="radio"
@@ -25,18 +27,19 @@ export default function DeliveryMethod({
                 value={deliver.nazwa}
                 checked={selectedWariant?.nazwa === deliver.nazwa}
                 onChange={() => onSelect(deliver)}
+                className="sr-only"
             />
-            <div className="checkout-delivery-info">
-                <div className="checkout-delivery-name">
-                    <strong>{deliver.nazwa}</strong>
-                    <span className="checkout-delivery-price">
+            <div className="flex-1">
+                <div className="flex items-center justify-between gap-2">
+                    <strong className="text-gray-900">{deliver.nazwa}</strong>
+                    <span className="font-semibold text-[#D2B79B]">
                         {deliver.darmowa_dostawa &&
                         price > deliver.kwota_darmowa
                             ? "Gratis"
                             : deliver.ceny[0].cena}
                     </span>
                 </div>
-                <p className="checkout-delivery-desc">{deliver.czas_dostawy}</p>
+                <p className="text-sm text-gray-500 mt-1">{deliver.czas_dostawy}</p>
             </div>
         </label>
     );

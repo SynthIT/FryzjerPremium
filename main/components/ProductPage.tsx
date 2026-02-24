@@ -3,7 +3,6 @@
 import { useState, useCallback, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import "@/app/globals.css";
 import { finalPrice, getProducts, renderStars } from "@/lib/utils";
 import { useCart } from "@/contexts/CartContext";
 import { Products, Warianty } from "@/lib/types/productTypes";
@@ -146,9 +145,9 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
 
     if (!product) {
         return (
-            <div className="product-page">
-                <div className="product-page-container">
-                    <div style={{ padding: "40px", textAlign: "center" }}>
+            <div className="min-h-screen bg-[#f8f6f3]">
+                <div className="mx-auto max-w-7xl px-4 py-8">
+                    <div className="py-10 text-center">
                         <h1>Produkt nie został znaleziony</h1>
                         <Link href="/products">Powrót do listy produktów</Link>
                     </div>
@@ -158,23 +157,23 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
     }
 
     return (
-        <div className="product-page">
-            <div className="product-page-container">
+        <div className="min-h-screen bg-[#f8f6f3]">
+            <div className="mx-auto max-w-7xl px-4 py-8">
                 {/* Breadcrumbs */}
-                <div className="product-breadcrumbs">
-                    <Link href="/" className="breadcrumb-link">
+                <nav className="flex flex-wrap items-center gap-1 text-sm text-gray-600 mb-8">
+                    <Link href="/" className="hover:text-[#D2B79B] transition-colors">
                         Strona główna
                     </Link>
-                    <span className="breadcrumb-separator">&gt;</span>
-                    <Link href="/products" className="breadcrumb-link">
+                    <span className="text-gray-400">&gt;</span>
+                    <Link href="/products" className="hover:text-[#D2B79B] transition-colors">
                         Sklep
                     </Link>
-                    <span className="breadcrumb-separator">&gt;</span>
+                    <span className="text-gray-400">&gt;</span>
                     <Link
                         href={`/products/${(
                             product.kategoria as Categories[]
                         )[0].slug.toLowerCase()}`}
-                        className="breadcrumb-link">
+                        className="hover:text-[#D2B79B] transition-colors">
                         {(
                             product.kategoria as Categories[]
                         )[0].slug[0].toUpperCase() +
@@ -184,8 +183,8 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                     </Link>
                     {(product.kategoria as Categories[])[0].nazwa && (
                         <>
-                            <span className="breadcrumb-separator">&gt;</span>
-                            <span className="breadcrumb-current">
+                            <span className="text-gray-400">&gt;</span>
+                            <span className="text-gray-900 font-medium">
                                 {(product.kategoria as Categories[])[0].nazwa}
                             </span>
                         </>
@@ -193,18 +192,18 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                 </div>
 
                 {/* Main Product Content */}
-                <div className="product-main-content">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
                     {/* Left Column - Images */}
-                    <div className="product-images-section">
+                    <div className="flex gap-4">
                         {/* Image Thumbnails - Left Side */}
                         {product.media && product.media.length > 1 && (
-                            <div className="product-thumbnails">
+                            <div className="flex flex-col gap-2 shrink-0">
                                 {product.media.map((image, index) => (
                                     <div
                                         key={index}
-                                        className={`product-thumbnail ${selectedImage === index
-                                            ? "active"
-                                            : ""
+                                        className={`w-20 h-20 rounded-lg border-2 overflow-hidden cursor-pointer transition-all ${selectedImage === index
+                                            ? "border-[#D2B79B] ring-2 ring-[#D2B79B]/30"
+                                            : "border-gray-200 hover:border-gray-300"
                                             }`}
                                         onClick={() =>
                                             handleImageSelect(index)
@@ -215,10 +214,10 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                                                 alt={image.alt || `${product.nazwa} - ${index + 1}`}
                                                 width={100}
                                                 height={100}
-                                                className="thumbnail-image"
+                                                className="w-full h-full object-cover"
                                             />
                                         ) : (
-                                            <div className="thumbnail-placeholder">
+                                            <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-500 text-sm">
                                                 <span>{index + 1}</span>
                                             </div>
                                         )}
@@ -228,10 +227,10 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                         )}
 
                         {/* Main Image - Right Side */}
-                        <div className="product-main-image">
-                            <div className="product-image-wrapper">
+                        <div className="relative flex-1 aspect-square bg-gray-100 rounded-xl overflow-hidden">
+                            <div className="relative w-full h-full">
                                 {product.promocje && (
-                                    <div className="product-discount-badge">
+                                    <div className="absolute top-3 right-3 z-10 px-2 py-1 rounded-lg bg-[#D2B79B] text-black text-sm font-bold">
                                         -{(product.promocje as Promos).procent}%
                                     </div>
                                 )}
@@ -244,11 +243,11 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                                         alt={product.media[selectedImage]?.alt || product.nazwa}
                                         width={600}
                                         height={600}
-                                        className="product-image-main"
+                                        className="w-full h-full object-cover"
                                         priority
                                     />
                                 ) : (
-                                    <div className="product-image-placeholder">
+                                    <div className="w-full h-full flex items-center justify-center p-6 text-gray-500 text-center">
                                         <span>{product.nazwa}</span>
                                     </div>
                                 )}
@@ -257,8 +256,8 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                     </div>
 
                     {/* Right Column - Product Details */}
-                    <div className="product-details-section">
-                        <h1 className="product-title">{product.nazwa}</h1>
+                    <div className="space-y-4">
+                        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{product.nazwa}</h1>
                         <p>Kod produkcyjny: {product.kod_produkcyjny}</p>
                         {product.kod_ean ? (
                             <p>Kod EAN: {product.kod_ean}</p>
@@ -277,11 +276,11 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
 
                         {/* wariant Selection */}
                         {product.wariant && (
-                            <div className="product-option-section">
-                                <label className="product-option-label">
+                            <div className="flex flex-col gap-2">
+                                <label className="text-sm font-medium text-gray-700">
                                     Wybierz wariant
                                 </label>
-                                <div className="product-sizes">
+                                <div className="flex flex-wrap gap-2">
                                     {product.wariant.map((w, i) => (
                                         <WariantySelector
                                             key={i}
@@ -297,13 +296,14 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                         )}
 
                         {/* Quantity Selector */}
-                        <div className="product-option-section">
-                            <label className="product-option-label">
+                        <div className="flex flex-col gap-2">
+                            <label className="text-sm font-medium text-gray-700">
                                 Ilość
                             </label>
-                            <div className="quantity-selector">
+                            <div className="flex items-center gap-2 border border-gray-300 rounded-lg w-fit">
                                 <button
-                                    className="quantity-button"
+                                    type="button"
+                                    className="p-2 text-gray-600 hover:bg-gray-100 rounded-l-md transition-colors"
                                     onClick={() => handleQuantityChange(-1)}
                                     aria-label="Zmniejsz ilość">
                                     <svg
@@ -314,11 +314,12 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                                         <path d="M5 12h14" />
                                     </svg>
                                 </button>
-                                <span className="quantity-value">
+                                <span className="min-w-[2rem] text-center font-medium">
                                     {quantity}
                                 </span>
                                 <button
-                                    className="quantity-button"
+                                    type="button"
+                                    className="p-2 text-gray-600 hover:bg-gray-100 rounded-r-md transition-colors"
                                     onClick={() => handleQuantityChange(1)}
                                     aria-label="Zwiększ ilość">
                                     <svg
@@ -334,7 +335,7 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
 
                         {/* Add to Cart Button */}
                         <button
-                            className="add-to-cart-button"
+                            className="w-full py-3 rounded-xl bg-[#D2B79B] text-black font-semibold hover:bg-[#b89a7f] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             disabled={product.ilosc == 0}
                             onClick={handleAddToCart}>
                             {product.ilosc != 0
@@ -348,34 +349,43 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
 
                 {/* Product Description Section */}
                 {product.opis && (
-                    <div className="product-description-section">
-                        <h2 className="product-description-title">
+                    <div className="rounded-xl border border-[rgba(212,196,176,0.3)] bg-white/60 p-6">
+                        <h2 className="text-lg font-bold text-gray-900 mb-3">
                             Opis produktu
                         </h2>
-                        <p className="product-description-text">
+                        <p className="text-gray-700 leading-relaxed">
                             {product.opis}
                         </p>
                     </div>
                 )}
 
                 {/* Rating & Reviews Section */}
-                <div className="product-reviews-section">
+                <div className="mt-10">
                     {/* Tabs */}
-                    <div className="product-tabs">
+                    <div className="flex flex-wrap gap-2 border-b border-gray-200 mb-6">
                         <button
-                            className={`product-tab ${activeTab === "details" ? "active" : ""
+                            type="button"
+                            className={`px-4 py-2 rounded-t-lg text-sm font-medium transition-colors ${activeTab === "details"
+                                ? "bg-[#D2B79B] text-black"
+                                : "text-gray-600 hover:bg-gray-100"
                                 }`}
                             onClick={() => setActiveTab("details")}>
                             Szczegóły produktu
                         </button>
                         <button
-                            className={`product-tab ${activeTab === "reviews" ? "active" : ""
+                            type="button"
+                            className={`px-4 py-2 rounded-t-lg text-sm font-medium transition-colors ${activeTab === "reviews"
+                                ? "bg-[#D2B79B] text-black"
+                                : "text-gray-600 hover:bg-gray-100"
                                 }`}
                             onClick={() => setActiveTab("reviews")}>
                             Oceny i opinie
                         </button>
                         <button
-                            className={`product-tab ${activeTab === "faqs" ? "active" : ""
+                            type="button"
+                            className={`px-4 py-2 rounded-t-lg text-sm font-medium transition-colors ${activeTab === "faqs"
+                                ? "bg-[#D2B79B] text-black"
+                                : "text-gray-600 hover:bg-gray-100"
                                 }`}
                             onClick={() => setActiveTab("faqs")}>
                             FAQ
@@ -391,11 +401,11 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
 
                 {/* Related Products Section */}
                 {relatedProducts.length > 0 && (
-                    <div className="related-products-section">
-                        <h2 className="related-products-title">
+                    <div className="mt-12">
+                        <h2 className="text-xl font-bold text-gray-900 mb-6">
                             Może Cię również zainteresować
                         </h2>
-                        <div className="related-products-grid">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                             {relatedProducts.map((relatedProduct, index) => (
                                 <RelatedProduct
                                     key={index}
@@ -410,17 +420,17 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
             {/* Review Modal */}
             {showReviewModal && (
                 <div
-                    className="review-modal-overlay"
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
                     onClick={() => setShowReviewModal(false)}>
                     <div
-                        className="review-modal"
+                        className="relative w-full max-w-lg rounded-2xl bg-white shadow-xl max-h-[90vh] overflow-y-auto"
                         onClick={(e) => e.stopPropagation()}>
-                        <div className="review-modal-header">
-                            <h2 className="review-modal-title">
+                        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                            <h2 className="text-xl font-bold text-gray-900">
                                 Napisz opinię
                             </h2>
                             <button
-                                className="review-modal-close"
+                                className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
                                 onClick={() => setShowReviewModal(false)}
                                 aria-label="Zamknij">
                                 <svg
@@ -438,7 +448,7 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                         </div>
 
                         <form
-                            className="review-modal-form"
+                            className="flex flex-col gap-4 p-6"
                             onSubmit={async (e) => {
                                 e.preventDefault();
                                 try {
@@ -490,18 +500,18 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                                     );
                                 }
                             }}>
-                            <div className="review-modal-field">
-                                <label className="review-modal-label">
+                            <div className="flex flex-col gap-1">
+                                <label className="text-sm font-medium text-gray-700">
                                     Ocena *
                                 </label>
-                                <div className="review-modal-rating">
+                                <div className="flex gap-1">
                                     {[1, 2, 3, 4, 5].map((star) => (
                                         <button
                                             key={star}
                                             type="button"
-                                            className={`review-modal-star ${reviewForm!.ocena >= star
-                                                ? "active"
-                                                : ""
+                                            className={`p-1 transition-colors ${reviewForm!.ocena >= star
+                                                ? "text-[#D2B79B]"
+                                                : "text-gray-300 hover:text-gray-400"
                                                 }`}
                                             onClick={() =>
                                                 setReviewForm({
@@ -524,16 +534,16 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                                 </div>
                             </div>
 
-                            <div className="review-modal-field">
+                            <div className="flex flex-col gap-1">
                                 <label
                                     htmlFor="reviewer-name"
-                                    className="review-modal-label">
+                                    className="text-sm font-medium text-gray-700">
                                     Imię *
                                 </label>
                                 <input
                                     id="reviewer-name"
                                     type="text"
-                                    className="review-modal-input"
+                                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-[#D2B79B] focus:border-[#D2B79B] outline-none"
                                     value={
                                         reviewForm.uzytkownik != ""
                                             ? reviewForm.uzytkownik
@@ -550,15 +560,15 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                                 />
                             </div>
 
-                            <div className="review-modal-field">
+                            <div className="flex flex-col gap-1">
                                 <label
                                     htmlFor="review-text"
-                                    className="review-modal-label">
+                                    className="text-sm font-medium text-gray-700">
                                     Opinia *
                                 </label>
                                 <textarea
                                     id="review-text"
-                                    className="review-modal-textarea"
+                                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-[#D2B79B] focus:border-[#D2B79B] outline-none resize-y min-h-[120px]"
                                     value={reviewForm.tresc}
                                     onChange={(e) =>
                                         setReviewForm({
@@ -572,10 +582,10 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                                 />
                             </div>
 
-                            <div className="review-modal-actions">
+                            <div className="flex flex-wrap gap-3 pt-2">
                                 <button
                                     type="button"
-                                    className="review-modal-button review-modal-button-cancel"
+                                    className="px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 font-medium hover:bg-gray-50"
                                     onClick={() => {
                                         setShowReviewModal(false);
                                         setReviewForm({
@@ -588,7 +598,7 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                                 </button>
                                 <button
                                     type="submit"
-                                    className="review-modal-button review-modal-button-submit"
+                                    className="px-4 py-2 rounded-lg bg-[#D2B79B] text-black font-semibold hover:bg-[#b89a7f]"
                                     disabled={
                                         reviewForm.ocena === 0 ||
                                         !reviewForm.uzytkownik ||

@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
-import "@/app/globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { getCourses } from "@/lib/utils";
@@ -88,16 +87,12 @@ export default function CoursesPage() {
         return (
             <>
                 <Header />
-                <div className="products-listing-page">
-                    <div className="products-listing-container">
-                        <div className="breadcrumbs" style={{ marginBottom: "32px" }}>
-                            <Link href="/" className="breadcrumb-link">
-                                Strona główna
-                            </Link>
-                            <span className="breadcrumb-separator">&gt;</span>
-                            <span className="breadcrumb-current">
-                                Szkolenia
-                            </span>
+                <div className="min-h-screen pt-[120px] pb-16 px-4 sm:px-6 lg:px-8">
+                    <div className="max-w-[1400px] mx-auto">
+                        <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600 mb-8">
+                            <Link href="/" className="text-[#D2B79B] hover:underline">Strona główna</Link>
+                            <span>&gt;</span>
+                            <span className="text-gray-900">Szkolenia</span>
                         </div>
                         <div className="min-h-[500px] flex items-center justify-center">
                             <div className="text-center">
@@ -122,45 +117,27 @@ export default function CoursesPage() {
     return (
         <>
             <Header />
-            <div className="products-listing-page">
-                <div className="products-listing-container">
-                    {/* Breadcrumbs */}
-                    <div className="breadcrumbs">
-                        <Link href="/" className="breadcrumb-link">
-                            Strona główna
-                        </Link>
-                        <span className="breadcrumb-separator">&gt;</span>
-                        <span className="breadcrumb-current">
-                            Szkolenia
-                        </span>
+            <div className="min-h-screen pt-[120px] pb-16 px-4 sm:px-6 lg:px-8">
+                <div className="max-w-[1400px] mx-auto">
+                    <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600 mb-6">
+                        <Link href="/" className="text-[#D2B79B] hover:underline">Strona główna</Link>
+                        <span>&gt;</span>
+                        <span className="text-gray-900">Szkolenia</span>
                     </div>
-
-                    {/* Page Header */}
-                    <div className="products-page-header">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
                         <div>
-                            <h1 className="products-page-title">Szkolenia</h1>
-                            <p style={{
-                                fontSize: "18px",
-                                color: "#6b7280",
-                                marginTop: "12px",
-                                fontFamily: "var(--font-dm-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                                lineHeight: "1.6",
-                                maxWidth: "800px",
-                            }}>
+                            <h1 className="text-2xl sm:text-3xl font-bold text-black">Szkolenia</h1>
+                            <p className="text-gray-600 mt-3 max-w-2xl">
                                 Odkryj nasze profesjonalne szkolenia z zakresu fryzjerstwa. Rozwijaj swoje umiejętności z najlepszymi ekspertami w branży.
                             </p>
                         </div>
-                        <div className="products-page-info">
-                            <span className="products-count">
-                                Wyświetlanie {startIndex + 1}-
-                                {Math.min(endIndex, totalItems)} z {totalItems} szkoleń
+                        <div className="flex flex-wrap items-center gap-4">
+                            <span className="text-sm text-gray-600">
+                                Wyświetlanie {startIndex + 1}-{Math.min(endIndex, totalItems)} z {totalItems} szkoleń
                             </span>
-                            <div className="sort-dropdown-wrapper">
-                                <label className="sort-label">Sortuj według:</label>
-                                <select
-                                    value={sortBy}
-                                    onChange={handleSortChange}
-                                    className="sort-dropdown">
+                            <div className="flex items-center gap-2">
+                                <label className="text-sm font-medium text-gray-700">Sortuj:</label>
+                                <select value={sortBy} onChange={handleSortChange} className="rounded-lg border border-[rgba(212,196,176,0.5)] bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-[#D2B79B]">
                                     <option value="Najpopularniejsze">Najpopularniejsze</option>
                                     <option value="Cena: od najniższej">Cena: od najniższej</option>
                                     <option value="Cena: od najwyższej">Cena: od najwyższej</option>
@@ -170,48 +147,14 @@ export default function CoursesPage() {
                             </div>
                         </div>
                     </div>
-
-                    {/* Main Content */}
-                    <div className="products-listing-content" style={{ gridTemplateColumns: "1fr" }}>
-                        <div className="products-main-content">
-                            <div className="products-grid-listing" style={{
-                                animation: "fadeIn 0.6s ease-out",
-                            }}>
+                    <div className="flex flex-col">
+                        <div className="flex-1">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {displayedCourses.length === 0 ? (
-                                    <div className="courses-empty-state" style={{
-                                        padding: "80px 20px",
-                                        textAlign: "center",
-                                        gridColumn: "1 / -1",
-                                        background: "linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%)",
-                                        borderRadius: "16px",
-                                        border: "1px solid rgba(212, 196, 176, 0.2)",
-                                        marginTop: "20px",
-                                    }}>
-                                        <div style={{
-                                            fontSize: "80px",
-                                            marginBottom: "24px",
-                                            opacity: 0.6,
-                                            animation: "gentleScale 2s ease-in-out infinite",
-                                        }}>📚</div>
-                                        <h3 style={{
-                                            fontSize: "28px",
-                                            fontWeight: "700",
-                                            color: "#000000",
-                                            marginBottom: "12px",
-                                            fontFamily: "var(--font-dm-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                                        }}>
-                                            Brak dostępnych szkoleń
-                                        </h3>
-                                        <p style={{
-                                            fontSize: "16px",
-                                            color: "#6b7280",
-                                            fontFamily: "var(--font-dm-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                                            maxWidth: "500px",
-                                            margin: "0 auto",
-                                            lineHeight: "1.6",
-                                        }}>
-                                            Wkrótce dodamy nowe szkolenia. Sprawdź ponownie później.
-                                        </p>
+                                    <div className="col-span-full py-16 px-6 text-center rounded-2xl bg-gray-50 border border-[rgba(212,196,176,0.2)]">
+                                        <div className="text-7xl mb-6 opacity-60">📚</div>
+                                        <h3 className="text-2xl font-bold text-black mb-3">Brak dostępnych szkoleń</h3>
+                                        <p className="text-gray-600 max-w-md mx-auto">Wkrótce dodamy nowe szkolenia. Sprawdź ponownie później.</p>
                                     </div>
                                 ) : (
                                     displayedCourses.map((course, index) => (
@@ -232,53 +175,26 @@ export default function CoursesPage() {
 
                             {/* Pagination */}
                             {totalPages > 1 && (
-                                <div className="pagination" style={{
-                                    marginTop: "60px",
-                                    paddingTop: "40px",
-                                    borderTop: "1px solid rgba(212, 196, 176, 0.2)",
-                                }}>
-                                    <button
-                                        onClick={handlePrevPage}
-                                        disabled={currentPage === 1}
-                                        className="pagination-button pagination-button-prev"
-                                        style={{
-                                            transition: "all 0.3s ease",
-                                        }}>
+                                <div className="flex items-center justify-center gap-2 mt-12 pt-10 border-t border-[rgba(212,196,176,0.2)] flex-wrap">
+                                    <button type="button" onClick={handlePrevPage} disabled={currentPage === 1} className="px-4 py-2 rounded-lg border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 transition-colors">
                                         Poprzednia
                                     </button>
-                                    <div className="pagination-numbers">
+                                    <div className="flex items-center gap-1">
                                         {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-                                            if (
-                                                page === 1 ||
-                                                page === totalPages ||
-                                                (page >= currentPage - 1 && page <= currentPage + 1)
-                                            ) {
+                                            if (page === 1 || page === totalPages || (page >= currentPage - 1 && page <= currentPage + 1)) {
                                                 return (
-                                                    <button
-                                                        key={page}
-                                                        onClick={() => handlePageChange(page)}
-                                                        className={`pagination-number ${
-                                                            currentPage === page ? "active" : ""
-                                                        }`}
-                                                        style={{
-                                                            transition: "all 0.3s ease",
-                                                        }}>
+                                                    <button key={page} type="button" onClick={() => handlePageChange(page)} className={`min-w-[40px] px-3 py-2 rounded-lg border transition-colors ${currentPage === page ? "bg-[#D2B79B] text-black border-[#D2B79B]" : "border-gray-300 hover:bg-gray-100"}`}>
                                                         {page}
                                                     </button>
                                                 );
-                                            } else if (page === currentPage - 2 || page === currentPage + 2) {
-                                                return <span key={page} className="pagination-ellipsis">...</span>;
+                                            }
+                                            if (page === currentPage - 2 || page === currentPage + 2) {
+                                                return <span key={page} className="px-2">...</span>;
                                             }
                                             return null;
                                         })}
                                     </div>
-                                    <button
-                                        onClick={handleNextPage}
-                                        disabled={currentPage === totalPages}
-                                        className="pagination-button pagination-button-next"
-                                        style={{
-                                            transition: "all 0.3s ease",
-                                        }}>
+                                    <button type="button" onClick={handleNextPage} disabled={currentPage === totalPages} className="px-4 py-2 rounded-lg border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 transition-colors">
                                         Następna
                                     </button>
                                 </div>

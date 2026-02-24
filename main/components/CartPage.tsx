@@ -4,7 +4,6 @@ import { useCart } from "@/contexts/CartContext";
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import "@/app/globals.css";
 import { useUser } from "@/contexts/UserContext";
 import { CartItem } from "@/lib/types/cartTypes";
 
@@ -73,18 +72,15 @@ export default function CartPage() {
 
     if (items.length === 0) {
         return (
-            <div className="cart-page">
-                <div className="cart-page-container">
-                    <div className="breadcrumbs">
-                        <Link href="/" className="breadcrumb-link">
-                            Strona główna
-                        </Link>
-                        <span className="breadcrumb-separator">&gt;</span>
-                        <span className="breadcrumb-current">Koszyk</span>
+            <div className="min-h-screen pt-[120px] pb-16 px-4 sm:px-6 lg:px-8">
+                <div className="max-w-[1200px] mx-auto">
+                    <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600 mb-6">
+                        <Link href="/" className="text-[#D2B79B] hover:underline">Strona główna</Link>
+                        <span>&gt;</span>
+                        <span className="text-gray-900">Koszyk</span>
                     </div>
-
-                    <div className="empty-cart">
-                        <div className="empty-cart-icon">
+                    <div className="flex flex-col items-center justify-center py-16 text-center">
+                        <div className="text-[#D2B79B] mb-4">
                             <svg
                                 fill="none"
                                 stroke="currentColor"
@@ -99,13 +95,13 @@ export default function CartPage() {
                                 />
                             </svg>
                         </div>
-                        <h2 className="empty-cart-title">
+                        <h2 className="text-2xl font-bold text-gray-900 mb-2">
                             Twój koszyk jest pusty
                         </h2>
-                        <p className="empty-cart-description">
+                        <p className="text-gray-600 mb-6 max-w-md">
                             Dodaj produkty do koszyka, aby kontynuować zakupy.
                         </p>
-                        <Link href="/products" className="empty-cart-button">
+                        <Link href="/products" className="inline-block px-8 py-3 rounded-xl font-semibold text-black bg-[#D2B79B] hover:bg-[#b89a7f] transition-colors">
                             Przejdź do sklepu
                         </Link>
                     </div>
@@ -115,21 +111,17 @@ export default function CartPage() {
     }
 
     return (
-        <div className="cart-page">
-            <div className="cart-page-container">
-                <div className="breadcrumbs">
-                    <Link href="/" className="breadcrumb-link">
-                        Strona główna
-                    </Link>
-                    <span className="breadcrumb-separator">&gt;</span>
-                    <span className="breadcrumb-current">Koszyk</span>
+        <div className="min-h-screen pt-[120px] pb-16 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-[1200px] mx-auto">
+                <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600 mb-6">
+                    <Link href="/" className="text-[#D2B79B] hover:underline">Strona główna</Link>
+                    <span>&gt;</span>
+                    <span className="text-gray-900">Koszyk</span>
                 </div>
-
-                <div className="cart-content">
-                    <div className="cart-items-section">
-                        <h1 className="cart-title">Twój koszyk</h1>
-
-                        <div className="cart-items-list">
+                <div className="flex flex-col lg:flex-row gap-8">
+                    <div className="flex-1 min-w-0">
+                        <h1 className="text-2xl font-bold text-gray-900 mb-6">Twój koszyk</h1>
+                        <div className="space-y-4">
                             {items.map((item) => {
                                 const productPrice = item.price;
                                 const itemTotal = (productPrice * item.quantity)
@@ -137,8 +129,8 @@ export default function CartPage() {
                                     .replace(".", ",");
 
                                 return (
-                                    <div key={item.id} className="cart-item">
-                                        <div className="cart-item-image">
+                                    <div key={item.id} className="flex flex-wrap items-center gap-4 p-4 rounded-xl border border-[rgba(212,196,176,0.3)] bg-white/60">
+                                        <div className="w-24 h-24 shrink-0 rounded-lg overflow-hidden bg-gray-100">
                                             <Link
                                                 href={`/product/${item.product.slug}`}>
                                                 {item.product.media && item.product.media.length > 0 ? (
@@ -153,10 +145,10 @@ export default function CartPage() {
                                                         }
                                                         width={124}
                                                         height={124}
-                                                        className="cart-item-img"
+                                                        className="w-full h-full object-cover"
                                                     />
                                                 ) : (
-                                                    <div className="cart-item-placeholder">
+                                                    <div className="w-full h-full flex items-center justify-center text-xs text-gray-500 p-2">
                                                         <span>
                                                             {item.product.nazwa}
                                                         </span>
@@ -165,27 +157,21 @@ export default function CartPage() {
                                             </Link>
                                         </div>
 
-                                        <div className="cart-item-details">
+                                        <div className="flex-1 min-w-0">
                                             <Link
                                                 href={`/product/${item.product.slug}`}
-                                                className="cart-item-name">
+                                                className="font-medium text-gray-900 hover:text-[#D2B79B] line-clamp-2">
                                                 {item.product.nazwa}
                                             </Link>
-                                            <div className="cart-item-options">
-                                                <span className="cart-item-option">
-                                                    {item.wariant?.typ}:{" "}
-                                                    {item.wariant?.nazwa}
-                                                </span>
-                                            </div>
-                                            <div className="cart-item-price">
-                                                <span className="cart-item-current-price">
-                                                    {itemTotal} zł
-                                                </span>
-                                            </div>
+                                            {item.wariant && (
+                                                <p className="text-sm text-gray-500">{item.wariant.typ}: {item.wariant.nazwa}</p>
+                                            )}
+                                            <p className="font-semibold text-[#D2B79B]">{itemTotal} zł</p>
                                         </div>
 
                                         <button
-                                            className="cart-item-remove"
+                                            type="button"
+                                            className="p-2 text-gray-500 hover:text-red-600 rounded-lg transition-colors"
                                             onClick={() =>
                                                 handleRemove(item.id)
                                             }
@@ -205,10 +191,11 @@ export default function CartPage() {
                                             </svg>
                                         </button>
 
-                                        <div className="cart-item-quantity">
-                                            <div className="quantity-selector-cart">
+                                        <div className="flex items-center gap-2">
+                                            <div className="flex items-center gap-2">
                                                 <button
-                                                    className="quantity-button-cart"
+                                                    type="button"
+                                                    className="w-8 h-8 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-gray-100"
                                                     onClick={() =>
                                                         handleQuantityChange(
                                                             item.id,
@@ -218,11 +205,12 @@ export default function CartPage() {
                                                     aria-label="Zmniejsz ilość">
                                                     −
                                                 </button>
-                                                <span className="quantity-value-cart">
+                                                <span className="min-w-[2rem] text-center font-medium">
                                                     {item.quantity}
                                                 </span>
                                                 <button
-                                                    className="quantity-button-cart"
+                                                    type="button"
+                                                    className="w-8 h-8 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-gray-100"
                                                     onClick={() =>
                                                         handleQuantityChange(
                                                             item.id,
@@ -240,56 +228,34 @@ export default function CartPage() {
                         </div>
                     </div>
 
-                    <div className="cart-summary">
-                        <div className="cart-summary-card">
-                            <h2 className="cart-summary-title">
-                                Podsumowanie zamówienia
-                            </h2>
-
-                            <div className="cart-summary-row">
-                                <span className="cart-summary-label">
-                                    Suma częściowa
-                                </span>
-                                <span className="cart-summary-value">
-                                    {formattedSubtotal} zł
-                                </span>
+                    <div className="lg:w-80 shrink-0">
+                        <div className="rounded-xl border border-[rgba(212,196,176,0.3)] bg-white/60 p-6 sticky top-24">
+                            <h2 className="text-lg font-bold text-gray-900 mb-4">Podsumowanie zamówienia</h2>
+                            <div className="flex justify-between py-2 text-sm">
+                                <span className="text-gray-600">Suma częściowa</span>
+                                <span className="font-medium">{formattedSubtotal} zł</span>
                             </div>
-                            <div className="cart-summary-row">
+                            <div className="flex justify-between py-2 text-sm">
                                 <div className="flex flex-col">
-                                    <span className="cart-summary-label">
-                                        Koszt dostawy*
+                                    <span className="text-gray-600">Koszt dostawy*
                                     </span>
-                                    <span className="w-xs">
+                                    <span className="text-xs text-gray-500 block">
                                         <sub>
                                             * - koszt dostawy zostanie
                                             przeliczony w następnym etapie
                                         </sub>
                                     </span>
                                 </div>
-                                <span className="cart-summary-value">
-                                    0,00 zł
-                                </span>
+                                <span className="font-medium">0,00 zł</span>
                             </div>
-
-                            <div className="cart-summary-divider"></div>
-
-                            <div className="cart-summary-row cart-summary-total">
-                                <span className="cart-summary-label">
-                                    Razem
-                                </span>
-                                <span className="cart-summary-value">
-                                    {formattedSubtotal} zł
-                                </span>
+                            <div className="border-t border-gray-200 my-4 pt-4 flex justify-between font-bold">
+                                <span>Razem</span>
+                                <span>{formattedSubtotal} zł</span>
                             </div>
-                            <Link
-                                href={`/kasa`}
-                                className="cart-checkout-button">
+                            <Link href="/kasa" className="block w-full py-3 text-center rounded-xl font-semibold bg-[#D2B79B] text-black hover:bg-[#b89a7f] transition-colors mb-3">
                                 Przejdź do kasy
                             </Link>
-
-                            <Link
-                                href="/products"
-                                className="cart-continue-shopping">
+                            <Link href="/products" className="block w-full py-2 text-center text-sm text-[#D2B79B] hover:underline">
                                 Kontynuuj zakupy
                             </Link>
                         </div>

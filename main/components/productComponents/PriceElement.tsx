@@ -13,10 +13,10 @@ export default function PriceElement({
 }) {
     const price = finalPrice(product.cena, product.vat, selectedWariant, promocje) + " zł"
     return (
-        <div className="product-price-section flex flex-col">
+        <div className="flex flex-col gap-2">
             <p>Cena bez VAT: {finalPrice(product.cena, 0, selectedWariant, promocje)}</p>
             {promocje && (
-                <div className="product-original-price">
+                <div className="text-sm text-gray-500 line-through">
                     <span>
                         {selectedWariant?.nadpisuje_cene
                             ? finalPrice(product.cena, product.vat, selectedWariant, promocje)
@@ -26,7 +26,7 @@ export default function PriceElement({
                     </span>
                 </div>
             )}
-            <div className="product-current-price">
+            <div className="text-xl font-bold text-[#D2B79B]">
                 {finalPrice(product.cena, product.vat, selectedWariant, promocje) + " zł"} <sub>Z VAT</sub>
             </div>
         </div>

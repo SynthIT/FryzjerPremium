@@ -108,22 +108,22 @@ export default function RegisterPage() {
             {mounted &&
                 createPortal(
                     <div
-                        className="login-modal-overlay"
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
                         onClick={(e) => {
                             if (e.target === e.currentTarget) {
                                 router.push("/");
                             }
                         }}>
                         <div
-                            className="login-modal"
+                            className="relative w-full rounded-2xl bg-white shadow-xl"
                             onClick={(e) => e.stopPropagation()}
                             style={{ maxWidth: "700px", maxHeight: "90vh", overflowY: "auto" }}>
-                            <div className="login-modal-header">
-                                <h2 className="login-modal-title">
+                            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                                <h2 className="text-xl font-bold text-gray-900">
                                     Rejestracja
                                 </h2>
                                 <button
-                                    className="login-modal-close"
+                                    className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-800 transition-colors"
                                     onClick={() => router.push("/")}
                                     aria-label="Zamknij">
                                     <svg
@@ -141,7 +141,7 @@ export default function RegisterPage() {
                             </div>
 
                             <form
-                                className="login-modal-form"
+                                className="flex flex-col p-6"
                                 onSubmit={handleSubmit}
                                 style={{ gap: "16px", overflowY: "visible" }}>
                                 {showAlert && alertInfo.length > 0 && (
@@ -166,10 +166,10 @@ export default function RegisterPage() {
                                         gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
                                         gap: "16px",
                                     }}>
-                                    <div className="login-modal-field">
+                                    <div className="flex flex-col gap-1">
                                         <label
                                             htmlFor="email"
-                                            className="login-modal-label">
+                                            className="text-sm font-medium text-gray-700">
                                             Adres e-mail *
                                         </label>
                                         <input
@@ -177,7 +177,7 @@ export default function RegisterPage() {
                                             name="email"
                                             type="email"
                                             autoComplete="email"
-                                            className="login-modal-input"
+                                            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-[#D2B79B] focus:ring-2 focus:ring-[#D2B79B]/20 focus:outline-none"
                                             placeholder="twoj@email.pl"
                                             value={formData.email}
                                             onChange={handleChangeInput}
@@ -185,10 +185,10 @@ export default function RegisterPage() {
                                         />
                                     </div>
 
-                                    <div className="login-modal-field">
+                                    <div className="flex flex-col gap-1">
                                         <label
                                             htmlFor="telefon"
-                                            className="login-modal-label">
+                                            className="text-sm font-medium text-gray-700">
                                             Numer telefonu *
                                         </label>
                                         <input
@@ -196,7 +196,7 @@ export default function RegisterPage() {
                                             name="telefon"
                                             type="tel"
                                             autoComplete="tel-national"
-                                            className="login-modal-input"
+                                            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-[#D2B79B] focus:ring-2 focus:ring-[#D2B79B]/20 focus:outline-none"
                                             placeholder="123456789"
                                             value={formData.telefon}
                                             onChange={handleChangeInput}
@@ -211,10 +211,10 @@ export default function RegisterPage() {
                                         gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
                                         gap: "16px",
                                     }}>
-                                    <div className="login-modal-field">
+                                    <div className="flex flex-col gap-1">
                                         <label
                                             htmlFor="imie"
-                                            className="login-modal-label">
+                                            className="text-sm font-medium text-gray-700">
                                             Imię *
                                         </label>
                                         <input
@@ -222,7 +222,7 @@ export default function RegisterPage() {
                                             name="imie"
                                             type="text"
                                             autoComplete="given-name"
-                                            className="login-modal-input"
+                                            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-[#D2B79B] focus:ring-2 focus:ring-[#D2B79B]/20 focus:outline-none"
                                             placeholder="Jan"
                                             value={formData.imie}
                                             onChange={handleChangeInput}
@@ -230,10 +230,10 @@ export default function RegisterPage() {
                                         />
                                     </div>
 
-                                    <div className="login-modal-field">
+                                    <div className="flex flex-col gap-1">
                                         <label
                                             htmlFor="nazwisko"
-                                            className="login-modal-label">
+                                            className="text-sm font-medium text-gray-700">
                                             Nazwisko *
                                         </label>
                                         <input
@@ -241,7 +241,7 @@ export default function RegisterPage() {
                                             name="nazwisko"
                                             type="text"
                                             autoComplete="family-name"
-                                            className="login-modal-input"
+                                            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-[#D2B79B] focus:ring-2 focus:ring-[#D2B79B]/20 focus:outline-none"
                                             placeholder="Kowalski"
                                             value={formData.nazwisko}
                                             onChange={handleChangeInput}
@@ -250,10 +250,10 @@ export default function RegisterPage() {
                                     </div>
                                 </div>
 
-                                <div className="login-modal-field">
+                                <div className="flex flex-col gap-1">
                                     <label
                                         htmlFor="haslo"
-                                        className="login-modal-label">
+                                        className="text-sm font-medium text-gray-700">
                                         Hasło *
                                     </label>
                                     <input
@@ -261,7 +261,7 @@ export default function RegisterPage() {
                                         name="haslo"
                                         type="password"
                                         autoComplete="new-password"
-                                        className="login-modal-input"
+                                        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-[#D2B79B] focus:ring-2 focus:ring-[#D2B79B]/20 focus:outline-none"
                                         placeholder="Wpisz hasło"
                                         value={formData.haslo}
                                         onChange={handleChangeInput}
@@ -270,10 +270,10 @@ export default function RegisterPage() {
                                     />
                                 </div>
 
-                                <div className="login-modal-field">
+                                <div className="flex flex-col gap-1">
                                     <label
                                         htmlFor="repassword"
-                                        className="login-modal-label">
+                                        className="text-sm font-medium text-gray-700">
                                         Potwierdź hasło *
                                     </label>
                                     <input
@@ -281,7 +281,7 @@ export default function RegisterPage() {
                                         name="repassword"
                                         type="password"
                                         autoComplete="new-password"
-                                        className="login-modal-input"
+                                        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-[#D2B79B] focus:ring-2 focus:ring-[#D2B79B]/20 focus:outline-none"
                                         placeholder="Potwierdź hasło"
                                         value={rePassword}
                                         onChange={(e) =>
@@ -292,17 +292,17 @@ export default function RegisterPage() {
                                     />
                                 </div>
 
-                                <div className="login-modal-field">
+                                <div className="flex flex-col gap-1">
                                     <label
                                         htmlFor="ulica"
-                                        className="login-modal-label">
+                                        className="text-sm font-medium text-gray-700">
                                         Ulica *
                                     </label>
                                     <input
                                         id="ulica"
                                         name="ulica"
                                         type="text"
-                                        className="login-modal-input"
+                                        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-[#D2B79B] focus:ring-2 focus:ring-[#D2B79B]/20 focus:outline-none"
                                         placeholder="ul. Przykładowa"
                                         value={formData.ulica}
                                         onChange={handleChangeInput}
@@ -316,17 +316,17 @@ export default function RegisterPage() {
                                         gridTemplateColumns: "2fr 1fr",
                                         gap: "16px",
                                     }}>
-                                    <div className="login-modal-field">
+                                    <div className="flex flex-col gap-1">
                                         <label
                                             htmlFor="nr_domu"
-                                            className="login-modal-label">
+                                            className="text-sm font-medium text-gray-700">
                                             Nr domu *
                                         </label>
                                         <input
                                             id="nr_domu"
                                             name="nr_domu"
                                             type="text"
-                                            className="login-modal-input"
+                                            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-[#D2B79B] focus:ring-2 focus:ring-[#D2B79B]/20 focus:outline-none"
                                             placeholder="12"
                                             value={formData.nr_domu}
                                             onChange={handleChangeInput}
@@ -334,17 +334,17 @@ export default function RegisterPage() {
                                         />
                                     </div>
 
-                                    <div className="login-modal-field">
+                                    <div className="flex flex-col gap-1">
                                         <label
                                             htmlFor="nr_lokalu"
-                                            className="login-modal-label">
+                                            className="text-sm font-medium text-gray-700">
                                             Nr lokalu
                                         </label>
                                         <input
                                             id="nr_lokalu"
                                             name="nr_lokalu"
                                             type="text"
-                                            className="login-modal-input"
+                                            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-[#D2B79B] focus:ring-2 focus:ring-[#D2B79B]/20 focus:outline-none"
                                             placeholder="5"
                                             value={formData.nr_lokalu}
                                             onChange={handleChangeInput}
@@ -358,10 +358,10 @@ export default function RegisterPage() {
                                         gridTemplateColumns: "2fr 1fr",
                                         gap: "16px",
                                     }}>
-                                    <div className="login-modal-field">
+                                    <div className="flex flex-col gap-1">
                                         <label
                                             htmlFor="miasto"
-                                            className="login-modal-label">
+                                            className="text-sm font-medium text-gray-700">
                                             Miasto *
                                         </label>
                                         <input
@@ -369,7 +369,7 @@ export default function RegisterPage() {
                                             name="miasto"
                                             type="text"
                                             autoComplete="address-level2"
-                                            className="login-modal-input"
+                                            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-[#D2B79B] focus:ring-2 focus:ring-[#D2B79B]/20 focus:outline-none"
                                             placeholder="Warszawa"
                                             value={formData.miasto}
                                             onChange={handleChangeInput}
@@ -377,10 +377,10 @@ export default function RegisterPage() {
                                         />
                                     </div>
 
-                                    <div className="login-modal-field">
+                                    <div className="flex flex-col gap-1">
                                         <label
                                             htmlFor="kod_pocztowy"
-                                            className="login-modal-label">
+                                            className="text-sm font-medium text-gray-700">
                                             Kod pocztowy *
                                         </label>
                                         <input
@@ -388,7 +388,7 @@ export default function RegisterPage() {
                                             name="kod_pocztowy"
                                             type="text"
                                             autoComplete="postal-code"
-                                            className="login-modal-input"
+                                            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-[#D2B79B] focus:ring-2 focus:ring-[#D2B79B]/20 focus:outline-none"
                                             placeholder="00-000"
                                             pattern="[0-9]{2}-[0-9]{3}"
                                             title="Poprawny format: xx-xxx"
@@ -399,10 +399,10 @@ export default function RegisterPage() {
                                     </div>
                                 </div>
 
-                                <div className="login-modal-field">
+                                <div className="flex flex-col gap-1">
                                     <label
                                         htmlFor="kraj"
-                                        className="login-modal-label">
+                                        className="text-sm font-medium text-gray-700">
                                         Kraj *
                                     </label>
                                     <input
@@ -410,7 +410,7 @@ export default function RegisterPage() {
                                         name="kraj"
                                         type="text"
                                         autoComplete="country-name"
-                                        className="login-modal-input"
+                                        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-[#D2B79B] focus:ring-2 focus:ring-[#D2B79B]/20 focus:outline-none"
                                         placeholder="Polska"
                                         value={formData.kraj}
                                         onChange={handleChangeInput}
@@ -418,16 +418,16 @@ export default function RegisterPage() {
                                     />
                                 </div>
 
-                                <div className="login-modal-actions">
+                                <div className="flex flex-wrap gap-3 pt-4">
                                     <button
                                         type="submit"
-                                        className="login-modal-button login-modal-button-submit"
+                                        className="px-4 py-2 rounded-lg bg-[#D2B79B] text-black font-semibold hover:bg-[#b89a7f] transition-colors disabled:opacity-50 disabled:pointer-events-none"
                                         disabled={showAlert || formData.haslo !== rePassword}>
                                         Zarejestruj się
                                     </button>
                                     <button
                                         type="button"
-                                        className="login-modal-button login-modal-button-cancel"
+                                        className="px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 font-medium hover:bg-gray-50 transition-colors"
                                         onClick={() => router.push("/")}>
                                         Anuluj
                                     </button>

@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import "@/app/globals.css";
 import { Products, Categories, Producents } from "@/lib/models/Products";
 import { getSubcategoryKeywords } from "@/lib/utils";
 
@@ -173,24 +172,20 @@ export default function FiltersSidebar({ category, products, filters, onFiltersC
   }, []);
 
   return (
-    <aside className="filters-sidebar">
-      <div className="filters-header">
-        <svg className="filter-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <aside className="w-full lg:w-64 shrink-0 rounded-xl border border-[rgba(212,196,176,0.3)] bg-white/60 p-4 h-fit">
+      <div className="flex items-center gap-2 mb-4">
+        <svg className="w-5 h-5 text-[#D2B79B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
         </svg>
-        <h2 className="filters-title">Filtry</h2>
+        <h2 className="font-semibold text-gray-900">Filtry</h2>
       </div>
 
       {/* Subcategories */}
       {categoryFilters.subcategories && categoryFilters.subcategories.length > 0 && (
-        <div className="filter-section">
-          <button 
-            className="filter-section-header"
-            onClick={() => toggleSection('subcategory')}
-          >
+        <div className="border-b border-gray-200 pb-3 mb-3">
+          <button type="button" className="w-full flex items-center justify-between py-2 text-left font-medium text-gray-800 hover:text-[#D2B79B] transition-colors" onClick={() => toggleSection('subcategory')}>
             <span>Podkategorie</span>
-            <svg 
-              className={`filter-arrow ${expandedSections.subcategory ? 'expanded' : ''}`}
+            <svg className={`w-4 h-4 transition-transform ${expandedSections.subcategory ? 'rotate-180' : ''}`}
               fill="none" 
               stroke="currentColor" 
               viewBox="0 0 24 24"
@@ -199,25 +194,12 @@ export default function FiltersSidebar({ category, products, filters, onFiltersC
             </svg>
           </button>
           {expandedSections.subcategory && (
-            <div className="filter-section-content">
+            <div className="pl-2 space-y-1">
               {categoryFilters.subcategories?.map((subcategory) => {
                 const isSelected = filters.selectedSubcategories.includes(subcategory.nazwa);
                 return (
-                  <div 
-                    key={subcategory.slug} 
-                    className={`filter-category-item ${isSelected ? 'selected' : ''}`}
-                    onClick={() => onFiltersChange({
-                      ...filters,
-                      selectedSubcategories: toggleFilter(filters.selectedSubcategories, subcategory.nazwa)
-                    })}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      onChange={() => {}}
-                      onClick={(e) => e.stopPropagation()}
-                      className="filter-checkbox"
-                    />
+                  <div key={subcategory.slug} className={`flex items-center gap-2 py-1.5 px-2 rounded-lg cursor-pointer ${isSelected ? 'bg-[#D2B79B]/20 text-[#D2B79B]' : 'hover:bg-gray-100'}`} onClick={() => onFiltersChange({ ...filters, selectedSubcategories: toggleFilter(filters.selectedSubcategories, subcategory.nazwa) })}>
+                    <input type="checkbox" checked={isSelected} onChange={() => {}} onClick={(e) => e.stopPropagation()} className="rounded border-gray-300 text-[#D2B79B] focus:ring-[#D2B79B]" />
                     <span>{subcategory.nazwa}</span>
                   </div>
                 );
@@ -228,14 +210,10 @@ export default function FiltersSidebar({ category, products, filters, onFiltersC
       )}
 
       {/* Price Range */}
-      <div className="filter-section">
-        <button 
-          className="filter-section-header"
-          onClick={() => toggleSection('price')}
-        >
+      <div className="border-b border-gray-200 pb-3 mb-3">
+        <button type="button" className="w-full flex items-center justify-between py-2 text-left font-medium text-gray-800 hover:text-[#D2B79B] transition-colors" onClick={() => toggleSection('price')}>
           <span>Cena</span>
-          <svg 
-            className={`filter-arrow ${expandedSections.price ? 'expanded' : ''}`}
+          <svg className={`w-4 h-4 transition-transform ${expandedSections.price ? 'rotate-180' : ''}`}
             fill="none" 
             stroke="currentColor" 
             viewBox="0 0 24 24"
@@ -244,36 +222,14 @@ export default function FiltersSidebar({ category, products, filters, onFiltersC
           </svg>
         </button>
         {expandedSections.price && categoryFilters.priceRange && (
-          <div className="filter-section-content">
-            <div className="price-range-slider">
-              <div className="price-range-values">
-                <span>{filters.priceRange.min} zł</span>
-                <span>{filters.priceRange.max} zł</span>
-              </div>
-              <div className="price-range-inputs">
-                <input
-                  type="range"
-                  min={categoryFilters.priceRange.min}
-                  max={categoryFilters.priceRange.max}
-                  value={filters.priceRange.min}
-                  onChange={(e) => onFiltersChange({
-                    ...filters,
-                    priceRange: { ...filters.priceRange, min: parseInt(e.target.value) }
-                  })}
-                  className="price-slider"
-                />
-                <input
-                  type="range"
-                  min={categoryFilters.priceRange.min}
-                  max={categoryFilters.priceRange.max}
-                  value={filters.priceRange.max}
-                  onChange={(e) => onFiltersChange({
-                    ...filters,
-                    priceRange: { ...filters.priceRange, max: parseInt(e.target.value) }
-                  })}
-                  className="price-slider"
-                />
-              </div>
+          <div className="pl-2 pt-2">
+            <div className="flex justify-between text-sm text-gray-600 mb-2">
+              <span>{filters.priceRange.min} zł</span>
+              <span>{filters.priceRange.max} zł</span>
+            </div>
+            <div className="space-y-2">
+              <input type="range" min={categoryFilters.priceRange.min} max={categoryFilters.priceRange.max} value={filters.priceRange.min} onChange={(e) => onFiltersChange({ ...filters, priceRange: { ...filters.priceRange, min: parseInt(e.target.value) } })} className="w-full accent-[#D2B79B]" />
+              <input type="range" min={categoryFilters.priceRange.min} max={categoryFilters.priceRange.max} value={filters.priceRange.max} onChange={(e) => onFiltersChange({ ...filters, priceRange: { ...filters.priceRange, max: parseInt(e.target.value) } })} className="w-full accent-[#D2B79B]" />
             </div>
           </div>
         )}
@@ -281,14 +237,10 @@ export default function FiltersSidebar({ category, products, filters, onFiltersC
 
       {/* Brands */}
       {categoryFilters.brands && categoryFilters.brands.length > 0 && (
-        <div className="filter-section">
-          <button 
-            className="filter-section-header"
-            onClick={() => toggleSection('brand')}
-          >
+        <div className="border-b border-gray-200 pb-3 mb-3">
+          <button type="button" className="w-full flex items-center justify-between py-2 text-left font-medium text-gray-800 hover:text-[#D2B79B] transition-colors" onClick={() => toggleSection('brand')}>
             <span>Marka</span>
-            <svg 
-              className={`filter-arrow ${expandedSections.brand ? 'expanded' : ''}`}
+            <svg className={`w-4 h-4 transition-transform ${expandedSections.brand ? 'rotate-180' : ''}`}
               fill="none" 
               stroke="currentColor" 
               viewBox="0 0 24 24"
@@ -297,25 +249,12 @@ export default function FiltersSidebar({ category, products, filters, onFiltersC
             </svg>
           </button>
           {expandedSections.brand && (
-            <div className="filter-section-content">
+            <div className="pl-2 space-y-1">
               {categoryFilters.brands.map((brand) => {
                 const isSelected = filters.selectedBrands.includes(brand);
                 return (
-                  <div 
-                    key={brand} 
-                    className={`filter-category-item ${isSelected ? 'selected' : ''}`}
-                    onClick={() => onFiltersChange({
-                      ...filters,
-                      selectedBrands: toggleFilter(filters.selectedBrands, brand)
-                    })}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      onChange={() => {}}
-                      onClick={(e) => e.stopPropagation()}
-                      className="filter-checkbox"
-                    />
+                  <div key={brand} className={`flex items-center gap-2 py-1.5 px-2 rounded-lg cursor-pointer ${isSelected ? 'bg-[#D2B79B]/20 text-[#D2B79B]' : 'hover:bg-gray-100'}`} onClick={() => onFiltersChange({ ...filters, selectedBrands: toggleFilter(filters.selectedBrands, brand) })}>
+                    <input type="checkbox" checked={isSelected} onChange={() => {}} onClick={(e) => e.stopPropagation()} className="rounded border-gray-300 text-[#D2B79B] focus:ring-[#D2B79B]" />
                     <span>{brand}</span>
                   </div>
                 );
@@ -327,14 +266,10 @@ export default function FiltersSidebar({ category, products, filters, onFiltersC
 
       {/* Sizes - tylko dla Meble */}
       {categoryFilters.sizes && categoryFilters.sizes.length > 0 && (
-        <div className="filter-section">
-          <button 
-            className="filter-section-header"
-            onClick={() => toggleSection('size')}
-          >
+        <div className="border-b border-gray-200 pb-3 mb-3">
+          <button type="button" className="w-full flex items-center justify-between py-2 text-left font-medium text-gray-800 hover:text-[#D2B79B] transition-colors" onClick={() => toggleSection('size')}>
             <span>Rozmiar</span>
-            <svg 
-              className={`filter-arrow ${expandedSections.size ? 'expanded' : ''}`}
+            <svg className={`w-4 h-4 transition-transform ${expandedSections.size ? 'rotate-180' : ''}`}
               fill="none" 
               stroke="currentColor" 
               viewBox="0 0 24 24"
@@ -343,26 +278,13 @@ export default function FiltersSidebar({ category, products, filters, onFiltersC
             </svg>
           </button>
           {expandedSections.size && (
-            <div className="filter-section-content">
-              <div className="sizes-grid">
+            <div className="pl-2 pt-2">
+              <div className="flex flex-wrap gap-2">
                 {categoryFilters.sizes.map((size) => {
                   const isSelected = filters.selectedSizes.includes(size);
                   return (
-                    <button
-                      key={size}
-                      className={`size-button ${isSelected ? 'selected' : ''}`}
-                      onClick={() => onFiltersChange({
-                        ...filters,
-                        selectedSizes: toggleFilter(filters.selectedSizes, size)
-                      })}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={isSelected}
-                        onChange={() => {}}
-                        onClick={(e) => e.stopPropagation()}
-                        className="filter-checkbox"
-                      />
+                    <button key={size} type="button" className={`flex items-center gap-1 px-3 py-1.5 rounded-lg border text-sm transition-colors ${isSelected ? 'border-[#D2B79B] bg-[#D2B79B]/20 text-[#D2B79B]' : 'border-gray-300 hover:border-[#D2B79B]'}`} onClick={() => onFiltersChange({ ...filters, selectedSizes: toggleFilter(filters.selectedSizes, size) })}>
+                      <input type="checkbox" checked={isSelected} onChange={() => {}} onClick={(e) => e.stopPropagation()} className="rounded border-gray-300 text-[#D2B79B]" />
                       {size}
                     </button>
                   );
@@ -375,14 +297,10 @@ export default function FiltersSidebar({ category, products, filters, onFiltersC
 
       {/* Types */}
       {categoryFilters.types && categoryFilters.types.length > 0 && (
-        <div className="filter-section">
-          <button 
-            className="filter-section-header"
-            onClick={() => toggleSection('type')}
-          >
+        <div className="border-b border-gray-200 pb-3 mb-3">
+          <button type="button" className="w-full flex items-center justify-between py-2 text-left font-medium text-gray-800 hover:text-[#D2B79B] transition-colors" onClick={() => toggleSection('type')}>
             <span>Typ</span>
-            <svg 
-              className={`filter-arrow ${expandedSections.type ? 'expanded' : ''}`}
+            <svg className={`w-4 h-4 transition-transform ${expandedSections.type ? 'rotate-180' : ''}`}
               fill="none" 
               stroke="currentColor" 
               viewBox="0 0 24 24"
@@ -391,25 +309,12 @@ export default function FiltersSidebar({ category, products, filters, onFiltersC
             </svg>
           </button>
           {expandedSections.type && (
-            <div className="filter-section-content">
+            <div className="pl-2 space-y-1">
               {categoryFilters.types.map((type) => {
                 const isSelected = filters.selectedTypes.includes(type);
                 return (
-                  <div 
-                    key={type} 
-                    className={`filter-category-item ${isSelected ? 'selected' : ''}`}
-                    onClick={() => onFiltersChange({
-                      ...filters,
-                      selectedTypes: toggleFilter(filters.selectedTypes, type)
-                    })}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      onChange={() => {}}
-                      onClick={(e) => e.stopPropagation()}
-                      className="filter-checkbox"
-                    />
+                  <div key={type} className={`flex items-center gap-2 py-1.5 px-2 rounded-lg cursor-pointer ${isSelected ? 'bg-[#D2B79B]/20 text-[#D2B79B]' : 'hover:bg-gray-100'}`} onClick={() => onFiltersChange({ ...filters, selectedTypes: toggleFilter(filters.selectedTypes, type) })}>
+                    <input type="checkbox" checked={isSelected} onChange={() => {}} onClick={(e) => e.stopPropagation()} className="rounded border-gray-300 text-[#D2B79B] focus:ring-[#D2B79B]" />
                     <span>{type}</span>
                   </div>
                 );
@@ -419,9 +324,7 @@ export default function FiltersSidebar({ category, products, filters, onFiltersC
         </div>
       )}
 
-      {/* Clear Filters Button */}
-      <button 
-        className="apply-filter-button"
+      <button type="button" className="w-full mt-4 py-2.5 rounded-lg border border-[#D2B79B] text-[#D2B79B] font-medium hover:bg-[#D2B79B]/10 transition-colors"
         onClick={() => onFiltersChange({
           priceRange: categoryFilters.priceRange || { min: 0, max: 0 },
           selectedSubcategories: [],

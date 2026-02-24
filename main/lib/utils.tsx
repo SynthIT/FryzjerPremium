@@ -178,7 +178,7 @@ export const renderStars = (
     const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
 
     return (
-        <div className="product-rating-stars">
+        <div className="flex items-center gap-0.5">
             {Array(fullStars)
                 .fill(0)
                 .map((_, i) => (

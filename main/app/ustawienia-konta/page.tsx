@@ -9,7 +9,7 @@ import { Users } from "@/lib/types/userTypes";
 
 export default function AccountSettingsPage() {
     const [activeSection, setActiveSection] = useState("personal");
-    const { userData, getUser, changePassword, changeUserData } = useUser();
+    const { userData,  changePassword, changeUserData } = useUser();
     const [user, setUserData] = useState<Partial<Users>>({
         imie: "",
         nazwisko: "",
@@ -31,7 +31,6 @@ export default function AccountSettingsPage() {
     useEffect(() => {
         function s() {
             if (!userData) {
-                getUser();
                 setUserData(userData!);
             } else {
                 setUserData(userData);
@@ -39,7 +38,7 @@ export default function AccountSettingsPage() {
             return true;
         }
         s();
-    }, [userData, getUser]);
+    }, [userData]);
 
     const sections = [
         { id: "personal", label: "Dane osobowe", icon: <User /> },
@@ -79,55 +78,49 @@ export default function AccountSettingsPage() {
     return (
         <>
             <Header />
-            <main className="settings-page-container">
-                <div className="settings-layout">
-                    {/* Sidebar */}
-                    <aside className="settings-sidebar">
-                        <h2 className="settings-sidebar-title">Ustawienia</h2>
-                        <nav className="settings-sidebar-nav">
+            <main className="min-h-screen pt-[120px] pb-16 px-4 sm:px-6 lg:px-8">
+                <div className="max-w-[1200px] mx-auto flex flex-col lg:flex-row gap-8">
+                    <aside className="lg:w-64 shrink-0 rounded-xl border border-[rgba(212,196,176,0.3)] bg-white/60 p-4 h-fit">
+                        <h2 className="text-lg font-bold text-gray-900 mb-4">Ustawienia</h2>
+                        <nav className="space-y-1">
                             {sections.map((section) => (
                                 <button
                                     key={section.id}
-                                    className={`settings-sidebar-item ${
+                                    type="button"
+                                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-sm font-medium transition-colors ${
                                         activeSection === section.id
-                                            ? "active"
-                                            : ""
+                                            ? "bg-[#D2B79B]/20 text-[#D2B79B]"
+                                            : "text-gray-700 hover:bg-gray-100"
                                     }`}
                                     onClick={() =>
                                         setActiveSection(section.id)
                                     }>
-                                    <span
-                                        className="settings-sidebar-icon"
-                                        aria-hidden="true">
-                                        {section.icon}
-                                    </span>
-                                    <span className="settings-sidebar-label">
-                                        {section.label}
-                                    </span>
+                                    <span aria-hidden="true">{section.icon}</span>
+                                    <span>{section.label}</span>
                                 </button>
                             ))}
                         </nav>
                     </aside>
 
                     {/* Main Content */}
-                    <div className="settings-main-content">
-                        <div className="settings-content-wrapper">
+                    <div className="flex-1 min-w-0">
+                        <div className="space-y-8">
                             {/* Personal Information Section */}
                             {activeSection === "personal" && (
-                                <section className="settings-section">
-                                    <h2 className="settings-section-title">
+                                <section className="rounded-xl border border-[rgba(212,196,176,0.3)] bg-white/60 p-6">
+                                    <h2 className="text-xl font-bold text-gray-900 mb-2">
                                         Dane osobowe
                                     </h2>
-                                    <p className="settings-section-description">
+                                    <p className="text-gray-600 mb-6">
                                         Zaktualizuj swoje dane osobowe i
                                         informacje kontaktowe.
                                     </p>
-                                    <div className="settings-form">
-                                        <div className="form-row">
-                                            <div className="form-group">
+                                    <div className="space-y-4">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div className="flex flex-col gap-1">
                                                 <label
                                                     htmlFor="firstName"
-                                                    className="form-label">
+                                                    className="text-sm font-medium text-gray-700">
                                                     Imię
                                                 </label>
                                                 <input
@@ -141,14 +134,14 @@ export default function AccountSettingsPage() {
                                                     }}
                                                     type="text"
                                                     id="firstName"
-                                                    className="form-input"
+                                                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-[#D2B79B] focus:ring-2 focus:ring-[#D2B79B]/20 outline-none disabled:bg-gray-100 disabled:text-gray-500"
                                                     placeholder="Wprowadź imię"
                                                 />
                                             </div>
-                                            <div className="form-group">
+                                            <div className="flex flex-col gap-1">
                                                 <label
                                                     htmlFor="lastName"
-                                                    className="form-label">
+                                                    className="text-sm font-medium text-gray-700">
                                                     Nazwisko
                                                 </label>
                                                 <input
@@ -162,15 +155,15 @@ export default function AccountSettingsPage() {
                                                     }
                                                     type="text"
                                                     id="lastName"
-                                                    className="form-input"
+                                                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-[#D2B79B] focus:ring-2 focus:ring-[#D2B79B]/20 outline-none disabled:bg-gray-100 disabled:text-gray-500"
                                                     placeholder="Wprowadź nazwisko"
                                                 />
                                             </div>
                                         </div>
-                                        <div className="form-group">
+                                        <div className="flex flex-col gap-1">
                                             <label
                                                 htmlFor="email"
-                                                className="form-label">
+                                                className="text-sm font-medium text-gray-700">
                                                 Adres e-mail
                                             </label>
                                             <input
@@ -184,14 +177,14 @@ export default function AccountSettingsPage() {
                                                 }
                                                 type="email"
                                                 id="email"
-                                                className="form-input"
+                                                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-[#D2B79B] focus:ring-2 focus:ring-[#D2B79B]/20 outline-none disabled:bg-gray-100 disabled:text-gray-500"
                                                 placeholder="twoj@email.pl"
                                             />
                                         </div>
-                                        <div className="form-group">
+                                        <div className="flex flex-col gap-1">
                                             <label
                                                 htmlFor="phone"
-                                                className="form-label">
+                                                className="text-sm font-medium text-gray-700">
                                                 Numer telefonu
                                             </label>
                                             <input
@@ -204,7 +197,7 @@ export default function AccountSettingsPage() {
                                                 }
                                                 type="tel"
                                                 id="phone"
-                                                className="form-input"
+                                                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-[#D2B79B] focus:ring-2 focus:ring-[#D2B79B]/20 outline-none disabled:bg-gray-100 disabled:text-gray-500"
                                                 placeholder="+48 123 456 789"
                                             />
                                         </div>
@@ -216,7 +209,7 @@ export default function AccountSettingsPage() {
                                                     telefon: user.telefon,
                                                 })
                                             }
-                                            className="settings-save-button">
+                                            className="px-6 py-2.5 rounded-xl font-semibold bg-[#D2B79B] text-black hover:bg-[#b89a7f] transition-colors">
                                             <span>Zapisz zmiany</span>
                                         </button>
                                     </div>
@@ -225,19 +218,19 @@ export default function AccountSettingsPage() {
 
                             {/* Address Section */}
                             {activeSection === "address" && (
-                                <section className="settings-section">
-                                    <h2 className="settings-section-title">
+                                <section className="rounded-xl border border-[rgba(212,196,176,0.3)] bg-white/60 p-6">
+                                    <h2 className="text-xl font-bold text-gray-900 mb-2">
                                         Adres dostawy
                                     </h2>
-                                    <p className="settings-section-description">
+                                    <p className="text-gray-600 mb-6">
                                         Zarządzaj adresami dostawy dla swoich
                                         zamówień.
                                     </p>
-                                    <div className="settings-form">
-                                        <div className="form-group">
+                                    <div className="space-y-4">
+                                        <div className="flex flex-col gap-1">
                                             <label
                                                 htmlFor="street"
-                                                className="form-label">
+                                                className="text-sm font-medium text-gray-700">
                                                 Ulica
                                             </label>
                                             <input
@@ -250,15 +243,15 @@ export default function AccountSettingsPage() {
                                                         ulica: e.target.value,
                                                     })
                                                 }
-                                                className="form-input"
+                                                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-[#D2B79B] focus:ring-2 focus:ring-[#D2B79B]/20 outline-none disabled:bg-gray-100 disabled:text-gray-500"
                                                 placeholder="ul. Przykładowa 123"
                                             />
                                         </div>
-                                        <div className="form-row">
-                                            <div className="form-group">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div className="flex flex-col gap-1">
                                                 <label
                                                     htmlFor="postalCode"
-                                                    className="form-label">
+                                                    className="text-sm font-medium text-gray-700">
                                                     Numer domu
                                                 </label>
                                                 <input
@@ -272,14 +265,14 @@ export default function AccountSettingsPage() {
                                                     }
                                                     type="text"
                                                     id="house_number"
-                                                    className="form-input"
+                                                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-[#D2B79B] focus:ring-2 focus:ring-[#D2B79B]/20 outline-none disabled:bg-gray-100 disabled:text-gray-500"
                                                     placeholder="10"
                                                 />
                                             </div>
-                                            <div className="form-group">
+                                            <div className="flex flex-col gap-1">
                                                 <label
                                                     htmlFor="city"
-                                                    className="form-label">
+                                                    className="text-sm font-medium text-gray-700">
                                                     Numer mieszkania
                                                 </label>
                                                 <input
@@ -293,16 +286,16 @@ export default function AccountSettingsPage() {
                                                     }
                                                     type="text"
                                                     id="flat_number"
-                                                    className="form-input"
+                                                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-[#D2B79B] focus:ring-2 focus:ring-[#D2B79B]/20 outline-none disabled:bg-gray-100 disabled:text-gray-500"
                                                     placeholder="2"
                                                 />
                                             </div>
                                         </div>
-                                        <div className="form-row">
-                                            <div className="form-group">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div className="flex flex-col gap-1">
                                                 <label
                                                     htmlFor="postalCode"
-                                                    className="form-label">
+                                                    className="text-sm font-medium text-gray-700">
                                                     Kod pocztowy
                                                 </label>
                                                 <input
@@ -318,14 +311,14 @@ export default function AccountSettingsPage() {
                                                     }
                                                     type="text"
                                                     id="postalCode"
-                                                    className="form-input"
+                                                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-[#D2B79B] focus:ring-2 focus:ring-[#D2B79B]/20 outline-none disabled:bg-gray-100 disabled:text-gray-500"
                                                     placeholder="00-000"
                                                 />
                                             </div>
-                                            <div className="form-group">
+                                            <div className="flex flex-col gap-1">
                                                 <label
                                                     htmlFor="city"
-                                                    className="form-label">
+                                                    className="text-sm font-medium text-gray-700">
                                                     Miasto
                                                 </label>
                                                 <input
@@ -339,20 +332,20 @@ export default function AccountSettingsPage() {
                                                     }
                                                     type="text"
                                                     id="city"
-                                                    className="form-input"
+                                                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-[#D2B79B] focus:ring-2 focus:ring-[#D2B79B]/20 outline-none disabled:bg-gray-100 disabled:text-gray-500"
                                                     placeholder="Warszawa"
                                                 />
                                             </div>
                                         </div>
-                                        <div className="form-group">
+                                        <div className="flex flex-col gap-1">
                                             <label
                                                 htmlFor="country"
-                                                className="form-label">
+                                                className="text-sm font-medium text-gray-700">
                                                 Kraj
                                             </label>
                                             <select
                                                 id="country"
-                                                className="form-input">
+                                                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-[#D2B79B] focus:ring-2 focus:ring-[#D2B79B]/20 outline-none disabled:bg-gray-100 disabled:text-gray-500">
                                                 <option value="pl">
                                                     Polska
                                                 </option>
@@ -379,7 +372,7 @@ export default function AccountSettingsPage() {
                                                     miasto: user.miasto || "",
                                                 })
                                             }
-                                            className="settings-save-button">
+                                            className="px-6 py-2.5 rounded-xl font-semibold bg-[#D2B79B] text-black hover:bg-[#b89a7f] transition-colors">
                                             <span>Zapisz adres</span>
                                         </button>
                                     </div>
@@ -388,24 +381,24 @@ export default function AccountSettingsPage() {
 
                             {/* Password Section */}
                             {activeSection === "password" && (
-                                <section className="settings-section">
-                                    <h2 className="settings-section-title">
+                                <section className="rounded-xl border border-[rgba(212,196,176,0.3)] bg-white/60 p-6">
+                                    <h2 className="text-xl font-bold text-gray-900 mb-2">
                                         Zmiana hasła
                                     </h2>
-                                    <p className="settings-section-description">
+                                    <p className="text-gray-600 mb-6">
                                         Zmień swoje hasło, aby zwiększyć
                                         bezpieczeństwo konta.
                                     </p>
-                                    <div className="settings-form">
+                                    <div className="space-y-4">
                                         {!passNot ? (
                                             <div>
                                                 <p>Hasła nie są takie same</p>
                                             </div>
                                         ) : null}
-                                        <div className="form-group">
+                                        <div className="flex flex-col gap-1">
                                             <label
                                                 htmlFor="currentPassword"
-                                                className="form-label">
+                                                className="text-sm font-medium text-gray-700">
                                                 Aktualne hasło
                                             </label>
                                             <input
@@ -415,14 +408,14 @@ export default function AccountSettingsPage() {
                                                 }
                                                 type="password"
                                                 id="currentPassword"
-                                                className="form-input"
+                                                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-[#D2B79B] focus:ring-2 focus:ring-[#D2B79B]/20 outline-none disabled:bg-gray-100 disabled:text-gray-500"
                                                 placeholder="Wprowadź aktualne hasło"
                                             />
                                         </div>
-                                        <div className="form-group">
+                                        <div className="flex flex-col gap-1">
                                             <label
                                                 htmlFor="newPassword"
-                                                className="form-label">
+                                                className="text-sm font-medium text-gray-700">
                                                 Nowe hasło
                                             </label>
                                             <input
@@ -432,14 +425,14 @@ export default function AccountSettingsPage() {
                                                 }
                                                 type="password"
                                                 id="newPassword"
-                                                className="form-input"
+                                                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-[#D2B79B] focus:ring-2 focus:ring-[#D2B79B]/20 outline-none disabled:bg-gray-100 disabled:text-gray-500"
                                                 placeholder="Wprowadź nowe hasło (min. 8 znaków)"
                                             />
                                         </div>
-                                        <div className="form-group">
+                                        <div className="flex flex-col gap-1">
                                             <label
                                                 htmlFor="confirmPassword"
-                                                className="form-label">
+                                                className="text-sm font-medium text-gray-700">
                                                 Potwierdź nowe hasło
                                             </label>
                                             <input
@@ -449,7 +442,7 @@ export default function AccountSettingsPage() {
                                                 }
                                                 type="password"
                                                 id="confirmPassword"
-                                                className="form-input"
+                                                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-[#D2B79B] focus:ring-2 focus:ring-[#D2B79B]/20 outline-none disabled:bg-gray-100 disabled:text-gray-500"
                                                 placeholder="Potwierdź nowe hasło"
                                             />
                                         </div>
@@ -460,7 +453,7 @@ export default function AccountSettingsPage() {
                                                     newPass,
                                                 )
                                             }
-                                            className="settings-save-button">
+                                            className="px-6 py-2.5 rounded-xl font-semibold bg-[#D2B79B] text-black hover:bg-[#b89a7f] transition-colors">
                                             <span>Zmień hasło</span>
                                         </button>
                                     </div>
@@ -469,70 +462,70 @@ export default function AccountSettingsPage() {
 
                             {/* Newsletter Section */}
                             {activeSection === "preferences" && (
-                                <section className="settings-section">
-                                    <h2 className="settings-section-title">
+                                <section className="rounded-xl border border-[rgba(212,196,176,0.3)] bg-white/60 p-6">
+                                    <h2 className="text-xl font-bold text-gray-900 mb-2">
                                         Preferencje komunikacji
                                     </h2>
-                                    <p className="settings-section-description">
+                                    <p className="text-gray-600 mb-6">
                                         Wybierz, jakie informacje chcesz
                                         otrzymywać od nas.
                                     </p>
-                                    <div className="settings-form">
-                                        <div className="form-checkbox-group">
-                                            <label className="checkbox-label">
+                                    <div className="space-y-4">
+                                        <div className="flex items-start gap-3">
+                                            <label className="flex items-start gap-3 cursor-pointer">
                                                 <input
                                                     type="checkbox"
-                                                    className="checkbox-input"
+                                                    className="mt-1 rounded border-gray-300 text-[#D2B79B] focus:ring-[#D2B79B]"
                                                     defaultChecked
                                                 />
-                                                <span className="checkbox-text">
+                                                <span className="flex flex-col gap-0.5">
                                                     <strong>
                                                         Newsletter z ofertami
                                                     </strong>
-                                                    <span className="checkbox-description">
+                                                    <span className="text-sm text-gray-500 font-normal">
                                                         Otrzymuj najlepsze
                                                         oferty i promocje
                                                     </span>
                                                 </span>
                                             </label>
                                         </div>
-                                        <div className="form-checkbox-group">
-                                            <label className="checkbox-label">
+                                        <div className="flex items-start gap-3">
+                                            <label className="flex items-start gap-3 cursor-pointer">
                                                 <input
                                                     type="checkbox"
-                                                    className="checkbox-input"
+                                                    className="mt-1 rounded border-gray-300 text-[#D2B79B] focus:ring-[#D2B79B]"
                                                     defaultChecked
                                                 />
-                                                <span className="checkbox-text">
+                                                <span className="flex flex-col gap-0.5">
                                                     <strong>
                                                         Powiadomienia o
                                                         zamówieniach
                                                     </strong>
-                                                    <span className="checkbox-description">
+                                                    <span className="text-sm text-gray-500 font-normal">
                                                         Informacje o statusie
                                                         Twojego zamówienia
                                                     </span>
                                                 </span>
                                             </label>
                                         </div>
-                                        <div className="form-checkbox-group">
-                                            <label className="checkbox-label">
+                                        <div className="flex items-start gap-3">
+                                            <label className="flex items-start gap-3 cursor-pointer">
                                                 <input
                                                     type="checkbox"
-                                                    className="checkbox-input"
+                                                    className="mt-1 rounded border-gray-300 text-[#D2B79B] focus:ring-[#D2B79B]"
                                                 />
-                                                <span className="checkbox-text">
+                                                <span className="flex flex-col gap-0.5">
                                                     <strong>
                                                         Porady i nowości
                                                     </strong>
-                                                    <span className="checkbox-description">
+                                                    <span className="text-sm text-gray-500 font-normal">
                                                         E-maile z poradami i
                                                         trendami z branży
                                                     </span>
                                                 </span>
                                             </label>
                                         </div>
-                                        <button className="settings-save-button">
+                                        <button className="px-6 py-2.5 rounded-xl font-semibold bg-[#D2B79B] text-black hover:bg-[#b89a7f] transition-colors">
                                             <span>Zapisz preferencje</span>
                                         </button>
                                     </div>
@@ -541,42 +534,42 @@ export default function AccountSettingsPage() {
 
                             {/* Account Actions Section */}
                             {activeSection === "actions" && (
-                                <section className="settings-section">
-                                    <h2 className="settings-section-title">
+                                <section className="rounded-xl border border-[rgba(212,196,176,0.3)] bg-white/60 p-6">
+                                    <h2 className="text-xl font-bold text-gray-900 mb-2">
                                         Akcje konta
                                     </h2>
-                                    <p className="settings-section-description">
+                                    <p className="text-gray-600 mb-6">
                                         Zarządzaj danymi konta i wykonaj
                                         zaawansowane akcje.
                                     </p>
-                                    <div className="settings-actions">
-                                        <div className="settings-action-card">
-                                            <div className="settings-action-content">
-                                                <h3 className="settings-action-title">
+                                    <div className="space-y-4">
+                                        <div className="rounded-xl border border-[rgba(212,196,176,0.3)] bg-white/60 p-6">
+                                            <div className="flex-1">
+                                                <h3 className="text-lg font-bold text-gray-900 mb-1">
                                                     Eksportuj dane
                                                 </h3>
-                                                <p className="settings-action-description">
+                                                <p className="text-sm text-gray-600 mb-4">
                                                     Pobierz kopię wszystkich
                                                     swoich danych osobowych w
                                                     formacie JSON.
                                                 </p>
                                             </div>
-                                            <button className="settings-action-button settings-action-button-secondary">
+                                            <button className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-100 transition-colors">
                                                 Eksportuj dane
                                             </button>
                                         </div>
-                                        <div className="settings-action-card settings-action-card-danger">
-                                            <div className="settings-action-content">
-                                                <h3 className="settings-action-title">
+                                        <div className="rounded-xl border border-red-200 bg-red-50/50 p-6">
+                                            <div className="flex-1">
+                                                <h3 className="text-lg font-bold text-gray-900 mb-1">
                                                     Usuń konto
                                                 </h3>
-                                                <p className="settings-action-description">
+                                                <p className="text-sm text-gray-600 mb-4">
                                                     Trwale usuń swoje konto i
                                                     wszystkie powiązane dane. Ta
                                                     akcja jest nieodwracalna.
                                                 </p>
                                             </div>
-                                            <button className="settings-action-button settings-action-button-danger">
+                                            <button className="px-4 py-2 rounded-lg border border-red-300 text-red-600 font-medium hover:bg-red-50 transition-colors">
                                                 Usuń konto
                                             </button>
                                         </div>
