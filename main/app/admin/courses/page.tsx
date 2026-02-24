@@ -33,12 +33,8 @@ export default function CoursesPage() {
                 }
                 const data = await res.json();
                 console.log("Otrzymane dane z API:", data);
-                // API zwraca { status: 0, courses: [...] } lub { status: 200, courses: [...] }
-                const coursesArray = (data && data.courses && Array.isArray(data.courses)) 
-                    ? data.courses 
-                    : (Array.isArray(data) ? data : []);
-                console.log("Liczba kursów:", coursesArray.length);
-                setCourses(coursesArray);
+                
+                setCourses(JSON.parse(data.courses));
             } catch (error) {
                 console.error("Błąd podczas ładowania kursów:", error);
                 setCourses([]);
@@ -150,6 +146,20 @@ export default function CoursesPage() {
                         Dodawaj, edytuj i organizuj szkolenia.
                     </p>
                 </div>
+                <button
+                    onClick={() => {
+                        fetch("/admin/api/v1/courses/cache", {
+                            credentials: "include",
+                        }).then(res => res.json()).then(data => {
+                            if (data.status === 0) {
+                                alert("Plik cache naprawiony");
+                            } else {
+                                alert("Błąd podczas naprawiania pliku cache: " + data.error);
+                            }
+                        });
+                    }}
+                    className="w-full rounded-md border px-3 py-2 text-sm transition-colors hover:bg-accent sm:w-auto"
+                >Napraw plik cache</button>
                 <Link
                     href="/admin/courses/new"
                     className="w-full rounded-md border px-3 py-2 text-sm transition-colors hover:bg-accent sm:w-auto">

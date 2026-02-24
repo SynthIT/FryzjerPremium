@@ -11,7 +11,7 @@ import { roleSchema } from "@/lib/types/userTypes";
 
 export async function GET(req: NextRequest) {
     // Dla GET requestów sprawdzamy tylko, czy użytkownik jest zalogowany
-    const { val } = checkRequestAuth(req);
+    const { val } = await checkRequestAuth(req);
     if (!val) {
         return NextResponse.json(
             { status: 1, error: "Brak autoryzacji" },
@@ -23,9 +23,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-    const { val, mess } = checkRequestAuth(req, ["admin:roles", "admin:users"]);
+    const { val, mess } = await checkRequestAuth(req, ["admin:roles", "admin:users"]);
     if (!val) {
-        console.log(mess);
         return NextResponse.json(
             { status: 1, error: "Brak autoryzacji", details: mess },
             { status: 401 }
@@ -66,9 +65,8 @@ export async function DELETE(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
-    const { val, mess } = checkRequestAuth(req, ["admin:roles", "admin:users"]);
+    const { val, mess } = await checkRequestAuth(req, ["admin:roles", "admin:users"]);
     if (!val) {
-        console.log(mess);
         return NextResponse.json(
             { status: 1, error: "Brak autoryzacji", details: mess },
             { status: 401 }
@@ -104,9 +102,8 @@ export async function PUT(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-    const { val, mess } = checkRequestAuth(req, ["admin:users", "admin:roles"]);
+    const { val, mess } = await checkRequestAuth(req, ["admin:users", "admin:roles"]);
     if (!val) {
-        console.log(mess);
         return NextResponse.json(
             { status: 1, error: "Brak autoryzacji", details: mess },
             { status: 401 }

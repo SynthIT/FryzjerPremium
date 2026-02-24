@@ -49,14 +49,7 @@ export const getCourses = async (slug?: string) => {
         } else {
             return { status: 200, courses: [] };
         }
-        
-        // Jeśli nie ma slug, API zwraca { status: 200, courses: [...] }
-        if (data && data.courses) {
-            return data;
-        }
-        
-        // Fallback - zwróć pustą tablicę kursów
-        return { status: 200, courses: [] };
+
     } catch (error) {
         console.error("Błąd w getCourses:", error);
         return { status: 1, error: "Błąd podczas pobierania danych" };
@@ -64,8 +57,8 @@ export const getCourses = async (slug?: string) => {
 };
 
 export const updateProduct = async (product: Products) => {
-    const bd = new URL("http://localhost:3000/admin/api/v1/products");
-    const url = new URL("http://localhost:3000/api/v1/products");
+    const bd = new URL("/admin/api/v1/products");
+    const url = new URL("/api/v1/products");
 
     const response = await fetch(bd, {
         method: "PUT",
@@ -89,8 +82,8 @@ export const updateProduct = async (product: Products) => {
 };
 
 export const deleteProduct = async (slug: string) => {
-    const bd = new URL("http://localhost:3000/admin/api/v1/products");
-    const url = new URL("http://localhost:3000/api/v1/products");
+    const bd = new URL("/admin/api/v1/products");
+    const url = new URL("/api/v1/products");
 
     bd.searchParams.append("slug", slug);
     const response = await fetch(bd, {
@@ -108,7 +101,7 @@ export const deleteProduct = async (slug: string) => {
 };
 
 export const registerUser = async (email: string, password: string) => {
-    const url = new URL("http://localhost:3001/api/v1/auth/register");
+    const url = new URL("/api/v1/auth/register");
     const data = await fetch(url, {
         method: "POST",
         body: JSON.stringify({ email, password }),
@@ -121,7 +114,7 @@ export const loginUser = async ({
 }: {
     payload: { email: string; password: string; refreshToken: boolean };
 }) => {
-    const url = new URL("http://localhost:3000/api/v1/auth/login");
+    const url = new URL("/api/v1/auth/login");
     const data = await fetch(url, {
         method: "POST",
         body: JSON.stringify(payload),
@@ -133,7 +126,7 @@ export const loginUser = async ({
 
 const getCategories = async () => {
     const data = await fetch(
-        "http://localhost:3000/api/v1/products/categories",
+        "/api/v1/products/categories",
         { cache: "force-cache", next: { revalidate: 300 } },
     );
     return data.json();
@@ -149,8 +142,18 @@ export const finalPrice = (
     if (selectedWariant?.nadpisuje_cene && selectedWariant.nowa_cena) {
         basePrice = selectedWariant.nowa_cena;
     }
-    if (promocje && promocje.procent) {
-        basePrice = basePrice * ((100 - promocje.procent) / 100);
+    if (promocje && promocje.procent !== null && promocje.procent !== undefined) {
+        if (promocje.procent !== 0) {
+            basePrice = basePrice * ((100 - promocje.procent) / 100);
+        }
+        if (promocje.special?.obniza_cene && promocje.special?.obnizka) {
+            console.log("dziala obnizka");
+            basePrice = basePrice - (basePrice * promocje.special.obnizka!) / 100;
+        }
+        if (promocje.special?.zmienia_cene && promocje.special?.nowa_cena) {
+            console.log("dziala zmienia cene");
+            basePrice = promocje.special.nowa_cena;
+        }
     }
     basePrice = basePrice + (basePrice * vat) / 100;
     return basePrice.toFixed(2);

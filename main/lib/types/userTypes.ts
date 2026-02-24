@@ -3,6 +3,13 @@ import { adminPermission, userPermission } from "../auth/permissions";
 import { zodDeliveryMethods } from "./deliveryTypes";
 import { zodCartItem } from "./cartTypes";
 
+
+export const zodLogin = zod.object({
+    email: zod.email(),
+    password: zod.string().min(1).max(20),
+    refreshToken: zod.boolean().optional(),
+});
+
 export const roleSchema = zod.object({
     _id: zod.string().optional(),
     nazwa: zod.string(),

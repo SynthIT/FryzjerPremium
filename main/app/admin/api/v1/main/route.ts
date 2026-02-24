@@ -5,7 +5,7 @@ import { collectOrders } from "@/lib/crud/orders/orders";
 import { collectAnalists } from "@/lib/crud/analists/analists";
 
 export async function GET(req: NextRequest) {
-    const { val } = checkRequestAuth(req);
+    const { val } = await checkRequestAuth(req);
     if (!val) {
         return NextResponse.json(
             { status: 1, error: "Brak autoryzacji" },

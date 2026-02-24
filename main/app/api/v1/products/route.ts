@@ -1,8 +1,8 @@
-import { Products } from "@/lib/types/productTypes";
+import { Products, zodProducts } from "@/lib/types/productTypes";
 import path from "path";
 import { readFileSync, writeFileSync } from "fs";
 import { NextRequest, NextResponse } from "next/server";
-import { returnAvailableWariant } from "@/lib/admin_utils";
+import { checkRequestAuth, returnAvailableWariant } from "@/lib/admin_utils";
 
 export async function GET(req: NextRequest) {
     const url = req.url.split("/");
@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
         const productf: Products | undefined = products.find((p) => {
             return p.slug == querystring.split("=")[1];
         });
-        const { product } = returnAvailableWariant(req, productf!);
+        const { product } = await returnAvailableWariant(req, productf!);
         const response = {
             status: 0,
             product: product,
@@ -37,23 +37,35 @@ export async function GET(req: NextRequest) {
 
 export async function PUT(req: NextRequest) {
     try {
-        const product: Products = await req.json();
+        const { val, mess } = await checkRequestAuth(req, ["admin:products"]);
+        if (!val) {
+            return NextResponse.json(
+                { status: 1, error: "Brak autoryzacji", details: mess },
+                { status: 401 },
+            );
+        }
+        const product = await req.json();
+        const ok = zodProducts.safeParse(product);
+        if (!ok.success) {
+            return NextResponse.json(
+                { status: 1, error: "Błędne dane produktu", details: ok.error.message },
+                { status: 400 },
+            );
+        }
+        const productData = ok.data;
         const filePath = path.join(process.cwd(), "data", "produkty.json");
         const file = readFileSync(filePath, "utf8");
         const products: Products[] = JSON.parse(file);
-
-        const index = products.findIndex((p) => p.slug === product.slug);
+        const index = products.findIndex((p) => p.slug === productData.slug);
         if (index === -1) {
             return NextResponse.json(
                 { status: 1, error: "Produkt nie znaleziony" },
                 { status: 404 },
             );
         }
-
-        products[index] = product;
+        products[index] = productData;
         writeFileSync(filePath, JSON.stringify(products, null, 2), "utf8");
-
-        return NextResponse.json({ status: 0, product });
+        return NextResponse.json({ status: 0, product: productData });
     } catch (error) {
         console.error("Błąd podczas aktualizacji produktu:", error);
         return NextResponse.json(
@@ -65,6 +77,13 @@ export async function PUT(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
     try {
+        const { val, mess } = await checkRequestAuth(req, ["admin:products"]);
+        if (!val) {
+            return NextResponse.json(
+                { status: 1, error: "Brak autoryzacji", details: mess },
+                { status: 401 },
+            );
+        }
         const { searchParams } = new URL(req.url);
         const slug = searchParams.get("slug");
 

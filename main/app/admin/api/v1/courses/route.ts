@@ -9,30 +9,34 @@ import { checkRequestAuth } from "@/lib/admin_utils";
 import { LogService } from "@/lib/log_service";
 
 export async function GET(req: NextRequest) {
-    const { val } = checkRequestAuth(req);
+    const { val } = await checkRequestAuth(req);
     if (!val) {
         return NextResponse.json(
             { status: 1, error: "Brak autoryzacji" },
             { status: 401 }
         );
     }
-
     try {
         const courses = await collectCourses();
-        const parsedCourses = JSON.parse(courses);
-        console.log("Pobrano kursów:", Array.isArray(parsedCourses) ? parsedCourses.length : 0);
-        return NextResponse.json({ status: 0, courses: parsedCourses || [] });
+        return NextResponse.json({ status: 0, courses: courses || [] });
     } catch (error) {
         console.error("Błąd podczas pobierania kursów:", error);
-        // Zwróć pustą tablicę zamiast błędu, żeby strona się załadowała
-        return NextResponse.json({ status: 1, error: "Błąd podczas pobierania kursów" }, { status: 200 });
+        new LogService({
+            path: req.url,
+            kind: "error",
+            position: "admin",
+            http: req.method,
+        }).error(`Błąd podczas pobierania kursów: ${error}`);
+        return NextResponse.json(
+            { status: 1, error: "Błąd podczas pobierania kursów" },
+            { status: 500 }
+        );
     }
 }
 
 export async function DELETE(req: NextRequest) {
-    const { val, mess } = checkRequestAuth(req, ["admin:products"]);
+    const { val, mess } = await checkRequestAuth(req, ["admin:courses"]);
     if (!val) {
-        console.log(mess);
         return NextResponse.json(
             { status: 1, error: "Brak autoryzacji", details: mess },
             { status: 401 }
@@ -70,9 +74,8 @@ export async function DELETE(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
-    const { val, mess } = checkRequestAuth(req, ["admin:products"]);
+    const { val, mess } = await checkRequestAuth(req, ["admin:courses"]);
     if (!val) {
-        console.log(mess);
         return NextResponse.json(
             { status: 1, error: "Brak autoryzacji", details: mess },
             { status: 401 }
@@ -108,9 +111,8 @@ export async function PUT(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-    const { val, mess } = checkRequestAuth(req, ["admin:products"]);
+    const { val, mess } = await checkRequestAuth(req, ["admin:courses"]);
     if (!val) {
-        console.log(mess);
         return NextResponse.json(
             { status: 1, error: "Brak autoryzacji", details: mess },
             { status: 401 }

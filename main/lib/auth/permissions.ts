@@ -9,13 +9,19 @@ export const DiscountsTable = {
 
 export const PermissionTable = {
     "admin:orders": 1 << 0,
-    "admin:products": 1 << 1,
-    "admin:promo": 1 << 2,
-    "admin:producent": 1 << 3,
-    "admin:categories": 1 << 4,
-    "admin:blog": 1 << 5,
-    "admin:roles": 1 << 6,
-    "admin:users": 1 << 7,
+    "admin:analytics": 1 << 1,
+    "admin:categories": 1 << 2,
+    "admin:courses": 1 << 3,
+    "admin:delivery": 1 << 4,
+    "admin:companies": 1 << 5,
+    "admin:products": 1 << 6,
+    "admin:producent": 1 << 7,
+    "admin:promo": 1 << 8,
+    "admin:blog": 1 << 9,
+    "admin:roles": 1 << 10,
+    "admin:users": 1 << 11,
+    "admin:settings": 1 << 12,
+    "admin:logs": 1 << 13,
 } as const;
 
 export const permissionKeys = Object.keys(PermissionTable) as Array<

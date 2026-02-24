@@ -37,18 +37,17 @@ export default function CoursePage({ courseSlug }: CoursePageProps) {
         async function getCourse(slug: string) {
             try {
                 setError(null);
-                console.log("Pobieranie kursu dla slug:", slug);
                 const data = await fetchCourse(slug);
-                console.log("Otrzymane dane:", data);
                 if (data) {
-                    setCourse(data);
-                    setSelectedPrice(finalPrice(data.cena, data.vat, undefined, data.promocje as Promos));
+                    const json = JSON.parse(data);
+                    setCourse(json);
+                    setSelectedPrice(finalPrice(json.cena, json.vat, undefined, json.promocje as Promos));
                 } else {
                     setError("Kurs nie został znaleziony");
                 }
             } catch (error) {
-                console.error("Błąd podczas pobierania kursu:", error);
                 setError("Wystąpił błąd podczas ładowania szkolenia");
+                console.error("Błąd podczas ładowania szkolenia:", error);
             }
         }
         if (courseSlug) {
@@ -273,71 +272,63 @@ export default function CoursePage({ courseSlug }: CoursePageProps) {
                     {/* Right Column - Purchase Card (Udemy Style) */}
                     <div className="lg:col-span-1">
                         <div className="sticky top-24 rounded-xl border-2 border-[#D2B79B] bg-white shadow-lg overflow-hidden">
-                        <div className="relative aspect-video bg-gray-100">
-                            {mainImage ? (
-                                <Image
-                                    src={mainImage}
-                                    alt={mainImageAlt}
-                                    width={400}
-                                    height={300}
-                                    className="w-full h-full object-cover"
-                                />
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center text-5xl">
-                                    📚
-                                </div>
-                            )}
-                            {hasPromo && (
-                                <div className="absolute top-2 right-2 px-2 py-1 rounded-lg bg-[#D2B79B] text-black text-sm font-bold">
-                                    -{promoPercent}%
-                                </div>
-                            )}
-                        </div>
-
-                        <div className="p-6">
-                            {hasPromo ? (
-                                <div className="flex items-baseline gap-2 mb-4">
-                                    <span className="text-gray-500 line-through">{course.cena.toFixed(2)} zł</span>
-                                    <span className="text-2xl font-bold text-[#D2B79B]">{selectedPrice} zł</span>
-                                </div>
-                            ) : (
-                                <div className="text-2xl font-bold text-gray-900 mb-4">{course.cena.toFixed(2)} zł</div>
-                            )}
-
-                            <div className="flex flex-col gap-2">
-                                <button
-                                    type="button"
-                                    onClick={handleAddToCart}
-                                    className="w-full py-3 rounded-xl bg-[#D2B79B] text-black font-semibold hover:bg-[#b89a7f] transition-colors">
-                                    Dodaj do koszyka
-                                </button>
-                                <button type="button" className="w-full py-3 rounded-xl border-2 border-[#D2B79B] text-[#D2B79B] font-semibold hover:bg-[#D2B79B]/10 transition-colors">
-                                    Kup teraz
-                                </button>
+                            <div className="relative aspect-video bg-gray-100">
+                                {mainImage ? (
+                                    <Image
+                                        src={mainImage}
+                                        alt={mainImageAlt}
+                                        width={400}
+                                        height={300}
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-5xl">
+                                        📚
+                                    </div>
+                                )}
+                                {hasPromo !== null && hasPromo !== undefined && promoPercent! > 0 && (
+                                    <div className="absolute top-2 right-2 px-2 py-1 rounded-lg bg-[#D2B79B] text-black text-sm font-bold">
+                                        -{promoPercent}%
+                                    </div>
+                                )}
                             </div>
 
-                            <div className="flex items-center gap-2 mt-4 text-sm text-gray-600">
-                                <CheckCircle className="h-5 w-5 shrink-0 text-green-600" />
-                                <span>30-dniowa gwarancja zwrotu pieniędzy</span>
-                            </div>
+                            <div className="p-6">
+                                {hasPromo !== null && hasPromo !== undefined && promoPercent! > 0 ? (
+                                    <div className="flex items-baseline gap-2 mb-4">
+                                        <span className="text-gray-500 line-through">{finalPrice(course.cena, course.vat, undefined, undefined)} zł</span>
+                                        <span className="text-2xl font-bold text-[#D2B79B]">{finalPrice(course.cena, course.vat, undefined, course.promocje as Promos)} zł</span>
+                                    </div>
+                                ) : (hasPromo !== null && hasPromo !== undefined && promoPercent! === 0) ? (
+                                    <div className="text-2xl font-bold text-gray-900 mb-4">{finalPrice(course.cena, course.vat, undefined, undefined)} zł <sub>Cena za szkolenie</sub><br></br>
+                                        <span className="text-sm text-gray-500">{finalPrice(course.cena, course.vat, undefined, course.promocje as Promos)} zł Cena za szkolenie przy zakupie <u>{((course.promocje as Promos).special?.warunek)}</u> </span>
+                                    </div>
+                                ) : (
+                                    <div className="text-2xl font-bold text-gray-900 mb-4">{finalPrice(course.cena, course.vat, undefined, undefined)} zł</div>
+                                )}
 
-                            <div className="mt-6">
-                                <h4 className="font-bold text-gray-900 mb-2">Ten kurs zawiera:</h4>
-                                <ul className="space-y-2 text-sm text-gray-700">
-                                {course.czasTrwania && (
-                                    <li><CheckCircle className="h-4 w-4" /> {course.czasTrwania} materiału</li>
-                                )}
-                                {course.liczbaLekcji && course.liczbaLekcji > 0 && (
-                                    <li><CheckCircle className="h-4 w-4" /> {course.liczbaLekcji} lekcji</li>
-                                )}
-                                {course.certyfikat && (
-                                    <li><CheckCircle className="h-4 w-4" /> Certyfikat ukończenia</li>
-                                )}
-                                <li><CheckCircle className="h-4 w-4" /> Dożywotni dostęp</li>
-                                <li><CheckCircle className="h-4 w-4" /> Materiały do pobrania</li>
-                                </ul>
+                                <div className="flex items-center gap-2 mt-4 text-sm text-gray-600">
+                                    <CheckCircle className="h-5 w-5 shrink-0 text-green-600" />
+                                    <span>30-dniowa gwarancja zwrotu pieniędzy</span>
+                                </div>
+
+                                <div className="mt-6">
+                                    <h4 className="font-bold text-gray-900 mb-2">Ten kurs zawiera:</h4>
+                                    <ul className="space-y-2 text-sm text-gray-700">
+                                        {course.czasTrwania && (
+                                            <li><CheckCircle className="h-4 w-4" /> {course.czasTrwania} materiału</li>
+                                        )}
+                                        {course.liczbaLekcji && course.liczbaLekcji > 0 && (
+                                            <li><CheckCircle className="h-4 w-4" /> {course.liczbaLekcji} lekcji</li>
+                                        )}
+                                        {course.certyfikat && (
+                                            <li><CheckCircle className="h-4 w-4" /> Certyfikat ukończenia</li>
+                                        )}
+                                        <li><CheckCircle className="h-4 w-4" /> Dożywotni dostęp</li>
+                                        <li><CheckCircle className="h-4 w-4" /> Materiały do pobrania</li>
+                                    </ul>
+                                </div>
                             </div>
-                        </div>
                         </div>
                     </div>
                 </div>

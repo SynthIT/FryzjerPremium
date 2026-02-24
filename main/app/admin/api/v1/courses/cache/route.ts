@@ -1,11 +1,11 @@
 import { checkRequestAuth } from "@/lib/admin_utils";
-import { collectProducts } from "@/lib/crud/products/product";
+import { collectCourses } from "@/lib/crud/courses/course";
 import { access, writeFileSync, constants, rmSync } from "fs";
 import { NextRequest, NextResponse } from "next/server";
 import path from "path";
 
 export async function GET(req: NextRequest) {
-    const { val } = await checkRequestAuth(req, ["admin:products"]);
+    const { val } = checkRequestAuth(req);
     if (!val) {
         return NextResponse.json(
             { status: 1, error: "Brak autoryzacji" },
@@ -13,14 +13,14 @@ export async function GET(req: NextRequest) {
         );
     }
     let result = "";
-    const products = await collectProducts();
-    access(path.join(process.cwd(), "data", "produkty.json"), constants.F_OK, (err) => {
+    const courses = await collectCourses();
+    access(path.join(process.cwd(), "data", "kursy.json"), constants.F_OK, (err) => {
         if (err) {
-            writeFileSync(path.join(process.cwd(), "data", "produkty.json"), products, "utf8");
+            writeFileSync(path.join(process.cwd(), "data", "kursy.json"), courses, "utf8");
             result = "Pomyślnie naprawiono plik cache";
         } else {
-            rmSync(path.join(process.cwd(), "data", "produkty.json"));
-            writeFileSync(path.join(process.cwd(), "data", "produkty.json"), products, "utf8");
+            rmSync(path.join(process.cwd(), "data", "kursy.json"));
+            writeFileSync(path.join(process.cwd(), "data", "kursy.json"), courses, "utf8");
             result = "Pomyślnie naprawiono plik cache";
         }
     });

@@ -9,7 +9,7 @@ import { checkRequestAuth } from "@/lib/admin_utils";
 import { LogService } from "@/lib/log_service";
 
 export async function GET(req: NextRequest) {
-    const { val } = checkRequestAuth(req);
+    const { val } = await checkRequestAuth(req);
     if (!val) {
         return NextResponse.json(
             { status: 1, error: "Brak autoryzacji" },
@@ -31,9 +31,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-    const { val, mess } = checkRequestAuth(req, ["admin:products"]);
+    const { val, mess } = await checkRequestAuth(req, ["admin:companies", "admin:users"]);
     if (!val) {
-        console.log(mess);
         return NextResponse.json(
             { status: 1, error: "Brak autoryzacji", details: mess },
             { status: 401 },
@@ -73,16 +72,14 @@ export async function DELETE(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
-    const { val, mess } = checkRequestAuth(req, ["admin:products"]);
+    const { val, mess } = await checkRequestAuth(req, ["admin:companies", "admin:users"]);
     if (!val) {
-        console.log(mess);
         return NextResponse.json(
             { status: 1, error: "Brak autoryzacji", details: mess },
             { status: 401 },
         );
     }
     const firmaData = await req.json();
-    console.log("Otrzymane dane firmy do aktualizacji:", firmaData);
     try {
         const res = await updateFirma(firmaData);
         new LogService({
@@ -96,7 +93,6 @@ export async function PUT(req: NextRequest) {
             message: `Firma (${res?.nazwa}) zaktualizowana`,
         });
     } catch (e) {
-        console.log(e);
         new LogService({
             path: req.url,
             kind: "error",
@@ -111,9 +107,8 @@ export async function PUT(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-    const { val, mess } = checkRequestAuth(req, ["admin:products"]);
+    const { val, mess } = await checkRequestAuth(req, ["admin:companies", "admin:users"]);
     if (!val) {
-        console.log(mess);
         return NextResponse.json(
             { status: 1, error: "Brak autoryzacji", details: mess },
             { status: 401 },

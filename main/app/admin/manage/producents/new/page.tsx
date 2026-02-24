@@ -32,7 +32,7 @@ export default function NewProductPage() {
             body: JSON.stringify(producentData),
         });
         const result = await response.json();
-        if (result.status === 200) {
+        if (result.status === 201) {
             alert("Producent został dodany pomyślnie!");
             router.push("/admin/manage/producents");
         } else {

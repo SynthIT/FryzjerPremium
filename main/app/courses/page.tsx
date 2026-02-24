@@ -20,7 +20,7 @@ export default function CoursesPage() {
             try {
                 setLoading(true);
                 const data = await getCourses();
-                setAllCourses(data.courses || []);
+                setAllCourses(JSON.parse(data.courses));
             } catch (error) {
                 console.error("Błąd podczas ładowania szkoleń:", error);
                 setAllCourses([]);

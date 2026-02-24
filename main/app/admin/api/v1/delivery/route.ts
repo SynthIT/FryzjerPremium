@@ -9,7 +9,7 @@ import { checkRequestAuth } from "@/lib/admin_utils";
 import { LogService } from "@/lib/log_service";
 
 export async function GET(req: NextRequest) {
-    const { val } = checkRequestAuth(req);
+    const { val } = await checkRequestAuth(req);
     if (!val) {
         return NextResponse.json(
             { status: 1, error: "Brak autoryzacji" },
@@ -20,15 +20,13 @@ export async function GET(req: NextRequest) {
         const deliveries = await getDeliveryMethods();
         return NextResponse.json({ status: 0, delivery: JSON.stringify(deliveries) });
     } catch (error) {
-        console.error("Błąd podczas pobierania dostaw:", error);
-        return NextResponse.json({ status: 1, error: "Błąd podczas pobierania dostaw" }, { status: 500 });
+        return NextResponse.json({ status: 1, error: "Błąd podczas pobierania dostaw", details: `${error}` }, { status: 500 });
     }
 }
 
 export async function DELETE(req: NextRequest) {
-    const { val, mess } = checkRequestAuth(req, ["admin:products"]);
+    const { val, mess } = await checkRequestAuth(req, ["admin:delivery"]);
     if (!val) {
-        console.log(mess);
         return NextResponse.json(
             { status: 1, error: "Brak autoryzacji", details: mess },
             { status: 401 },
@@ -68,9 +66,8 @@ export async function DELETE(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
-    const { val, mess } = checkRequestAuth(req, ["admin:products"]);
+    const { val, mess } = await checkRequestAuth(req, ["admin:delivery"]);
     if (!val) {
-        console.log(mess);
         return NextResponse.json(
             { status: 1, error: "Brak autoryzacji", details: mess },
             { status: 401 },
@@ -98,9 +95,8 @@ export async function PUT(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-    const { val, mess } = checkRequestAuth(req, ["admin:products"]);
+    const { val, mess } = await checkRequestAuth(req, ["admin:delivery"]);
     if (!val) {
-        console.log(mess);
         return NextResponse.json(
             { status: 1, error: "Brak autoryzacji", details: mess },
             { status: 401 },

@@ -12,7 +12,7 @@ import { LogService } from "@/lib/log_service";
 export async function GET(req: NextRequest) {
     // Dla GET requestów sprawdzamy tylko, czy użytkownik jest zalogowany (ma ważny JWT)
     // Nie sprawdzamy konkretnych uprawnień - to jest tylko do wyświetlania listy produktów
-    const { val } = checkRequestAuth(req);
+    const { val } = await checkRequestAuth(req);
     if (!val) {
         return NextResponse.json(
             { status: 1, error: "Brak autoryzacji" },
@@ -31,9 +31,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-    const { val, mess } = checkRequestAuth(req, ["admin:products"]);
+    const { val, mess } = await checkRequestAuth(req, ["admin:products"]);
     if (!val) {
-        console.log(mess);
         return NextResponse.json(
             { status: 1, error: "Brak autoryzacji", details: mess },
             { status: 401 }
@@ -77,16 +76,14 @@ export async function DELETE(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
-    const { val, mess } = checkRequestAuth(req, ["admin:products"]);
+    const { val, mess } = await checkRequestAuth(req, ["admin:products"]);
     if (!val) {
-        console.log(mess);
         return NextResponse.json(
             { status: 1, error: "Brak autoryzacji", details: mess },
             { status: 401 }
         );
     }
     const productData = await req.json();
-    console.log("Otrzymane dane produktu do aktualizacji:", productData);
     try {
         const res = await updateProduct(productData);
         if (typeof res === "object" && "error" in res) {
@@ -106,7 +103,6 @@ export async function PUT(req: NextRequest) {
             message: `Produkt (${res?.nazwa}) zaktualizowany`,
         });
     } catch (e) {
-        console.log(e);
         new LogService({
             path: req.url,
             kind: "error",
@@ -121,9 +117,8 @@ export async function PUT(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-    const { val, mess } = checkRequestAuth(req, ["admin:products"]);
+    const { val, mess } = await checkRequestAuth(req, ["admin:products"]);
     if (!val) {
-        console.log(mess);
         return NextResponse.json(
             { status: 1, error: "Brak autoryzacji", details: mess },
             { status: 401 }

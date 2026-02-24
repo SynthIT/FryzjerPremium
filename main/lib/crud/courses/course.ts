@@ -3,19 +3,16 @@ import { Course } from "@/lib/models/Courses";
 import { zodCourses, Courses } from "@/lib/types/coursesTypes";
 import { Categories } from "@/lib/types/shared";
 import { Types } from "mongoose";
+import { LogService } from "@/lib/log_service";
 
 export async function collectCourses() {
-    try {
-        await db();
-        const cours = await Course.find()
-            .populate("kategoria")
-            .populate("promocje")
-            .populate("firma")
-            .lean();
-        return JSON.stringify(cours || []);
-    } catch (error) {
-        return error;
-    }
+    await db();
+    const cours = await Course.find()
+        .populate("kategoria")
+        .populate("promocje")
+        .populate("firma")
+        .lean();
+    return JSON.stringify(cours || []);
 }
 
 export async function createCourse(course: Courses) {

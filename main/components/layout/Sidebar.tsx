@@ -64,6 +64,11 @@ const navItems: NavItem[] = [
                 label: "Role",
                 icon: <User className="h-4 w-4" />,
             },
+            {
+                href: "/admin/customers/companies",
+                label: "Firmy",
+                icon: <Factory className="h-4 w-4" />,
+            },
         ],
     },
     {
@@ -125,11 +130,6 @@ const navItems: NavItem[] = [
                 label: "Dodaj nowe szkolenie",
                 icon: <PlusCircle className="h-4 w-4" />,
             },
-            {
-                href: "/admin/companies",
-                label: "Firmy",
-                icon: <Factory className="h-4 w-4" />,
-            },
         ],
     },
     {
@@ -190,7 +190,7 @@ export function Sidebar({
         if (raw) {
             try {
                 setTodos(JSON.parse(raw));
-            } catch {}
+            } catch { }
         }
     }, []);
 
@@ -264,13 +264,11 @@ export function Sidebar({
 
     return (
         <aside
-            className={`group/sidebar ${
-                isMobile
-                    ? "flex h-full w-full flex-col bg-background"
-                    : "border-r bg-background h-[calc(100vh-4rem)] overflow-y-auto"
-            } ${isCollapsed ? "w-16" : "w-64"} ${
-                isMobile ? "" : "hidden shrink-0 md:block"
-            } transition-[width] duration-300`}>
+            className={`group/sidebar ${isMobile
+                ? "flex h-full w-full flex-col bg-background"
+                : "border-r bg-background h-[calc(100vh-4rem)] overflow-y-auto"
+                } ${isCollapsed ? "w-16" : "w-64"} ${isMobile ? "" : "hidden shrink-0 md:block"
+                } transition-[width] duration-300`}>
             {!isMobile && (
                 <div className="flex h-14 items-center justify-between px-3">
                     <button
@@ -315,11 +313,10 @@ export function Sidebar({
                                             <Link
                                                 href={item.href}
                                                 onClick={handleLinkClick}
-                                                className={`relative flex flex-1 items-center gap-3 rounded-md px-3 py-2 text-sm transition-all duration-200 hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                                                    active || hasActiveChild
-                                                        ? "bg-accent text-accent-foreground"
-                                                        : "text-muted-foreground"
-                                                }`}
+                                                className={`relative flex flex-1 items-center gap-3 rounded-md px-3 py-2 text-sm transition-all duration-200 hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${active || hasActiveChild
+                                                    ? "bg-accent text-accent-foreground"
+                                                    : "text-muted-foreground"
+                                                    }`}
                                                 aria-current={
                                                     active ? "page" : undefined
                                                 }>
@@ -380,11 +377,10 @@ export function Sidebar({
                                                             onClick={
                                                                 handleLinkClick
                                                             }
-                                                            className={`relative flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-all duration-200 hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                                                                childActive
-                                                                    ? "bg-accent text-accent-foreground"
-                                                                    : "text-muted-foreground"
-                                                            }`}
+                                                            className={`relative flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-all duration-200 hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${childActive
+                                                                ? "bg-accent text-accent-foreground"
+                                                                : "text-muted-foreground"
+                                                                }`}
                                                             aria-current={
                                                                 childActive
                                                                     ? "page"
@@ -460,11 +456,10 @@ export function Sidebar({
                                                 <Square className="h-3.5 w-3.5" />
                                             )}
                                             <span
-                                                className={`truncate ${
-                                                    t.done
-                                                        ? "line-through opacity-60"
-                                                        : ""
-                                                }`}>
+                                                className={`truncate ${t.done
+                                                    ? "line-through opacity-60"
+                                                    : ""
+                                                    }`}>
                                                 {t.text}
                                             </span>
                                         </button>

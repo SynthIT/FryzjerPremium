@@ -135,7 +135,7 @@ export default function CompaniesPage() {
                     </p>
                 </div>
                 <Link
-                    href="/admin/companies/new"
+                    href="/admin/customers/companies/new"
                     className="w-full rounded-md border px-3 py-2 text-sm transition-colors hover:bg-accent sm:w-auto">
                     Dodaj firmę
                 </Link>

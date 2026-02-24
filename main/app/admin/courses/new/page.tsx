@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import "@/app/globals2.css";
-import { Courses, Firmy } from "@/lib/types/coursesTypes";
+import { Courses, Firmy, Lekcja } from "@/lib/types/coursesTypes";
 import { Categories, Media } from "@/lib/types/shared";
-import { makeSlugKeys, parseSlugName } from "@/lib/utils_admin";
 import { useRouter } from "next/navigation";
-import { Plus, X, Clock, Users, BookOpen, Award, Globe } from "lucide-react";
+import { X, Clock, Users, BookOpen, Award, Info } from "lucide-react";
+import { Users as User, userSchema } from "@/lib/types/userTypes";
 
 // Helper do generowania slug
 function generateSlug(text: string): string {
@@ -18,40 +18,86 @@ function generateSlug(text: string): string {
         .replace(/(^-|-$)/g, "");
 }
 
+
+function calculateProwizja(cena: number, prowizja: number, prowizja_typ: string, vat: number): number {
+    if (prowizja_typ === "procent") {
+        return (cena * (prowizja / 100)) + ((cena * (prowizja / 100)) * vat / 100);
+    } else {
+        return prowizja + (prowizja * vat / 100);
+    }
+}
+
+
 export default function NewCoursePage() {
     const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Podstawowe dane szkolenia
-    const [nazwa, setNazwa] = useState<string>("");
-    const [slug, setSlug] = useState<string>("");
-    const [cena, setCena] = useState<number>(0);
-    const [krotkiOpis, setKrotkiOpis] = useState<string>(""); // Krótki opis (jak subtitle na Udemy)
-    const [opis, setOpis] = useState<string>(""); // Pełny opis
-    const [ocena, setOcena] = useState<number>(0);
-    const [vat, setVat] = useState<number>(23);
-    const [aktywne, setAktywne] = useState<boolean>(true);
 
-    // Pola specyficzne dla szkoleń
-    const [czasTrwania, setCzasTrwania] = useState<string>(""); // np. "10 godzin"
-    const [poziom, setPoziom] = useState<string>("poczatkujacy"); // Początkujący, Średniozaawansowany, Zaawansowany
-    const [liczbaLekcji, setLiczbaLekcji] = useState<number>(0);
-    const [instruktor, setInstruktor] = useState<string>(""); // Nazwa instruktora
-    const [jezyk, setJezyk] = useState<string>("polski");
-    const [certyfikat, setCertyfikat] = useState<boolean>(false);
+    const [coursePayload, setCoursePayload] = useState<Courses>({
+        slug: "",
+        nazwa: "",
+        cena: 0,
+        prowizja: undefined,
+        prowizja_typ: undefined,
+        prowizja_vat: undefined,
+        kategoria: [],
+        firma: "",
+        lekcje: [],
+        media: [],
+        promocje: null,
+        opis: "",
+        ocena: 0,
+        opinie: [],
+        vat: 23,
+        sku: null,
+        aktywne: true,
+        czasTrwania: undefined,
+        poziom: undefined,
+        liczbaLekcji: undefined,
+        instruktor: undefined,
+        jezyk: "polski",
+        certyfikat: false,
+        krotkiOpis: undefined,
+    });
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const handleCoursePayloadChange = (key: keyof Courses, value: any) => {
+        if (key === "firma" && value !== "inna") {
+            const firma = firmy.find((f) => f._id!.toString() === value) as Firmy;
+            setCoursePayload((prev) => ({
+                ...prev,
+                firma: value,
+                prowizja: firma?.prowizja,
+                prowizja_typ: firma?.prowizja_typ,
+                prowizja_vat: firma?.prowizja_vat,
+            }));
+        } else {
+            setCoursePayload((prev) => ({
+                ...prev,
+                [key]: value,
+            }));
+            console.log(coursePayload);
+        }
+    };
+
+    const handleLessonPayloadChange = (index: number, key: keyof Lekcja, value: any) => {
+        setCoursePayload((prev) => ({
+            ...prev,
+            lekcje: prev.lekcje?.map((lesson, i) => i === index ? { ...lesson, [key]: value } : lesson),
+        }));
+    };
+
+
+    const [prowizjaCheckbox, setProwizjaCheckbox] = useState<boolean>(false);
     // Kategorie i firma
-    const [categories, setCategories] = useState<Record<string, Categories[]>>(
-        {},
-    );
-    const [categoriesSlug, setCategoriesSlug] = useState<string[]>([]);
+    const [categories, setCategories] = useState<Categories[]>([]);
+    const [uniqueCategories, setUniqueCategories] = useState<Record<string, Categories[]>>({});
     const [selectedMainCategory, setSelectedMainCategory] =
         useState<string>("");
     const [selectedSubCategories, setSelectedSubCategories] = useState<
         string[]
     >([]);
     const [firmy, setFirmy] = useState<Firmy[]>([]);
-    const [selectedFirma, setSelectedFirma] = useState<string>("");
 
     // Media - główne zdjęcie + galeria
     const [mainImageFile, setMainImageFile] = useState<File | null>(null);
@@ -61,10 +107,13 @@ export default function NewCoursePage() {
 
     // Auto-generuj slug z nazwy
     useEffect(() => {
-        if (nazwa) {
-            setSlug(generateSlug(nazwa));
+        if (coursePayload.nazwa) {
+            setCoursePayload((prev) => ({
+                ...prev,
+                slug: generateSlug(prev.nazwa),
+            }));
         }
-    }, [nazwa]);
+    }, [coursePayload.nazwa]);
 
     // Pobierz kategorie
     useEffect(() => {
@@ -79,10 +128,13 @@ export default function NewCoursePage() {
                     credentials: "include",
                 }).then((data) => data.json());
                 await Promise.all([p1, p2]).then(([a, b]) => {
-                    console.log(b);
                     if (a.status == 0) {
-                        setCategories(a.categories);
-                        setCategoriesSlug(makeSlugKeys(a.categories));
+                        const cat = JSON.parse(a.categories);
+                        setCategories(cat);
+                        setUniqueCategories(cat.reduce((acc: Record<string, Categories[]>, cat: Categories) => {
+                            (acc[cat.kategoria] ??= []).push(cat);
+                            return acc;
+                        }, {}));
                     }
                     if (b.status == 0) {
                         setFirmy(b.firmy);
@@ -144,6 +196,10 @@ export default function NewCoursePage() {
         setGalleryPreview((prev) => prev.filter((_, i) => i !== index));
     };
 
+    const selectedFirm = useMemo(() => {
+        return firmy.find((f) => f._id!.toString() === coursePayload.firma)?.instruktorzy ?? [];
+    }, [coursePayload.firma, firmy]);
+
     // Wysyłanie szkolenia
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -161,7 +217,7 @@ export default function NewCoursePage() {
             }
 
             // Przygotuj firmę
-            const firmaData = firmy.find((f) => f.slug === selectedFirma);
+            const firmaData = firmy.find((f) => f._id!.toString() === coursePayload.firma);
             if (!firmaData) {
                 alert("Wybierz firmę");
                 setIsSubmitting(false);
@@ -190,29 +246,6 @@ export default function NewCoursePage() {
             });
 
             // Przygotuj kurs - BEZ wariantów, z polami specyficznymi dla szkoleń
-            const courseData: Courses = {
-                slug,
-                nazwa,
-                cena: cena,
-                kategoria: selectedCategories,
-                firma: firmaData._id || firmaData,
-                media: mediaData,
-                opis: opis || krotkiOpis, // Używamy pełnego opisu, jeśli nie ma to krótki
-                ocena,
-                opinie: null,
-                vat,
-                sku: null, // Nie używamy SKU dla szkoleń
-                aktywne: aktywne,
-                // Pola specyficzne dla szkoleń
-                czasTrwania: czasTrwania || undefined,
-                poziom: poziom || undefined,
-                liczbaLekcji: liczbaLekcji > 0 ? liczbaLekcji : undefined,
-                instruktor: instruktor || undefined,
-                jezyk: jezyk || "polski",
-                certyfikat: certyfikat || false,
-                krotkiOpis: krotkiOpis || undefined,
-                promocje: null,
-            };
 
             const response = await fetch("/admin/api/v1/courses", {
                 method: "POST",
@@ -231,7 +264,7 @@ export default function NewCoursePage() {
             } else {
                 alert(
                     "Błąd podczas dodawania szkolenia: " +
-                        (result.error || "Nieznany błąd"),
+                    (result.error || "Nieznany błąd"),
                 );
             }
         } catch (error) {
@@ -268,14 +301,14 @@ export default function NewCoursePage() {
                             </label>
                             <input
                                 type="text"
-                                value={nazwa}
-                                onChange={(e) => setNazwa(e.target.value)}
+                                value={coursePayload.nazwa}
+                                onChange={(e) => handleCoursePayloadChange("nazwa", e.target.value)}
                                 required
                                 className="w-full rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
                                 placeholder="Np. Kompleksowy kurs strzyżenia męskiego"
                             />
                             <p className="text-xs text-muted-foreground mt-1">
-                                Slug: {slug || "(auto-generowany z tytułu)"}
+                                Slug: {coursePayload.slug || "(auto-generowany z tytułu)"}
                             </p>
                         </div>
 
@@ -285,15 +318,15 @@ export default function NewCoursePage() {
                             </label>
                             <input
                                 type="text"
-                                value={krotkiOpis}
-                                onChange={(e) => setKrotkiOpis(e.target.value)}
+                                value={coursePayload.krotkiOpis}
+                                onChange={(e) => handleCoursePayloadChange("krotkiOpis", e.target.value)}
                                 required
                                 maxLength={120}
                                 className="w-full rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
                                 placeholder="Krótkie podsumowanie szkolenia (max 120 znaków)"
                             />
                             <p className="text-xs text-muted-foreground mt-1">
-                                {krotkiOpis.length}/120 znaków
+                                {coursePayload.krotkiOpis?.length}/120 znaków
                             </p>
                         </div>
 
@@ -305,9 +338,9 @@ export default function NewCoursePage() {
                                 type="number"
                                 step="0.01"
                                 min="0"
-                                value={cena}
+                                value={coursePayload.cena}
                                 onChange={(e) =>
-                                    setCena(parseFloat(e.target.value) || 0)
+                                    handleCoursePayloadChange("cena", parseFloat(e.target.value) || 0)
                                 }
                                 required
                                 className="w-full rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
@@ -323,23 +356,23 @@ export default function NewCoursePage() {
                                 type="number"
                                 min="0"
                                 max="100"
-                                value={vat}
+                                value={coursePayload.vat}
                                 onChange={(e) =>
-                                    setVat(parseFloat(e.target.value) || 23)
+                                    handleCoursePayloadChange("vat", parseFloat(e.target.value) || 23)
                                 }
                                 className="w-full rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
                             />
                         </div>
                     </div>
+
                 </div>
 
-                {/* Sekcja 2: Szczegóły szkolenia */}
+                {/* Sekcja 2: Szkolenia */}
                 <div className="rounded-lg border p-6 space-y-6">
                     <h2 className="text-xl font-semibold flex items-center gap-2">
                         <Clock className="h-5 w-5" />
-                        Szczegóły szkolenia
+                        Szkolenia
                     </h2>
-
                     <div className="grid gap-4 sm:grid-cols-2">
                         <div>
                             <label className="block text-sm font-medium mb-2">
@@ -347,8 +380,8 @@ export default function NewCoursePage() {
                             </label>
                             <input
                                 type="text"
-                                value={czasTrwania}
-                                onChange={(e) => setCzasTrwania(e.target.value)}
+                                value={coursePayload.czasTrwania || ""}
+                                onChange={(e) => handleCoursePayloadChange("czasTrwania", e.target.value)}
                                 required
                                 className="w-full rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
                                 placeholder="Np. 10 godzin, 5 tygodni"
@@ -360,8 +393,8 @@ export default function NewCoursePage() {
                                 Poziom zaawansowania *
                             </label>
                             <select
-                                value={poziom}
-                                onChange={(e) => setPoziom(e.target.value)}
+                                value={coursePayload.poziom || ""}
+                                onChange={(e) => handleCoursePayloadChange("poziom", e.target.value)}
                                 required
                                 className="w-full rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring">
                                 <option value="poczatkujacy">
@@ -386,37 +419,21 @@ export default function NewCoursePage() {
                             <input
                                 type="number"
                                 min="0"
-                                value={liczbaLekcji}
+                                value={coursePayload.liczbaLekcji || 0}
                                 onChange={(e) =>
-                                    setLiczbaLekcji(
-                                        parseInt(e.target.value) || 0,
-                                    )
+                                    handleCoursePayloadChange("liczbaLekcji", parseInt(e.target.value) || 0)
                                 }
                                 className="w-full rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
                                 placeholder="0"
                             />
                         </div>
-
-                        <div>
-                            <label className="block text-sm font-medium mb-2">
-                                Instruktor
-                            </label>
-                            <input
-                                type="text"
-                                value={instruktor}
-                                onChange={(e) => setInstruktor(e.target.value)}
-                                className="w-full rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
-                                placeholder="Nazwa instruktora"
-                            />
-                        </div>
-
                         <div>
                             <label className="block text-sm font-medium mb-2">
                                 Język
                             </label>
                             <select
-                                value={jezyk}
-                                onChange={(e) => setJezyk(e.target.value)}
+                                value={coursePayload.jezyk || "polski"}
+                                onChange={(e) => handleCoursePayloadChange("jezyk", e.target.value)}
                                 className="w-full rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring">
                                 <option value="polski">Polski</option>
                                 <option value="angielski">Angielski</option>
@@ -427,9 +444,9 @@ export default function NewCoursePage() {
                         <div className="flex items-center gap-2 pt-6">
                             <input
                                 type="checkbox"
-                                checked={certyfikat}
+                                checked={coursePayload.certyfikat || false}
                                 onChange={(e) =>
-                                    setCertyfikat(e.target.checked)
+                                    handleCoursePayloadChange("certyfikat", e.target.checked)
                                 }
                                 className="w-4 h-4"
                                 id="certyfikat"
@@ -443,6 +460,28 @@ export default function NewCoursePage() {
                     </div>
                 </div>
 
+                {/* Sekcja 3: Szczegóły szkoleń */}
+                {coursePayload.liczbaLekcji && coursePayload.liczbaLekcji > 0 && (
+                    <div className="rounded-lg border p-6 space-y-6">
+                        <h2 className="text-xl font-semibold flex items-center gap-2">
+                            <Clock className="h-5 w-5" />
+                            Szczegóły szkoleń
+                        </h2>
+                        {Array.from({ length: coursePayload.liczbaLekcji || 0 }).map((_, index) => (
+                            <div key={index} className="rounded-lg border p-6 space-y-6">
+                                <h3 className="text-lg font-semibold">Lekcja #{index + 1}</h3>
+                                <div className="grid gap-4 sm:grid-cols-2">
+                                    <div>
+                                        <label className="block text-sm font-medium mb-2">
+                                            Tytuł lekcji
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
                 {/* Sekcja 3: Opis */}
                 <div className="rounded-lg border p-6 space-y-6">
                     <h2 className="text-xl font-semibold">Opis szkolenia</h2>
@@ -453,8 +492,8 @@ export default function NewCoursePage() {
                         </label>
                         <textarea
                             rows={8}
-                            value={opis}
-                            onChange={(e) => setOpis(e.target.value)}
+                            value={coursePayload.opis || ""}
+                            onChange={(e) => handleCoursePayloadChange("opis", e.target.value)}
                             required
                             className="w-full resize-none rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
                             placeholder="Szczegółowy opis szkolenia, czego się nauczysz, program kursu..."
@@ -476,28 +515,28 @@ export default function NewCoursePage() {
                             </label>
                             <div className="space-y-2">
                                 <select
-                                    value={selectedMainCategory}
-                                    onChange={(e) =>
+                                    value={selectedMainCategory || ""}
+                                    onChange={(e) => {
                                         handleMainCategoryChange(e.target.value)
-                                    }
+                                    }}
                                     required
                                     className="w-full rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring">
                                     <option value="">
                                         Wybierz główną kategorię
                                     </option>
-                                    {categoriesSlug.map((slug) => (
-                                        <option key={slug} value={slug}>
-                                            {parseSlugName(slug)}
+                                    {Object.keys(uniqueCategories).map((key: string) => (
+                                        <option key={key} value={key}>
+                                            {key}
                                         </option>
                                     ))}
                                 </select>
                                 {selectedMainCategory &&
-                                    categories[selectedMainCategory] && (
+                                    uniqueCategories[selectedMainCategory] && (
                                         <div className="space-y-2 mt-2">
                                             <label className="text-xs text-muted-foreground">
                                                 Wybierz podkategorie (wiele):
                                             </label>
-                                            {categories[
+                                            {uniqueCategories[
                                                 selectedMainCategory
                                             ].map((cat) => (
                                                 <label
@@ -508,11 +547,13 @@ export default function NewCoursePage() {
                                                         checked={selectedSubCategories.includes(
                                                             cat._id || "",
                                                         )}
-                                                        onChange={() =>
+                                                        onChange={() => {
                                                             handleSubCategoryToggle(
                                                                 cat._id || "",
-                                                            )
-                                                        }
+                                                            );
+                                                            console.log(cat._id);
+                                                            handleCoursePayloadChange("kategoria", [...coursePayload.kategoria, cat._id || ""]);
+                                                        }}
                                                         className="w-4 h-4"
                                                     />
                                                     <span className="text-sm">
@@ -530,22 +571,110 @@ export default function NewCoursePage() {
                                 Firma prowadząca *
                             </label>
                             <select
-                                value={selectedFirma}
+                                value={coursePayload.firma as string || ""}
                                 onChange={(e) =>
-                                    setSelectedFirma(e.target.value)
+                                    handleCoursePayloadChange("firma", e.target.value)
                                 }
                                 required
                                 className="w-full rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring">
                                 <option value="">Wybierz firmę</option>
+                                <option value="inna">Instruktor nieskojarzony z firmą</option>
                                 {firmy.map((firma) => (
                                     <option
                                         key={firma.nazwa}
-                                        value={firma.slug}>
+                                        value={firma._id}>
                                         {firma.nazwa}
                                     </option>
                                 ))}
                             </select>
                         </div>
+                        {coursePayload.firma && coursePayload.firma !== "" && (
+                            <div>
+                                <label className="block text-sm font-medium mb-2">
+                                    Instruktor
+                                </label>
+                                {coursePayload.firma && coursePayload.firma !== "inna" && <select
+                                    value={coursePayload.instruktor || ""}
+                                    onChange={(e) => handleCoursePayloadChange("instruktor", e.target.value)}
+                                    className="w-full rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
+                                >
+                                    <option value="">Wybierz instruktora</option>
+                                    {selectedFirm.map((instruktor) => (
+                                        <option key={(instruktor as User)._id || ""} value={(instruktor as User)._id || ""}>
+                                            {(instruktor as User).imie} {(instruktor as User).nazwisko}
+                                        </option>
+                                    ))}
+                                </select>}
+                                {coursePayload.firma && coursePayload.firma === "inna" && (
+                                    <input type="text" placeholder="np. Jan Kowalski" value={coursePayload.instruktor || ""} onChange={(e) => handleCoursePayloadChange("instruktor", e.target.value)} className="w-full rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring" />
+                                )}
+                                {coursePayload.instruktor && coursePayload.instruktor !== "" && (
+                                    <div className="flex items-center gap-2 mt-2">
+                                        <input type="checkbox"
+                                            checked={prowizjaCheckbox}
+                                            onChange={() => setProwizjaCheckbox(prev => !prev)}
+                                        ></input>
+                                        <label
+                                            onClick={() => setProwizjaCheckbox(prev => !prev)}
+                                            htmlFor="prowizjaCheckbox"
+                                            className="text-sm font-medium cursor-pointer">
+                                            Dla tego kursu powinna być wyliczona inna prowizja
+                                        </label>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                        {prowizjaCheckbox && (
+                            <div className="grid gap-4 sm:grid-cols-3">
+                                <div>
+                                    <label title="Prowizja - kwota, którą otrzyma instruktor za sprzedaż szkolenia" className="block text-sm font-medium mb-2">
+                                        Prowizja * <Info className="h-4 w-4 inline-block ml-2" />
+                                    </label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        min="0"
+                                        value={coursePayload.prowizja || 0}
+                                        onChange={(e) =>
+                                            handleCoursePayloadChange("prowizja", parseFloat(e.target.value) || 0)
+                                        }
+                                        required
+                                        className="w-full rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
+                                        placeholder="0.00"
+                                    />
+                                    {coursePayload.prowizja_typ === "procent" && <p className="text-xs text-muted-foreground mt-1">Kwota wyliczona na podstawie ceny szkolenia {coursePayload.cena && (coursePayload.cena * (coursePayload.prowizja / 100)).toFixed(2)} zł</p>}
+                                </div>
+
+                                <div>
+                                    <label title="Typ prowizji - procent lub kwota, podana w umowie z instruktorem" className="block text-sm font-medium mb-2">
+                                        Typ prowizji <Info className="h-4 w-4 inline-block ml-2" />
+                                    </label>
+                                    <select
+                                        value={coursePayload.prowizja_typ || "procent"}
+                                        onChange={(e) =>
+                                            handleCoursePayloadChange("prowizja_typ", e.target.value as "procent" | "kwota")
+                                        }
+                                        className="w-full rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring">
+                                        <option value="procent">Procent</option>
+                                        <option value="kwota">Kwota</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label title="VAT prowizji - brutto lub netto, podana w umowie z instruktorem" className="block text-sm font-medium mb-2">
+                                        VAT prowizji <Info className="h-4 w-4 inline-block ml-2" />
+                                    </label>
+                                    <select
+                                        value={coursePayload.prowizja_vat || "brutto"}
+                                        onChange={(e) =>
+                                            handleCoursePayloadChange("prowizja_vat", e.target.value as "brutto" | "netto")
+                                        }
+                                        className="w-full rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring">
+                                        <option value="brutto">Brutto</option>
+                                        <option value="netto">Netto</option>
+                                    </select>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -625,8 +754,8 @@ export default function NewCoursePage() {
                     <div className="flex items-center gap-2">
                         <input
                             type="checkbox"
-                            checked={aktywne}
-                            onChange={(e) => setAktywne(e.target.checked)}
+                            checked={coursePayload.aktywne || false}
+                            onChange={(e) => handleCoursePayloadChange("aktywne", e.target.checked)}
                             className="w-4 h-4"
                             id="aktywne"
                         />
@@ -663,7 +792,8 @@ export default function NewCoursePage() {
                         )}
                     </button>
                 </div>
-            </form>
-        </div>
+            </form >
+        </div >
+
     );
 }

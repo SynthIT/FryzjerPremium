@@ -17,13 +17,13 @@ export async function GET(req: NextRequest) {
             const course = courses.find((c: Courses) => c.slug === slug);
             return NextResponse.json({
                 status: 0,
-                course: course,
+                course: JSON.stringify(course),
             });
         } else {
             const courses: Courses[] = JSON.parse(file);
             return NextResponse.json({
                 status: 0,
-                courses: courses.filter((c) => c.aktywne !== false),
+                courses: JSON.stringify(courses.filter((c) => c.aktywne !== false)),
             });
         }
 
