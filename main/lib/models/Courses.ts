@@ -51,6 +51,11 @@ const courseSchema = new Schema<Courses>(
         opinie: { type: [reviewProductSchema], default: [] },
         vat: { type: Number, required: true, default: 23 },
         sku: { type: String },
+        liczbaZapisanych: { type: Number, default: 0 },
+        czegoSieNauczysz: { type: [String], default: [] },
+        gwarancjaDni: { type: Number, required: true, default: 0 },
+        zawartoscKursu: { type: [String], default: [] },
+        wymagania: { type: [String], default: [] },
         aktywne: { type: Boolean },
         // Pola specyficzne dla szkoleń (opcjonalne - nie zepsują istniejących danych)
         czasTrwania: { type: String },
