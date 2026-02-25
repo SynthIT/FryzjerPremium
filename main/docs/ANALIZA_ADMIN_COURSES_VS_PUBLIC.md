@@ -197,7 +197,7 @@ Na start wystarczy **płaska lista lekcji** bez `rozdzial`.
 ### Tworzenie: `main/app/admin/courses/new/page.tsx`
 
 - [ ] Zdefiniować `courseData` w `handleSubmit`: połączyć `coursePayload`, wybrane kategorie (`selectedSubCategories` → obiekty z `categories`/`uniqueCategories`), firmę (id lub „inna”), instruktor, prowizję, **lekcje** (z `coursePayload.lekcje` po wypełnieniu w formularzu), **media** (np. `mediaData`; naprawić `nazwa` na `coursePayload.nazwa` lub odpowiednik).
-- [ ] Synchronizacja kategorii: jedna źródło prawdy (np. `coursePayload.kategoria` pochodne od `selectedSubCategories`), przy zapisie przekazać do API wybrane kategorie. **bez bo do coursePayload wchodzi jedynie _id categorii**
+- [ ] Synchronizacja kategorii: jedna źródło prawdy (np. `coursePayload.kategoria` pochodne od `selectedSubCategories`), przy zapisie przekazać do API wybrane kategorie. **bez bo do coursePayload wchodzi jedynie _id categorii** 
 - [ ] Sekcja lekcji: przy zmianie `liczbaLekcji` inicjalizować/aktualizować `coursePayload.lekcje` (np. puste `{ tytul, opis, dlugosc, video?, plik? }`). Dodać inputy w każdym bloku „Lekcja #N” i powiązać z `handleLessonPayloadChange`.
 - [ ] **Pola dynamiczne (po dodaniu do typu):** W formularzu new dodać sekcję „Czego się nauczysz” (lista pól tekstowych, dodaj/usuń) → `coursePayload.czegoSieNauczysz`; sekcję „Wymagania” (lista pól) → `coursePayload.wymagania`. Opcjonalnie: `gwarancjaDni`, checkboxy „Dożywotni dostęp”, „Materiały do pobrania”.
 - [ ] Opcja „inna” przy firmie: w `handleSubmit` nie wymagać `firmaData` z listy firm gdy wybrano „inna”; w payloadzie przekazać odpowiednią wartość (np. null lub flag). *nie pamiętam jak to wyglada przy api, więc narazie olej*
