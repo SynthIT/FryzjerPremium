@@ -114,13 +114,11 @@ export const loginUser = async ({
 }: {
     payload: { email: string; password: string; refreshToken: boolean };
 }) => {
-    const url = new URL("/api/v1/auth/login");
-    const data = await fetch(url, {
+    const response = await fetch("/api/v1/auth/login", {
         method: "POST",
         body: JSON.stringify(payload),
-    }).then((res) => {
-        return res.json();
     });
+    const data = await response.json();
     return data;
 };
 

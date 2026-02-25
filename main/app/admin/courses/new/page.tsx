@@ -31,8 +31,6 @@ function calculateProwizja(cena: number, prowizja: number, prowizja_typ: string,
 export default function NewCoursePage() {
     const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
-
-
     const [coursePayload, setCoursePayload] = useState<Courses>({
         slug: "",
         nazwa: "",

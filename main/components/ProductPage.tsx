@@ -157,7 +157,7 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
     }
 
     return (
-        <div className="min-h-screen bg-[#f8f6f3]">
+        <div className="min-h-screen bg-[#f8f6f3] pt-[140px]">
             <div className="mx-auto max-w-7xl px-4 py-8">
                 {/* Breadcrumbs */}
                 <nav className="flex flex-wrap items-center gap-1 text-sm text-gray-600 mb-8">
@@ -189,7 +189,7 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                             </span>
                         </>
                     )}
-                </div>
+                </nav>
 
                 {/* Main Product Content */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">

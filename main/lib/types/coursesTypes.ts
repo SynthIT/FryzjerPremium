@@ -10,7 +10,6 @@ export const zodFirmy = z.object({
     prowizja: z.number().optional(),
     prowizja_typ: z.enum(["procent", "kwota"]).optional(),
     prowizja_vat: z.enum(["brutto", "netto"]).optional(),
-    
     slug: z.string(),
     opis: z.string().optional(),
     strona_internetowa: z.string().nullable(),

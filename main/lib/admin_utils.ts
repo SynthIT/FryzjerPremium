@@ -147,7 +147,7 @@ export async function verifyJWT(req: NextRequest): Promise<{
         );
         const email = (cookie as JwtPayload).email;
         if (!email) return { val: false, mess: "Nieprawidłowy token" };
-        const user = await User.findOne({ email: email }).populate("role").orFail();
+        const user = await User.findOne({ email: email }).populate("role").orFail().lean();
         if (!user) return { val: false, mess: "Użytkownik nie istnieje" };
         return { val: true, user: user };
     } catch (_) {
@@ -164,7 +164,7 @@ export async function verifyJWT(req: NextRequest): Promise<{
         );
         const email = (cookie as JwtPayload).email;
         if (!email) return { val: false, mess: "Nieprawidłowy token" };
-        const user = await User.findOne({ email: email }).populate("role").orFail();
+        const user = await User.findOne({ email: email }).populate("role").orFail().lean();
         if (!user) return { val: false, mess: "Użytkownik nie istnieje" };
         return { val: true, user: user };
     }

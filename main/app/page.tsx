@@ -5,7 +5,9 @@ import NewArrivals from "@/components/NewArrivals";
 import Bestsellers from "@/components/Bestsellers";
 import ProductCategories from "@/components/ProductCategories";
 import Footer from "@/components/Footer";
+import QueryInfoBanner from "@/components/QueryInfoBanner";
 import { getProducts } from "@/lib/utils";
+import { Suspense } from "react";
 
 export default async function Home() {
     const retrivetProducts = await getProducts();
@@ -13,6 +15,9 @@ export default async function Home() {
     return (
         <>
             <Header />
+            <Suspense fallback={null}>
+                <QueryInfoBanner />
+            </Suspense>
             <Hero />
             <Brands data={retrivetProducts} />
             <NewArrivals data={retrivetProducts} />

@@ -55,12 +55,13 @@ export function UserProvider({ children }: { children: ReactNode }) {
                 })
                 .then((data) => {
                     if (!data) return;
+                    console.log(data);
                     setUser(data.user._id);
                     if (!userData) {
                         setUserData(data.user);
                     }
-                    if (data.orders) {
-                        setOrders(data.user.zamowienia);
+                    if (data.orders && data.orders.length > 0) {
+                        setOrders(data.orders);
                     }
                 });
         }
@@ -77,7 +78,9 @@ export function UserProvider({ children }: { children: ReactNode }) {
         if (!user.updatedAt) return;
         user.createdAt = new Date(user.createdAt);
         user.updatedAt = new Date(user.updatedAt);
-        userSchema.parse(user);
+        const ok = userSchema.safeParse(user);
+        if (!ok.success) return;
+        user = ok.data;
         if (orders.length > 0) {
             setOrders(orders);
             setUser(user._id);

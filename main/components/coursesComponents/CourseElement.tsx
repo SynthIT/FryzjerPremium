@@ -20,8 +20,6 @@ export default function CourseElement({ course, index }: CourseElementProps) {
     const imageAlt = course.media?.[0]?.alt || course.nazwa || "Szkolenie";
     const hasPromo = course.promocje && typeof course.promocje === "object" && "procent" in course.promocje;
     const promo = hasPromo ? (course.promocje as Promos) : null;
-    const original = course.cena;
-    const discounted = promo ? course.cena * ((100 - promo.procent) / 100) : course.cena;
 
     return (
         <Link

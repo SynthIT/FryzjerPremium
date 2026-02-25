@@ -20,15 +20,14 @@ function createOrderNumber() {
 }
 export async function GET(request: NextRequest) {
     const { val, user } = await verifyJWT(request);
-    if (val && user) {
-        const cart = await retriveUserCartOrders(user?._id as string);
-        if (!cart) {
-            return NextResponse.json({ error: "Nie udało się pobrać koszyka" }, { status: 400 });
-        }
-        return NextResponse.json({ status: 0, koszyk: cart });
-    } else {
-        
+    if (!val && !user) {
+
     }
+    const cart = await retriveUserCartOrders(user?._id as string);
+    if (!cart) {
+        return NextResponse.json({ error: "Nie udało się pobrać koszyka" }, { status: 400 });
+    }
+    return NextResponse.json({ status: 0, koszyk: cart });
 }
 
 export async function POST(request: NextRequest) {
@@ -135,4 +134,4 @@ export async function POST(request: NextRequest) {
             }
             return NextResponse.json({ status: 0, koszyk: { id: order.numer_zamowienia, items: updatedCart }, changedEntries: changedEntries ?? '' });
         }
-    }
+    }}

@@ -11,7 +11,11 @@ import { User } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
 import { useNotification } from "@/contexts/NotificationContext";
 
-export default function Header() {
+interface HeaderProps {
+    openLoginModal?: boolean;
+}
+
+export default function Header({ openLoginModal }: HeaderProps) {
     const [searchQuery, setSearchQuery] = useState("");
     const [showDropdown, setShowDropdown] = useState(false);
     const [showCartDropdown, setShowCartDropdown] = useState(false);
@@ -33,6 +37,12 @@ export default function Header() {
     const { getTotalItems, lastAddedItem, clearLastAddedItem } = useCart();
     const { addUser, userData, isAdmin, logout } = useUser();
     const { notify } = useNotification();
+
+    useEffect(() => {
+        if (openLoginModal) {
+            setShowLoginModal(true);
+        }
+    }, [openLoginModal]);
 
     const cartItemsCount = getTotalItems();
 
@@ -214,6 +224,20 @@ export default function Header() {
         setShowDropdown((prev) => !prev);
     }, []);
 
+    const handleLogin = async () => {
+        const response = await loginUser({ payload: loginForm });
+        if (response.status == 201) {
+            addUser(response.user, response.orders);
+            notify("Zostałeś zalogowany", "log");
+            setShowLoginModal(false);
+            setLoginForm({ email: "", password: "", refreshToken: false });
+        } else {
+            setLoginForm((prev) => ({ ...prev, password: "" }));
+            notify(response.error ?? "Błąd", "error");
+        }
+    }
+
+
     return (
         <header className="fixed top-0 left-0 right-0 z-[1100] w-full max-w-full overflow-visible bg-[rgba(240,232,221)] backdrop-blur-[20px] border-b border-[rgba(212,196,176,0.3)] shadow-[0_4px_30px_rgba(0,0,0,0.06),0_1px_0_rgba(255,255,255,0.5)_inset] transition-shadow duration-300 hover:shadow-[0_8px_40px_rgba(0,0,0,0.1),0_1px_0_rgba(255,255,255,0.5)_inset]">
             <div className="max-w-[1400px] mx-auto px-6 py-4 flex items-center justify-between gap-8 w-full min-h-[100px] box-border overflow-visible">
@@ -392,7 +416,7 @@ export default function Header() {
                                 </div>
                             </div>
                             <div className="flex gap-3 pt-2">
-                                <button type="submit" className="flex-1 py-2.5 rounded-lg bg-[#D2B79B] text-black font-semibold hover:bg-[#b89a7f] transition-colors disabled:opacity-50" disabled={!loginForm.email || !loginForm.password} onClick={async () => { const response = await loginUser({ payload: loginForm }); if (response.status == 201) { addUser(response.user, response.orders); notify("Zostałeś zalogowany", "log"); } else { notify(response.error ?? "Błąd", "error"); } }}>Zaloguj się</button>
+                                <button type="submit" className="flex-1 py-2.5 rounded-lg bg-[#D2B79B] text-black font-semibold hover:bg-[#b89a7f] transition-colors disabled:opacity-50" disabled={!loginForm.email || !loginForm.password} onClick={handleLogin}>Zaloguj się</button>
                                 <button type="button" className="flex-1 py-2.5 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors" onClick={() => { setShowLoginModal(false); setLoginForm({ email: "", password: "", refreshToken: false }); }}>Anuluj</button>
                             </div>
                         </form>
