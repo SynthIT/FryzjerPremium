@@ -1,6 +1,6 @@
-import { permissionToAdminNumber, permissionToUserNumber } from "@/lib/auth/permissions";
-import { Role } from "@/lib/models/Users";
-import { Roles } from "@/lib/types/userTypes";
+import { permissionToAdminNumber, permissionToUserNumber } from "../lib/auth/permissions";
+import { Role } from "../lib/models/Users";
+import { Roles } from "../lib/types/userTypes";
 import mongoose from "mongoose";
 
 (async () => {
