@@ -141,13 +141,65 @@ Wniosek: żeby strona `courses/[slug]` miała kompletne i spójne dane, w **twor
 
 ---
 
-## 7. Konkretne zadania (checklist)
+## 7. Treści zahardkodowane vs dynamiczne – przegląd i propozycje rozwiązań
+
+Poniżej lista miejsc z **zahardkodowaną** treścią, które powinny być sterowane danymi kursu (lub konfiguracją). Dla każdego: lokalizacja, co jest zahardkodowane, propozycja pola/struktury i ewentualna zmiana w typie.
+
+### 7.1 `main/components/CoursePage.tsx`
+
+| Lokalizacja | Zahardkodowana treść | Propozycja rozwiązania |
+|-------------|----------------------|------------------------|
+| **Linia 155** | `{Math.floor(Math.random() * 1000) + 100} studentów` – losowa liczba | x**Opcja A:** Dodać pole kursu `liczbaZapisanych?: number` (aktualizowane przy zapisach/zamówieniach). x**Opcja B:** Endpoint / pole obliczane z zamówień (np. `GET /api/v1/courses/:slug/stats` → `{ liczbaZapisanych }`). >**Opcja C:** Nie wyświetlać liczby dopóki nie ma realnych danych; albo tekst typu „Dołącz do uczestników” bez liczby. |
+| **Linie 217–223** | Sekcja „Czego się nauczysz” – 4 stałe punkty: „Profesjonalne techniki strzyżenia”, „Praca z różnymi typami włosów”, „Stylizacja i modelowanie”, „Obsługa klienta w salonie” | **Dodać pole kursu:** `czegoSieNauczysz?: string[]` (tablica stringów). W adminie (new + edycja): lista pól tekstowych (dodaj/usuń pozycję). Na stronie: `course.czegoSieNauczysz?.map(...)` lub fallback do pustej listy / ukrycie sekcji. |
+| **Linie 228–252** | Blok „Zawartość szkolenia” (lewa kolumna) – 3 stałe „rozdziały”: „Wprowadzenie do fryzjerstwa” (3 lekcje • 45 min), „Techniki strzyżenia” (8 lekcji • 2 godziny), „Stylizacja i modelowanie” (6 lekcji • 1.5 godziny) | **Użyć istniejącego pola:** `course.lekcje` (`Lekcja`: `tytul`, `opis`, `dlugosc`). Renderować `course.lekcje?.map((lekcja, i) => (...))` z numerem, `lekcja.tytul`, `lekcja.dlugosc`. Grupowanie w „rozdziały” opcjonalnie później (np. pole `rozdzial?: string` w `Lekcja`). |
+| **Linie 257–262** | Sekcja „Wymagania” – 3 stałe punkty: „Podstawowa znajomość narzędzi fryzjerskich”, „Dostęp do podstawowych narzędzi (nożyczki, grzebień)”, „Chęć do nauki i praktyki” | **Dodać pole kursu:** `wymagania?: string[]` (tablica stringów). W adminie: lista pól tekstowych (dodaj/usuń). Na stronie: `course.wymagania?.map(...)`. Gdy puste – sekcję ukryć lub nie renderować. |
+| **Linia 312** | Tekst „30-dniowa gwarancja zwrotu pieniędzy” | **Opcja A:** Pole kursu `gwarancjaDni?: number | null` (np. 30). Wyświetlać tylko gdy `course.gwarancjaDni > 0`: „{course.gwarancjaDni}-dniowa gwarancja zwrotu pieniędzy”. **Opcja B:** Ustawienie globalne (np. config/settings) – jeden tekst dla wszystkich kursów. |
+| **Linie 327–328** | „Ten kurs zawiera:” – zawsze wyświetlane: „Dożywotni dostęp”, „Materiały do pobrania” | **Opcja A:** Dodać pola kursu `dozywotniDostep?: boolean`, `materialyDoPobrania?: boolean` (domyślnie true). Wyświetlać tylko gdy true. **Opcja B:** Jedna tablica `zawartośćKursu?: string[]` – admin wpisuje dowolne punkty (w tym „Dożywotni dostęp”, „Materiały do pobrania” itd.). |
+| **Linie 373–393** | Zakładka „Program” (curriculum) – stała struktura: „Rozdział 1: Wprowadzenie”, „Lekcja 1: Wprowadzenie do kursu” (15:30), „Lekcja 2: Podstawowe narzędzia” (20:45) | **Użyć `course.lekcje`:** Lista lekcji z `tytul`, `dlugosc` (i opcjonalnie `opis`). Render: `course.lekcje?.map((lekcja, i) => ( <div key={i}> <PlayCircle /> Lekcja {i+1}: {lekcja.tytul} <span>{lekcja.dlugosc}</span> </div> ))`. Bez „rozdziałów” na start – płaska lista; ewentualnie później pole `rozdzial` w `Lekcja` i grupowanie. |
+
+### 7.2 Propozycje zmian w typach (`main/lib/types/coursesTypes.ts`)
+
+- **Dodać do `zodCourses` (i ewentualnie do CRUD/API):**
+  - `czegoSieNauczysz: z.array(z.string()).optional()` – punkty „Czego się nauczysz”.
+  - `wymagania: z.array(z.string()).optional()` – punkty „Wymagania”.
+  - `gwarancjaDni: z.number().nullable().optional()` – liczba dni gwarancji (np. 30); brak = nie pokazywać bloku.
+  - `dozywotniDostep: z.boolean().optional()` – czy pokazywać „Dożywotni dostęp” w „Ten kurs zawiera” (domyślnie true).
+  - `materialyDoPobrania: z.boolean().optional()` – jw. dla „Materiały do pobrania” (domyślnie true).
+  - `liczbaZapisanych: z.number().optional()` – opcjonalnie, jeśli będzie zbierane z zapisów/zamówień.
+
+- **Nie zmieniać:** `lekcje` już jest w `zodLekcja` z `tytul`, `opis`, `dlugosc`, `video`, `plik` – wystarczy wypełniać je w adminie i renderować na stronie kursu.
+
+### 7.3 Opcjonalne rozszerzenie `Lekcja` (rozdziały)
+
+Jeśli w przyszłości ma być podział na rozdziały (np. „Rozdział 1: Wprowadzenie” → lista lekcji):
+
+- Dodać do `zodLekcja`: `rozdzial?: z.string().optional()` (nazwa rozdziału).
+- Na stronie: grupować `course.lekcje` po `rozdzial` i wyświetlać nagłówki rozdziałów + listę lekcji.
+
+Na start wystarczy **płaska lista lekcji** bez `rozdzial`.
+
+### 7.4 Inne miejsca (nawigacja / teksty globalne)
+
+- **CoursePage ok. 91, 124–126:** Link „Wróć do listy szkoleń” → `/products/szkolenia`, breadcrumbs „Strona główna”, „Szkolenia” → `/`, `/courses`. Ścieżki są poprawne (strona kursu nie musi ich mieć w bazie); ewentualnie link do listy kursów spójny z resztą (np. zawsze `/courses` zamiast `/products/szkolenia` w jednym miejscu).
+- **Stałe etykiety UI** („Przegląd”, „Program”, „Opinie”, „Czego się nauczysz”, „Wymagania”, „Opis szkolenia”, „Ten kurs zawiera”) – mogą zostać w kodzie; ewentualnie później i18n / CMS.
+
+### 7.5 Podsumowanie wdrożenia (kolejność)
+
+1. **Bez nowych pól:** W CoursePage sekcje „Zawartość szkolenia” (lewa kolumna) i zakładka „Program” podmienić na render z `course.lekcje` (tytul, dlugosc, opcjonalnie opis). W adminie (new + edycja) dokończyć formularz lekcji i zapis `coursePayload.lekcje`.
+2. **Nowe pola tablicowe:** Dodać `czegoSieNauczysz` i `wymagania` do typu kursu i do formularzy w adminie; w CoursePage renderować z tych pól, sekcję chować gdy brak danych.
+3. **Opcjonalnie:** `gwarancjaDni`, `dozywotniDostep`, `materialyDoPobrania` – w schemacie i w adminie; w CoursePage warunkowe wyświetlanie.
+4. **Opcjonalnie:** `liczbaZapisanych` lub endpoint statystyk – gdy będzie logika zapisów/zamówień.
+
+---
+
+## 8. Konkretne zadania (checklist)
 
 ### Tworzenie: `main/app/admin/courses/new/page.tsx`
 
 - [ ] Zdefiniować `courseData` w `handleSubmit`: połączyć `coursePayload`, wybrane kategorie (`selectedSubCategories` → obiekty z `categories`/`uniqueCategories`), firmę (id lub „inna”), instruktor, prowizję, **lekcje** (z `coursePayload.lekcje` po wypełnieniu w formularzu), **media** (np. `mediaData`; naprawić `nazwa` na `coursePayload.nazwa` lub odpowiednik).
 - [ ] Synchronizacja kategorii: jedna źródło prawdy (np. `coursePayload.kategoria` pochodne od `selectedSubCategories`), przy zapisie przekazać do API wybrane kategorie. **bez bo do coursePayload wchodzi jedynie _id categorii**
 - [ ] Sekcja lekcji: przy zmianie `liczbaLekcji` inicjalizować/aktualizować `coursePayload.lekcje` (np. puste `{ tytul, opis, dlugosc, video?, plik? }`). Dodać inputy w każdym bloku „Lekcja #N” i powiązać z `handleLessonPayloadChange`.
+- [ ] **Pola dynamiczne (po dodaniu do typu):** W formularzu new dodać sekcję „Czego się nauczysz” (lista pól tekstowych, dodaj/usuń) → `coursePayload.czegoSieNauczysz`; sekcję „Wymagania” (lista pól) → `coursePayload.wymagania`. Opcjonalnie: `gwarancjaDni`, checkboxy „Dożywotni dostęp”, „Materiały do pobrania”.
 - [ ] Opcja „inna” przy firmie: w `handleSubmit` nie wymagać `firmaData` z listy firm gdy wybrano „inna”; w payloadzie przekazać odpowiednią wartość (np. null lub flag). *nie pamiętam jak to wyglada przy api, więc narazie olej*
 - [ ] Poprawki wyglądowe (opcjonalnie): spójne sekcje, odstępy, etykiety, walidacja.
 
@@ -160,9 +212,17 @@ Wniosek: żeby strona `courses/[slug]` miała kompletne i spójne dane, w **twor
 
 - [ ] Dodać dynamiczną trasę `[slug]`.
 - [ ] Pobranie kursu: z listy (np. przez searchParams lub context) albo GET jeden kurs (endpoint lub filtrowanie po slug z listy).
-- [ ] Formularz edycji: te same bloki co w new (podstawowe, czas/poziom/lekcje/język/certyfikat, opis, kategorie i firma, instruktor, prowizja, media, lekcje, status). Uzupełnić wszystkie pola z tabeli powyżej (krotkiOpis, czasTrwania, poziom, jezyk, certyfikat, instruktor, lekcje, promocje).
+- [ ] Formularz edycji: te same bloki co w new (podstawowe, czas/poziom/lekcje/język/certyfikat, opis, kategorie i firma, instruktor, prowizja, media, lekcje, status). Uzupełnić wszystkie pola z tabeli powyżej (krotkiOpis, czasTrwania, poziom, jezyk, certyfikat, instruktor, lekcje, promocje). **Dodać pola dynamiczne:** `czegoSieNauczysz[]`, `wymagania[]`, opcjonalnie `gwarancjaDni`, `dozywotniDostep`, `materialyDoPobrania`.
 - [ ] Zapis: PUT do `/admin/api/v1/courses` z pełnym obiektem kursu; po sukcesie redirect na `/admin/courses`.
 - [ ] Usunięcie: DELETE z przekierowaniem na listę.
+
+### Strona publiczna: `main/components/CoursePage.tsx` (treści dynamiczne)
+
+- [ ] **Lekcje:** Sekcja „Zawartość szkolenia” (lewa kolumna) i zakładka „Program” – renderować z `course.lekcje` (tytul, dlugosc, opis); usuwać zahardkodowane 3 bloki / rozdział 1.
+- [ ] **Czego się nauczysz:** Po dodaniu pola `czegoSieNauczysz` w typie i API – renderować `course.czegoSieNauczysz?.map(...)`; gdy puste – ukryć sekcję lub pokazać placeholder.
+- [ ] **Wymagania:** Po dodaniu pola `wymagania` – renderować `course.wymagania?.map(...)`; gdy puste – ukryć sekcję.
+- [ ] **Liczba studentów:** Zastąpić `Math.random()` polem `course.liczbaZapisanych` lub endpointem statystyk; albo usunąć / zmienić na neutralny tekst.
+- [ ] **Gwarancja / Ten kurs zawiera:** Po dodaniu `gwarancjaDni`, `dozywotniDostep`, `materialyDoPobrania` – warunkowe wyświetlanie w prawej kolumnie.
 
 ### Modal (do usunięcia lub ograniczenia): `main/components/admin/CourseEditModal.tsx`
 
