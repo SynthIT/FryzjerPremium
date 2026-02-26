@@ -56,7 +56,7 @@ const Role = models.Roles || model("Roles", roleSchema);
 
 async function main() {
   try {
-    await mongoose.connect("mongodb://localhost:27017/fryzjerpremium");
+    await mongoose.connect("mongodb+srv://patryksuchy57_db_user:UymecTNIDrINox2F@fryzjer.z0ko3bp.mongodb.net/fryzjerpremium?appName=Fryzjer");
     console.log("Połączono z bazą danych");
 
     const allAdminNumbers = permissionToAdminNumber([
@@ -70,6 +70,10 @@ async function main() {
       "admin:producent",
       "admin:promo",
       "admin:logs",
+      "admin:blog",
+      "admin:roles",
+      "admin:users",
+      "admin:settings",
     ]);
 
     const allUserNumbers = permissionToUserNumber([
