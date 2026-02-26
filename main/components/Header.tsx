@@ -270,10 +270,11 @@ export default function Header({ openLoginModal }: HeaderProps) {
                         {showDropdown && (
                             <div className="absolute top-full left-0 mt-1 py-2 min-w-[180px] bg-white rounded-lg shadow-[0_8px_24px_rgba(0,0,0,0.12)] border border-[rgba(212,196,176,0.2)] z-50">
                                 <Link href="/products" className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#f0e8dd] hover:text-[#D2B79B]" onClick={closeMobileMenu}>Kup Teraz</Link>
-                                <a href="#product-categories-section" className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#f0e8dd] hover:text-[#D2B79B]" onClick={(e) => { e.preventDefault(); smoothScrollTo("product-categories-section"); }}>Kategorie</a>
+                                <Link href="/courses" className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#f0e8dd] hover:text-[#D2B79B]" onClick={closeMobileMenu}>Kursy</Link>
+                                {/* <a href="#product-categories-section" className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#f0e8dd] hover:text-[#D2B79B]" onClick={(e) => { e.preventDefault(); smoothScrollTo("product-categories-section"); }}>Kategorie</a>
                                 <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#f0e8dd] hover:text-[#D2B79B]" onClick={(e) => { e.preventDefault(); closeMobileMenu(); }}>Promocje</a>
                                 <a href="#new-arrivals-section" className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#f0e8dd] hover:text-[#D2B79B]" onClick={(e) => { e.preventDefault(); smoothScrollTo("new-arrivals-section"); }}>Nowości</a>
-                                <a href="#bestsellers-section" className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#f0e8dd] hover:text-[#D2B79B]" onClick={(e) => { e.preventDefault(); smoothScrollTo("bestsellers-section"); }}>Bestsellery</a>
+                                <a href="#bestsellers-section" className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#f0e8dd] hover:text-[#D2B79B]" onClick={(e) => { e.preventDefault(); smoothScrollTo("bestsellers-section"); }}>Bestsellery</a> */}
                             </div>
                         )}
                     </div>

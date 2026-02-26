@@ -3,6 +3,7 @@ import type { Promos } from "@/lib/types/shared";
 import { renderStars } from "@/lib/utils";
 import Link from "next/link";
 import Image from "next/image";
+import CoursePriceElement from "./CoursePriceElement";
 
 interface CourseElementProps {
     course: Courses;
@@ -42,19 +43,11 @@ export default function CourseElement({ course, index }: CourseElementProps) {
                     </div>
                 )}
             </div>
+            <CoursePriceElement course={course} promo={course.promocje as Promos} />
             <div className="p-4">
                 <h3 className="font-semibold text-gray-900 line-clamp-2 mb-2 group-hover:text-[#D2B79B] transition-colors">{course.nazwa}</h3>
                 <div className="mb-2">{renderStars(course.ocena || 0)}</div>
-                <div className="flex items-baseline gap-2 flex-wrap">
-                    {hasPromo ? (
-                        <>
-                            <span className="text-sm text-gray-500 line-through">{original.toFixed(2)} zł</span>
-                            <span className="font-bold text-[#D2B79B]">{discounted.toFixed(2)} zł</span>
-                        </>
-                    ) : (
-                        <span className="font-bold text-gray-900">{original.toFixed(2)} zł</span>
-                    )}
-                </div>
+
                 {course.firma && typeof course.firma === "object" && "nazwa" in course.firma && (
                     <p className="text-xs text-gray-500 mt-2">Firma: {(course.firma as { nazwa: string }).nazwa}</p>
                 )}

@@ -7,6 +7,7 @@ import { Categories, Media } from "@/lib/types/shared";
 import { useRouter } from "next/navigation";
 import { X, Clock, Users, BookOpen, Award, Info } from "lucide-react";
 import { Users as User, userSchema } from "@/lib/types/userTypes";
+import { finalPrice } from "@/lib/utils";
 
 // Helper do generowania slug
 function generateSlug(text: string): string {
@@ -390,6 +391,7 @@ export default function NewCoursePage() {
                                 className="w-full rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
                                 placeholder="0.00"
                             />
+                            <p className="text-xs text-muted-foreground mt-1">Cena z VAT: {finalPrice(coursePayload.cena, coursePayload.vat, undefined, undefined)} zł</p>
                         </div>
 
                         <div>
@@ -398,7 +400,6 @@ export default function NewCoursePage() {
                             </label>
                             <input
                                 type="number"
-                                min="0"
                                 max="100"
                                 value={coursePayload.vat}
                                 onChange={(e) =>

@@ -81,7 +81,7 @@ export default function RegisterPage() {
                 const data = await response.json();
 
                 if (data.status === 201) {
-                    addUser(data.user);
+                    addUser(data.user, []);
                     notify("Rejestracja zakończona pomyślnie", "log");
                     router.push("/");
                 } else {
@@ -126,6 +126,13 @@ export default function RegisterPage() {
                             <li className="flex items-start gap-2">
                                 <span className="mt-1 h-1.5 w-1.5 rounded-full bg-black/70" />
                                 <span>otrzymasz powiadomienia o nadchodzących wizytach.</span>
+                            </li>
+                        </ul>
+                        <p className="text-sm text-black/70">Korzystałeś wcześniej bez konta? Nic straconego:</p>
+                        <ul className="space-y-2 text-sm text-black/80">
+                            <li className="flex items-start gap-2">
+                                <span className="mt-1 h-1.5 w-1.5 rounded-full bg-black/70" />
+                                <span>Zamówienia wykonane na podany adres e-mail pojawią sie w Twoim profilu</span>
                             </li>
                         </ul>
                         <p className="mt-2 text-xs text-black/70">

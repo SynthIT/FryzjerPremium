@@ -66,14 +66,13 @@ export function UserProvider({ children }: { children: ReactNode }) {
                 });
         }
         try {
-            const loggedUser = localStorage.getItem("user");
-            u(loggedUser ?? undefined);
+            u(user ?? undefined);
         } catch (err) {
             console.log("Błąd podczas ładowania użytkownika: ", err);
         }
-    }, [userData]);
+    }, [user, userData]);
 
-    const addUser = useCallback((user: Users, orders: OrderList[]) => {
+    const addUser = useCallback((user: Users, orders?: OrderList[]) => {
         if (!user.createdAt) return;
         if (!user.updatedAt) return;
         user.createdAt = new Date(user.createdAt);
@@ -81,11 +80,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
         const ok = userSchema.safeParse(user);
         if (!ok.success) return;
         user = ok.data;
-        if (orders.length > 0) {
-            setOrders(orders);
-            setUser(user._id);
-        }
         setUser(user._id);
+        setOrders(orders ?? []);
     }, []);
 
     const changePassword = useCallback(
