@@ -33,10 +33,9 @@ export async function updateCourse(courseData: Courses) {
     if (course.error) return;
     const kategorie = course.data.kategoria;
     courseData.kategoria = [];
-    for (const kategoria of kategorie) {
-        courseData.kategoria.push(
-            new Types.ObjectId((kategoria as Categories)._id) as unknown as string,
-        );
+    for (const k of kategorie) {
+        const id = typeof k === "string" ? k : (k as Categories)._id;
+        if (id) courseData.kategoria.push(new Types.ObjectId(id) as unknown as string);
     }
 
     await db();

@@ -57,20 +57,21 @@ export const zodCourses = z.object({
     createdAt: z.date().optional(),
     vat: z.number().default(23),
     sku: z.string().nullable(),
-    liczbaZapisanych: z.number().optional().default(0),
-    czegoSieNauczysz: z.array(z.string()),
-    gwarancjaDni: z.number(),
-    zawartoscKursu: z.array(z.string()),
-    wymagania: z.array(z.string()),
+    liczbaZapisanych: z.number().optional(),
+    czegoSieNauczysz: z.array(z.string()).optional(),
+    gwarancjaDni: z.number().nullable().optional(),
+    zawartoscKursu: z.array(z.string()).optional(),
+    wymagania: z.array(z.string()).optional(),
+    dozywotniDostep: z.boolean().optional(),
+    materialyDoPobrania: z.boolean().optional(),
     aktywne: z.boolean(),
-    // Pola specyficzne dla szkoleń (opcjonalne, żeby nie zepsuć istniejących danych)
     czasTrwania: z.string().optional(),
     poziom: z.string().optional(),
     liczbaLekcji: z.number().optional(),
     instruktor: z.string().optional(),
     jezyk: z.string().optional(),
     certyfikat: z.boolean().optional(),
-    krotkiOpis: z.string().optional(), // Krótki opis/subtitle
+    krotkiOpis: z.string().optional(),
 });
 
 export type Courses = z.infer<typeof zodCourses>;

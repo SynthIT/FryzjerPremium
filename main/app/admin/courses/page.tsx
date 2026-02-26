@@ -3,16 +3,13 @@
 import { useState, useEffect, useMemo } from "react";
 import { Courses } from "@/lib/types/coursesTypes";
 import AdminCourseCard from "@/components/admin/AdminCourseCard";
-import CourseEditModal from "@/components/admin/CourseEditModal";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function CoursesPage() {
+    const router = useRouter();
     const [courses, setCourses] = useState<Courses[]>([]);
     const [loading, setLoading] = useState(true);
-    const [selectedCourse, setSelectedCourse] = useState<Courses | null>(
-        null
-    );
-    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [searchQuery, setSearchQuery] = useState("");
     const coursesPerPage = 12;
@@ -68,58 +65,7 @@ export default function CoursesPage() {
     const displayedCourses = Array.isArray(filteredCourses) ? filteredCourses.slice(startIndex, endIndex) : [];
 
     const handleCourseClick = (course: Courses) => {
-        setSelectedCourse(course);
-        setIsEditModalOpen(true);
-    };
-
-    const handleCourseUpdate = async (updatedCourse: Courses) => {
-        try {
-            const res = await fetch("/admin/api/v1/courses", {
-                credentials: "include",
-            });
-            if (res.ok) {
-                const data = await res.json();
-                // API zwraca { status: 0, courses: [...] } lub { status: 200, courses: [...] }
-                const coursesArray = (data && data.courses && Array.isArray(data.courses)) 
-                    ? data.courses 
-                    : (Array.isArray(data) ? data : []);
-                setCourses(coursesArray);
-            } else {
-                throw new Error(`HTTP ${res.status}`);
-            }
-        } catch (error) {
-            console.error("Błąd podczas odświeżania kursów:", error);
-            setCourses((prev) =>
-                prev.map((c) =>
-                    c.slug === updatedCourse.slug ? updatedCourse : c
-                )
-            );
-        }
-        setIsEditModalOpen(false);
-        setSelectedCourse(null);
-    };
-
-    const handleCourseDelete = async (courseSlug: string) => {
-        try {
-            const res = await fetch("/admin/api/v1/courses", {
-                credentials: "include",
-            });
-            if (res.ok) {
-                const data = await res.json();
-                // API zwraca { status: 0, courses: [...] } lub { status: 200, courses: [...] }
-                const coursesArray = (data && data.courses && Array.isArray(data.courses)) 
-                    ? data.courses 
-                    : (Array.isArray(data) ? data : []);
-                setCourses(coursesArray);
-            } else {
-                throw new Error(`HTTP ${res.status}`);
-            }
-        } catch (error) {
-            console.error("Błąd podczas odświeżania kursów:", error);
-            setCourses((prev) => prev.filter((c) => c.slug !== courseSlug));
-        }
-        setIsEditModalOpen(false);
-        setSelectedCourse(null);
+        router.push(`/admin/courses/${encodeURIComponent(course.slug)}`);
     };
 
     if (loading) {
@@ -279,20 +225,6 @@ export default function CoursesPage() {
                         </div>
                     )}
                 </>
-            )}
-
-            {/* Edit Modal */}
-            {selectedCourse && (
-                <CourseEditModal
-                    course={selectedCourse}
-                    isOpen={isEditModalOpen}
-                    onClose={() => {
-                        setIsEditModalOpen(false);
-                        setSelectedCourse(null);
-                    }}
-                    onUpdate={handleCourseUpdate}
-                    onDelete={handleCourseDelete}
-                />
             )}
         </div>
     );

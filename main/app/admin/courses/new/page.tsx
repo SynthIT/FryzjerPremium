@@ -56,6 +56,12 @@ export default function NewCoursePage() {
         jezyk: "polski",
         certyfikat: false,
         krotkiOpis: undefined,
+        czegoSieNauczysz: [],
+        wymagania: [],
+        gwarancjaDni: undefined,
+        dozywotniDostep: true,
+        materialyDoPobrania: true,
+        zawartoscKursu: [],
     });
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -103,7 +109,29 @@ export default function NewCoursePage() {
     const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
     const [galleryPreview, setGalleryPreview] = useState<string[]>([]);
 
-    // Auto-generuj slug z nazwy
+    // Sync coursePayload.kategoria with selectedSubCategories
+    useEffect(() => {
+        setCoursePayload((prev) => ({ ...prev, kategoria: selectedSubCategories }));
+    }, [selectedSubCategories]);
+
+    // Sync coursePayload.lekcje length with liczbaLekcji
+    useEffect(() => {
+        const n = coursePayload.liczbaLekcji ?? 0;
+        if (n <= 0) {
+            setCoursePayload((prev) => ({ ...prev, lekcje: [] }));
+            return;
+        }
+        setCoursePayload((prev) => {
+            const curr = prev.lekcje ?? [];
+            if (curr.length === n) return prev;
+            if (curr.length > n) return { ...prev, lekcje: curr.slice(0, n) };
+            const next = [...curr];
+            while (next.length < n) {
+                next.push({ tytul: "", opis: "", dlugosc: "" });
+            }
+            return { ...prev, lekcje: next };
+        });
+    }, [coursePayload.liczbaLekcji]);
     useEffect(() => {
         if (coursePayload.nazwa) {
             setCoursePayload((prev) => ({
@@ -214,7 +242,12 @@ export default function NewCoursePage() {
                 });
             }
 
-            // Przygotuj firmę
+            // Przygotuj firmę (przy "inna" backend nie przyjmuje null – wymagamy firmy z listy)
+            if (!coursePayload.firma || coursePayload.firma === "inna") {
+                alert("Wybierz firmę z listy (opcja «inna» nie jest jeszcze obsługiwana przy zapisie).");
+                setIsSubmitting(false);
+                return;
+            }
             const firmaData = firmy.find((f) => f._id!.toString() === coursePayload.firma);
             if (!firmaData) {
                 alert("Wybierz firmę");
@@ -222,15 +255,15 @@ export default function NewCoursePage() {
                 return;
             }
 
-            // Przygotuj media - główne zdjęcie + galeria
+            // Przygotuj media - główne zdjęcie + galeria (nazwa z coursePayload.nazwa)
             const mediaData: Media[] = [];
             if (mainImageFile) {
                 mediaData.push({
-                    nazwa: mainImageFile.name,
-                    slug: generateSlug(mainImageFile.name),
+                    nazwa: coursePayload.nazwa || mainImageFile.name,
+                    slug: generateSlug(coursePayload.nazwa || mainImageFile.name),
                     typ: "image",
-                    alt: nazwa || "Główne zdjęcie szkolenia",
-                    path: "", // Będzie wypełnione po uploadzie
+                    alt: coursePayload.nazwa || "Główne zdjęcie szkolenia",
+                    path: "",
                 });
             }
             galleryFiles.forEach((file) => {
@@ -239,11 +272,24 @@ export default function NewCoursePage() {
                     slug: generateSlug(file.name),
                     typ: "image",
                     alt: file.name,
-                    path: "", // Będzie wypełnione po uploadzie
+                    path: "",
                 });
             });
 
-            // Przygotuj kurs - BEZ wariantów, z polami specyficznymi dla szkoleń
+            const courseData = {
+                ...coursePayload,
+                kategoria: selectedSubCategories,
+                firma: firmaData._id ?? coursePayload.firma,
+                instruktor: coursePayload.instruktor || undefined,
+                lekcje: coursePayload.lekcje ?? [],
+                media: mediaData.length > 0 ? mediaData : coursePayload.media,
+                czegoSieNauczysz: coursePayload.czegoSieNauczysz ?? [],
+                wymagania: coursePayload.wymagania ?? [],
+                gwarancjaDni: coursePayload.gwarancjaDni ?? 0,
+                dozywotniDostep: coursePayload.dozywotniDostep ?? true,
+                materialyDoPobrania: coursePayload.materialyDoPobrania ?? true,
+                zawartoscKursu: coursePayload.zawartoscKursu ?? [],
+            };
 
             const response = await fetch("/admin/api/v1/courses", {
                 method: "POST",
@@ -459,26 +505,165 @@ export default function NewCoursePage() {
                 </div>
 
                 {/* Sekcja 3: Szczegóły szkoleń */}
-                {coursePayload.liczbaLekcji && coursePayload.liczbaLekcji > 0 && (
+                {coursePayload.liczbaLekcji != null && coursePayload.liczbaLekcji > 0 && (
                     <div className="rounded-lg border p-6 space-y-6">
                         <h2 className="text-xl font-semibold flex items-center gap-2">
                             <Clock className="h-5 w-5" />
                             Szczegóły szkoleń
                         </h2>
-                        {Array.from({ length: coursePayload.liczbaLekcji || 0 }).map((_, index) => (
-                            <div key={index} className="rounded-lg border p-6 space-y-6">
+                        {(coursePayload.lekcje ?? []).map((lekcja, index) => (
+                            <div key={index} className="rounded-lg border p-4 space-y-4">
                                 <h3 className="text-lg font-semibold">Lekcja #{index + 1}</h3>
                                 <div className="grid gap-4 sm:grid-cols-2">
+                                    <div className="sm:col-span-2">
+                                        <label className="block text-sm font-medium mb-2">Tytuł lekcji</label>
+                                        <input
+                                            type="text"
+                                            value={lekcja.tytul}
+                                            onChange={(e) => handleLessonPayloadChange(index, "tytul", e.target.value)}
+                                            className="w-full rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
+                                            placeholder="Np. Wprowadzenie do kursu"
+                                        />
+                                    </div>
+                                    <div className="sm:col-span-2">
+                                        <label className="block text-sm font-medium mb-2">Opis lekcji</label>
+                                        <textarea
+                                            rows={2}
+                                            value={lekcja.opis}
+                                            onChange={(e) => handleLessonPayloadChange(index, "opis", e.target.value)}
+                                            className="w-full rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
+                                            placeholder="Krótki opis lekcji"
+                                        />
+                                    </div>
                                     <div>
-                                        <label className="block text-sm font-medium mb-2">
-                                            Tytuł lekcji
-                                        </label>
+                                        <label className="block text-sm font-medium mb-2">Długość (np. 15:30 lub 45 min)</label>
+                                        <input
+                                            type="text"
+                                            value={lekcja.dlugosc}
+                                            onChange={(e) => handleLessonPayloadChange(index, "dlugosc", e.target.value)}
+                                            className="w-full rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
+                                            placeholder="15:30"
+                                        />
                                     </div>
                                 </div>
                             </div>
                         ))}
                     </div>
                 )}
+
+                {/* Sekcja: Czego się nauczysz */}
+                <div className="rounded-lg border p-6 space-y-6">
+                    <h2 className="text-xl font-semibold flex items-center gap-2">
+                        <Award className="h-5 w-5" />
+                        Czego się nauczysz
+                    </h2>
+                    <p className="text-sm text-muted-foreground">Dodaj punkty wyświetlane na stronie kursu (dodaj/usuń).</p>
+                    {(coursePayload.czegoSieNauczysz ?? []).map((punkt, index) => (
+                        <div key={index} className="flex gap-2">
+                            <input
+                                type="text"
+                                value={punkt}
+                                onChange={(e) => {
+                                    const next = [...(coursePayload.czegoSieNauczysz ?? [])];
+                                    next[index] = e.target.value;
+                                    handleCoursePayloadChange("czegoSieNauczysz", next);
+                                }}
+                                className="flex-1 rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
+                                placeholder="Np. Profesjonalne techniki strzyżenia"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => handleCoursePayloadChange("czegoSieNauczysz", (coursePayload.czegoSieNauczysz ?? []).filter((_, i) => i !== index))}
+                                className="px-3 py-2 border rounded-md hover:bg-red-50 text-red-600"
+                            >
+                                Usuń
+                            </button>
+                        </div>
+                    ))}
+                    <button
+                        type="button"
+                        onClick={() => handleCoursePayloadChange("czegoSieNauczysz", [...(coursePayload.czegoSieNauczysz ?? []), ""])}
+                        className="px-4 py-2 border rounded-md hover:bg-accent transition-colors text-sm"
+                    >
+                        + Dodaj punkt
+                    </button>
+                </div>
+
+                {/* Sekcja: Wymagania */}
+                <div className="rounded-lg border p-6 space-y-6">
+                    <h2 className="text-xl font-semibold flex items-center gap-2">
+                        <Info className="h-5 w-5" />
+                        Wymagania
+                    </h2>
+                    <p className="text-sm text-muted-foreground">Dodaj wymagania wobec uczestnika (dodaj/usuń).</p>
+                    {(coursePayload.wymagania ?? []).map((w, index) => (
+                        <div key={index} className="flex gap-2">
+                            <input
+                                type="text"
+                                value={w}
+                                onChange={(e) => {
+                                    const next = [...(coursePayload.wymagania ?? [])];
+                                    next[index] = e.target.value;
+                                    handleCoursePayloadChange("wymagania", next);
+                                }}
+                                className="flex-1 rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
+                                placeholder="Np. Podstawowa znajomość narzędzi"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => handleCoursePayloadChange("wymagania", (coursePayload.wymagania ?? []).filter((_, i) => i !== index))}
+                                className="px-3 py-2 border rounded-md hover:bg-red-50 text-red-600"
+                            >
+                                Usuń
+                            </button>
+                        </div>
+                    ))}
+                    <button
+                        type="button"
+                        onClick={() => handleCoursePayloadChange("wymagania", [...(coursePayload.wymagania ?? []), ""])}
+                        className="px-4 py-2 border rounded-md hover:bg-accent transition-colors text-sm"
+                    >
+                        + Dodaj wymaganie
+                    </button>
+                </div>
+
+                {/* Opcjonalnie: Gwarancja i zawartość */}
+                <div className="rounded-lg border p-6 space-y-6">
+                    <h2 className="text-xl font-semibold">Gwarancja i zawartość kursu</h2>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                        <div>
+                            <label className="block text-sm font-medium mb-2">Gwarancja (dni, 0 = brak)</label>
+                            <input
+                                type="number"
+                                min={0}
+                                value={coursePayload.gwarancjaDni ?? ""}
+                                onChange={(e) => handleCoursePayloadChange("gwarancjaDni", e.target.value === "" ? undefined : parseInt(e.target.value, 10) || 0)}
+                                className="w-full rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
+                                placeholder="30"
+                            />
+                        </div>
+                        <div className="flex items-center gap-2 pt-6">
+                            <input
+                                type="checkbox"
+                                checked={coursePayload.dozywotniDostep !== false}
+                                onChange={(e) => handleCoursePayloadChange("dozywotniDostep", e.target.checked)}
+                                className="w-4 h-4"
+                                id="dozywotniDostep"
+                            />
+                            <label htmlFor="dozywotniDostep" className="text-sm font-medium cursor-pointer">Dożywotni dostęp</label>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <input
+                                type="checkbox"
+                                checked={coursePayload.materialyDoPobrania !== false}
+                                onChange={(e) => handleCoursePayloadChange("materialyDoPobrania", e.target.checked)}
+                                className="w-4 h-4"
+                                id="materialyDoPobrania"
+                            />
+                            <label htmlFor="materialyDoPobrania" className="text-sm font-medium cursor-pointer">Materiały do pobrania</label>
+                        </div>
+                    </div>
+                </div>
 
                 {/* Sekcja 3: Opis */}
                 <div className="rounded-lg border p-6 space-y-6">
@@ -549,8 +734,6 @@ export default function NewCoursePage() {
                                                             handleSubCategoryToggle(
                                                                 cat._id || "",
                                                             );
-                                                            console.log(cat._id);
-                                                            handleCoursePayloadChange("kategoria", [...coursePayload.kategoria, cat._id || ""]);
                                                         }}
                                                         className="w-4 h-4"
                                                     />

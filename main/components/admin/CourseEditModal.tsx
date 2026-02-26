@@ -79,15 +79,22 @@ export default function CourseEditModal({
                 });
                 const data = await response.json();
                 if (data.status === 0 && data.categories) {
-                    setCategories(data.categories);
-                    setCategoriesSlug(makeSlugKeys(data.categories));
+                    const raw = data.categories;
+                    const catList: Categories[] = typeof raw === "string" ? JSON.parse(raw) : Array.isArray(raw) ? raw : [];
+                    const byKategoria = catList.reduce<Record<string, Categories[]>>((acc, c) => {
+                        const k = (c as Categories & { kategoria?: string }).kategoria ?? "";
+                        (acc[k] ??= []).push(c);
+                        return acc;
+                    }, {});
+                    setCategories(byKategoria);
+                    setCategoriesSlug(Object.keys(byKategoria));
 
                     // Ustaw wybrane kategorie na podstawie kursu
                     const courseCategories = getCategories();
                     if (courseCategories.length > 0) {
                         const firstCat = courseCategories[0];
-                        const mainSlug = firstCat.slug;
-                        setSelectedMainCategory(mainSlug);
+                        const mainKey = (firstCat as Categories & { kategoria?: string }).kategoria ?? firstCat.nazwa ?? "";
+                        setSelectedMainCategory(mainKey);
                         setSelectedSubCategories(
                             courseCategories
                                 .map((cat) => cat._id || "")
@@ -111,18 +118,16 @@ export default function CourseEditModal({
                     credentials: "include",
                 });
                 const data = await response.json();
-                if (Array.isArray(data)) {
-                    setFirmy(data);
+                setFirmy(data.firmy ?? []);
 
-                    // Ustaw wybraną firmę na podstawie kursu
-                    const courseFirma = getFirma();
-                    if (
-                        courseFirma &&
-                        typeof courseFirma === "object" &&
-                        "_id" in courseFirma
-                    ) {
-                        setSelectedFirma((courseFirma as Firmy).slug || "");
-                    }
+                // Ustaw wybraną firmę na podstawie kursu
+                const courseFirma = getFirma();
+                if (
+                    courseFirma &&
+                    typeof courseFirma === "object" &&
+                    "_id" in courseFirma
+                ) {
+                    setSelectedFirma((courseFirma as Firmy).slug || "");
                 }
             } catch (error) {
                 console.error("Błąd podczas pobierania firm:", error);

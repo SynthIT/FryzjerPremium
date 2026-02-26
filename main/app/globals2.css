@@ -155,9 +155,7 @@ body:has(.admin-panel-wrapper) {
   background-image: none !important;
   background-size: auto !important;
   animation: none !important;
-}
-
-/* Alternative approach if :has() is not supported */
+}/* Alternative approach if :has() is not supported */
 html:has(.admin-panel-wrapper) body,
 body.admin-panel-active {
   background: var(--background) !important;

@@ -21,7 +21,11 @@ const FirmaSchema = new Schema<Firmy>(
 const LekcjaSchema = new Schema<Lekcja>(
     {
         tytul: { type: String, required: true },
-        opis: { type: String, required: true },
+        opis: { type: String, default: "" },
+        dlugosc: { type: String, default: "" },
+        rozdzial: { type: String },
+        video: { type: String },
+        plik: { type: String },
     },
     {
         autoIndex: false,
@@ -53,9 +57,11 @@ const courseSchema = new Schema<Courses>(
         sku: { type: String },
         liczbaZapisanych: { type: Number, default: 0 },
         czegoSieNauczysz: { type: [String], default: [] },
-        gwarancjaDni: { type: Number, required: true, default: 0 },
+        gwarancjaDni: { type: Number, default: 0 },
         zawartoscKursu: { type: [String], default: [] },
         wymagania: { type: [String], default: [] },
+        dozywotniDostep: { type: Boolean },
+        materialyDoPobrania: { type: Boolean },
         aktywne: { type: Boolean },
         // Pola specyficzne dla szkoleń (opcjonalne - nie zepsują istniejących danych)
         czasTrwania: { type: String },

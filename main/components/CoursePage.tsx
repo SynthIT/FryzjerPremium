@@ -88,7 +88,7 @@ export default function CoursePage({ courseSlug }: CoursePageProps) {
                     <h2 className="text-2xl font-bold mb-2">Błąd</h2>
                     <p className="text-muted-foreground mb-4">{error}</p>
                     <Link
-                        href="/products/szkolenia"
+                        href="/courses"
                         className="text-primary hover:underline">
                         Wróć do listy szkoleń
                     </Link>
@@ -152,7 +152,9 @@ export default function CoursePage({ courseSlug }: CoursePageProps) {
                             </span>
                             <span className="flex items-center gap-1 text-sm text-gray-500">
                                 <Users className="h-4 w-4" />
-                                {Math.floor(Math.random() * 1000) + 100} studentów
+                                {typeof course.liczbaZapisanych === "number" && course.liczbaZapisanych > 0
+                                    ? `${course.liczbaZapisanych} studentów`
+                                    : "Dołącz do uczestników"}
                             </span>
                         </div>
 
@@ -212,53 +214,70 @@ export default function CoursePage({ courseSlug }: CoursePageProps) {
                         </div>
 
                         {/* What You'll Learn */}
-                        <div className="rounded-xl border border-[rgba(212,196,176,0.3)] bg-white/60 p-6">
-                            <h3 className="text-lg font-bold text-gray-900 mb-3">Czego się nauczysz</h3>
-                            <ul className="space-y-2 text-gray-700">
-                                <li><CheckCircle className="h-5 w-5" /> Profesjonalne techniki strzyżenia</li>
-                                <li><CheckCircle className="h-5 w-5" /> Praca z różnymi typami włosów</li>
-                                <li><CheckCircle className="h-5 w-5" /> Stylizacja i modelowanie</li>
-                                <li><CheckCircle className="h-5 w-5" /> Obsługa klienta w salonie</li>
-                            </ul>
-                        </div>
+                        {(course.czegoSieNauczysz?.length ?? 0) > 0 && (
+                            <div className="rounded-xl border border-[rgba(212,196,176,0.3)] bg-white/60 p-6">
+                                <h3 className="text-lg font-bold text-gray-900 mb-3">Czego się nauczysz</h3>
+                                <ul className="space-y-2 text-gray-700">
+                                    {course.czegoSieNauczysz!.map((punkt, i) => (
+                                        <li key={i} className="flex items-start gap-2">
+                                            <CheckCircle className="h-5 w-5 shrink-0 text-[#D2B79B]" />
+                                            <span>{punkt}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
 
-                        {/* Course Content */}
-                        <div className="rounded-xl border border-[rgba(212,196,176,0.3)] bg-white/60 p-6">
-                            <h3 className="text-lg font-bold text-gray-900 mb-3">Zawartość szkolenia</h3>
-                            <div className="space-y-3">
-                                <div className="flex gap-3">
-                                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#D2B79B] text-sm font-bold text-black">1</span>
-                                    <div>
-                                        <div className="font-medium text-gray-900">Wprowadzenie do fryzjerstwa</div>
-                                        <div className="text-sm text-gray-500">3 lekcje • 45 min</div>
-                                    </div>
-                                </div>
-                                <div className="flex gap-3">
-                                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#D2B79B] text-sm font-bold text-black">2</span>
-                                    <div>
-                                        <div className="font-medium text-gray-900">Techniki strzyżenia</div>
-                                        <div className="text-sm text-gray-500">8 lekcji • 2 godziny</div>
-                                    </div>
-                                </div>
-                                <div className="flex gap-3">
-                                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#D2B79B] text-sm font-bold text-black">3</span>
-                                    <div>
-                                        <div className="font-medium text-gray-900">Stylizacja i modelowanie</div>
-                                        <div className="text-sm text-gray-500">6 lekcji • 1.5 godziny</div>
-                                    </div>
+                        {/* Course Content - from course.lekcje */}
+                        {(course.lekcje?.length ?? 0) > 0 && (
+                            <div className="rounded-xl border border-[rgba(212,196,176,0.3)] bg-white/60 p-6">
+                                <h3 className="text-lg font-bold text-gray-900 mb-3">Zawartość szkolenia</h3>
+                                <div className="space-y-3">
+                                    {(() => {
+                                        const lekcje = course.lekcje ?? [];
+                                        const hasRozdzial = lekcje.some((l) => (l as { rozdzial?: string }).rozdzial);
+                                        if (hasRozdzial) {
+                                            const byRozdzial = lekcje.reduce<Record<string, typeof lekcje>>((acc, lekcja) => {
+                                                const r = (lekcja as { rozdzial?: string }).rozdzial ?? "";
+                                                if (!acc[r]) acc[r] = [];
+                                                acc[r].push(lekcja);
+                                                return acc;
+                                            }, {});
+                                            return Object.entries(byRozdzial).map(([rozdzialName, list], idx) => (
+                                                <div key={idx} className="flex gap-3">
+                                                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#D2B79B] text-sm font-bold text-black">{idx + 1}</span>
+                                                    <div>
+                                                        {rozdzialName && <div className="font-medium text-gray-900">{rozdzialName}</div>}
+                                                        <div className="text-sm text-gray-500">{list!.length} lekcje</div>
+                                                    </div>
+                                                </div>
+                                            ));
+                                        }
+                                        return lekcje.map((lekcja, i) => (
+                                            <div key={i} className="flex gap-3">
+                                                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#D2B79B] text-sm font-bold text-black">{i + 1}</span>
+                                                <div>
+                                                    <div className="font-medium text-gray-900">{lekcja.tytul}</div>
+                                                    <div className="text-sm text-gray-500">{lekcja.dlugosc || "—"}</div>
+                                                </div>
+                                            </div>
+                                        ));
+                                    })()}
                                 </div>
                             </div>
-                        </div>
+                        )}
 
                         {/* Requirements */}
-                        <div className="rounded-xl border border-[rgba(212,196,176,0.3)] bg-white/60 p-6">
-                            <h3 className="text-lg font-bold text-gray-900 mb-3">Wymagania</h3>
-                            <ul className="list-disc list-inside space-y-1 text-gray-700">
-                                <li>Podstawowa znajomość narzędzi fryzjerskich</li>
-                                <li>Dostęp do podstawowych narzędzi (nożyczki, grzebień)</li>
-                                <li>Chęć do nauki i praktyki</li>
-                            </ul>
-                        </div>
+                        {(course.wymagania?.length ?? 0) > 0 && (
+                            <div className="rounded-xl border border-[rgba(212,196,176,0.3)] bg-white/60 p-6">
+                                <h3 className="text-lg font-bold text-gray-900 mb-3">Wymagania</h3>
+                                <ul className="list-disc list-inside space-y-1 text-gray-700">
+                                    {course.wymagania!.map((w, i) => (
+                                        <li key={i}>{w}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
 
                         {/* Description */}
                         <div className="rounded-xl border border-[rgba(212,196,176,0.3)] bg-white/60 p-6">
@@ -308,8 +327,12 @@ export default function CoursePage({ courseSlug }: CoursePageProps) {
                                 )}
 
                                 <div className="flex items-center gap-2 mt-4 text-sm text-gray-600">
-                                    <CheckCircle className="h-5 w-5 shrink-0 text-green-600" />
-                                    <span>30-dniowa gwarancja zwrotu pieniędzy</span>
+                                    {course.gwarancjaDni != null && course.gwarancjaDni > 0 && (
+                                        <>
+                                            <CheckCircle className="h-5 w-5 shrink-0 text-green-600" />
+                                            <span>{course.gwarancjaDni}-dniowa gwarancja zwrotu pieniędzy</span>
+                                        </>
+                                    )}
                                 </div>
 
                                 <div className="mt-6">
@@ -318,14 +341,21 @@ export default function CoursePage({ courseSlug }: CoursePageProps) {
                                         {course.czasTrwania && (
                                             <li><CheckCircle className="h-4 w-4" /> {course.czasTrwania} materiału</li>
                                         )}
-                                        {course.liczbaLekcji && course.liczbaLekcji > 0 && (
+                                        {course.liczbaLekcji != null && course.liczbaLekcji > 0 && (
                                             <li><CheckCircle className="h-4 w-4" /> {course.liczbaLekcji} lekcji</li>
                                         )}
                                         {course.certyfikat && (
                                             <li><CheckCircle className="h-4 w-4" /> Certyfikat ukończenia</li>
                                         )}
-                                        <li><CheckCircle className="h-4 w-4" /> Dożywotni dostęp</li>
-                                        <li><CheckCircle className="h-4 w-4" /> Materiały do pobrania</li>
+                                        {course.dozywotniDostep !== false && (
+                                            <li><CheckCircle className="h-4 w-4" /> Dożywotni dostęp</li>
+                                        )}
+                                        {course.materialyDoPobrania !== false && (
+                                            <li><CheckCircle className="h-4 w-4" /> Materiały do pobrania</li>
+                                        )}
+                                        {(course.zawartoscKursu?.length ?? 0) > 0 && course.zawartoscKursu!.map((item, i) => (
+                                            <li key={i}><CheckCircle className="h-4 w-4" /> {item}</li>
+                                        ))}
                                     </ul>
                                 </div>
                             </div>
@@ -373,27 +403,21 @@ export default function CoursePage({ courseSlug }: CoursePageProps) {
                         {activeTab === "curriculum" && (
                             <div className="space-y-6">
                                 <h3 className="text-lg font-bold text-gray-900">Program szkolenia</h3>
-                                <div className="space-y-4">
-                                    <div>
-                                        <h4 className="font-semibold text-gray-900 mb-2">Rozdział 1: Wprowadzenie</h4>
-                                        <div className="space-y-2">
-                                            <div className="flex items-center justify-between gap-2 py-2 border-b border-gray-100">
+                                {(course.lekcje?.length ?? 0) > 0 ? (
+                                    <div className="space-y-4">
+                                        {course.lekcje!.map((lekcja, i) => (
+                                            <div key={i} className="flex items-center justify-between gap-2 py-2 border-b border-gray-100">
                                                 <div className="flex items-center gap-2">
                                                     <PlayCircle className="h-4 w-4 text-[#D2B79B]" />
-                                                    <span className="text-gray-700">Lekcja 1: Wprowadzenie do kursu</span>
+                                                    <span className="text-gray-700">Lekcja {i + 1}: {lekcja.tytul}</span>
                                                 </div>
-                                                <span className="text-sm text-gray-500">15:30</span>
+                                                <span className="text-sm text-gray-500">{lekcja.dlugosc || "—"}</span>
                                             </div>
-                                            <div className="flex items-center justify-between gap-2 py-2 border-b border-gray-100">
-                                                <div className="flex items-center gap-2">
-                                                    <PlayCircle className="h-4 w-4 text-[#D2B79B]" />
-                                                    <span className="text-gray-700">Lekcja 2: Podstawowe narzędzia</span>
-                                                </div>
-                                                <span className="text-sm text-gray-500">20:45</span>
-                                            </div>
-                                        </div>
+                                        ))}
                                     </div>
-                                </div>
+                                ) : (
+                                    <p className="text-gray-500">Brak dodanego programu.</p>
+                                )}
                             </div>
                         )}
 
