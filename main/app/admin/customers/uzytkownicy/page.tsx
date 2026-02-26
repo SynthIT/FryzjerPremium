@@ -2,6 +2,8 @@
 import UserCard from "@/components/admin/UserCard";
 import { Roles, Users } from "@/lib/types/userTypes";
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import { UserPlus } from "lucide-react";
 
 export default function UzytkownicyPage() {
     const [users, setUsers] = useState<Users[]>([]);
@@ -58,8 +60,18 @@ export default function UzytkownicyPage() {
     return (
         <>
             <div className="space-y-3 sm:space-y-4">
-                <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">Użytkownicy</h1>
-                <p className="text-sm text-muted-foreground sm:text-base">Zarządzaj użytkownikami systemu.</p>
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                        <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">Użytkownicy</h1>
+                        <p className="text-sm text-muted-foreground sm:text-base">Zarządzaj użytkownikami systemu.</p>
+                    </div>
+                    <Link
+                        href="/admin/customers/uzytkownicy/new"
+                        className="inline-flex items-center gap-2 rounded-md border bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+                    >
+                        <UserPlus className="h-4 w-4" /> Dodaj użytkownika
+                    </Link>
+                </div>
             </div>
             <div className="flex items-center justify-between">
                 <input

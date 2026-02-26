@@ -4,8 +4,9 @@ import { useState, useEffect } from "react";
 import "@/app/globals2.css";
 import { Firmy } from "@/lib/types/coursesTypes";
 import { Media } from "@/lib/types/shared";
+import { Users } from "@/lib/types/userTypes";
 import { useRouter } from "next/navigation";
-import { Info } from "lucide-react";
+import { Info, X } from "lucide-react";
 
 // Helper do generowania slug
 function generateSlug(text: string): string {
@@ -20,6 +21,10 @@ function generateSlug(text: string): string {
 export default function NewCompanyPage() {
     const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [users, setUsers] = useState<Users[]>([]);
+    const [usersLoading, setUsersLoading] = useState(true);
+    const [employeeQuery, setEmployeeQuery] = useState("");
+    const [employeeDropdownOpen, setEmployeeDropdownOpen] = useState(false);
 
     const [firmPayload, setFirmPayload] = useState<Firmy>({
         nazwa: "",
@@ -47,6 +52,19 @@ export default function NewCompanyPage() {
     const handleFirmPayloadChange = (key: keyof Firmy, value: any) => {
         setFirmPayload((prev) => ({ ...prev, [key]: value }));
     };
+
+    useEffect(() => {
+        async function fetchUsers() {
+            try {
+                const response = await fetch("/admin/api/v1/users", { credentials: "include" });
+                const data = await response.json();
+                if (data.users) setUsers(JSON.parse(data.users));
+            } finally {
+                setUsersLoading(false);
+            }
+        }
+        fetchUsers();
+    }, []);
     // Auto-generuj slug z nazwy
     useEffect(() => {
         if (firmPayload.nazwa) {
@@ -56,6 +74,15 @@ export default function NewCompanyPage() {
             }));
         }
     }, [firmPayload.nazwa]);
+
+    const selectedIds = (firmPayload.instruktorzy as string[]) || [];
+    const employeeFiltered = users.filter((u) => {
+        if (!u._id || selectedIds.includes(u._id)) return false;
+        const q = employeeQuery.trim().toLowerCase();
+        if (!q) return true;
+        const full = `${(u.imie || "").toLowerCase()} ${(u.nazwisko || "").toLowerCase()} ${(u.email || "").toLowerCase()}`;
+        return full.includes(q);
+    });
 
     // Wysyłanie firmy
     const handleSubmit = async (e: React.FormEvent) => {
@@ -167,9 +194,87 @@ export default function NewCompanyPage() {
                         <Info className="w-4 h-4" /> Pracownicy i prowizja
                     </h2>
                     <div className="grid gap-2 sm:col-span-2">
-                        <label className="text-sm font-medium">Pracownicy</label>
-                        <div className="space-y-2">
-                            <input type="text" value={firmPayload.instruktorzy.join(", ") || ""} onChange={(e) => handleFirmPayloadChange("instruktorzy", e.target.value.split(", ").map((instruktor) => instruktor.trim()))} className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring" placeholder="Pracownicy (np. Jan Kowalski, Anna Nowak)" />
+                        <label className="text-sm font-medium">Pracownicy (instruktorzy)</label>
+                        <div className="space-y-2 relative">
+                            {!usersLoading && (
+                                <>
+                                    <input
+                                        type="text"
+                                        value={employeeQuery}
+                                        onChange={(e) => {
+                                            setEmployeeQuery(e.target.value);
+                                            setEmployeeDropdownOpen(true);
+                                        }}
+                                        onFocus={() => setEmployeeDropdownOpen(true)}
+                                        onBlur={() => setTimeout(() => setEmployeeDropdownOpen(false), 150)}
+                                        placeholder="Wpisz imię, nazwisko lub email, aby wyszukać..."
+                                        className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none ring-offset-background focus:ring-2 focus:ring-ring"
+                                        autoComplete="off"
+                                    />
+                                    {employeeDropdownOpen && (
+                                        <ul
+                                            className="absolute z-10 mt-1 max-h-48 w-full overflow-auto rounded-md border bg-background py-1 shadow-lg"
+                                            role="listbox"
+                                        >
+                                            {employeeFiltered.length === 0 ? (
+                                                <li className="px-3 py-2 text-sm text-muted-foreground">
+                                                    {employeeQuery.trim() ? "Brak pasujących użytkowników" : "Wpisz frazę, aby filtrować"}
+                                                </li>
+                                            ) : (
+                                                employeeFiltered.map((u) => (
+                                                    <li
+                                                        key={u._id}
+                                                        role="option"
+                                                        className="cursor-pointer px-3 py-2 text-sm hover:bg-accent focus:bg-accent outline-none"
+                                                        onMouseDown={(e) => {
+                                                            e.preventDefault();
+                                                            const prev = firmPayload.instruktorzy as string[];
+                                                            if (u._id && !prev.includes(u._id)) {
+                                                                handleFirmPayloadChange("instruktorzy", [...prev, u._id]);
+                                                            }
+                                                            setEmployeeQuery("");
+                                                            setEmployeeDropdownOpen(false);
+                                                        }}
+                                                    >
+                                                        {u.imie} {u.nazwisko}
+                                                        {u.email ? (
+                                                            <span className="text-muted-foreground"> — {u.email}</span>
+                                                        ) : null}
+                                                    </li>
+                                                ))
+                                            )}
+                                        </ul>
+                                    )}
+                                </>
+                            )}
+                            {usersLoading && <span className="text-sm text-muted-foreground">Ładowanie listy użytkowników...</span>}
+                            <div className="flex flex-wrap gap-2">
+                                {(firmPayload.instruktorzy as string[]).map((id) => {
+                                    const u = users.find((x) => x._id === id);
+                                    const label = u ? `${u.imie} ${u.nazwisko}` : id;
+                                    return (
+                                        <span
+                                            key={id}
+                                            className="inline-flex items-center gap-1 rounded-md border bg-muted px-2 py-1 text-sm"
+                                        >
+                                            {label}
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    handleFirmPayloadChange(
+                                                        "instruktorzy",
+                                                        (firmPayload.instruktorzy as string[]).filter((x) => x !== id)
+                                                    )
+                                                }
+                                                className="rounded p-0.5 hover:bg-muted-foreground/20"
+                                                aria-label="Usuń"
+                                            >
+                                                <X className="h-3 w-3" />
+                                            </button>
+                                        </span>
+                                    );
+                                })}
+                            </div>
                             <label className="text-sm font-medium">Prowizja</label>
                             <input type="number" value={firmPayload.prowizja} onChange={(e) => handleFirmPayloadChange("prowizja", parseFloat(e.target.value))} className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring" placeholder="Prowizja (np. 10)" />
                             <label className="text-sm font-medium">Typ prowizji</label>
