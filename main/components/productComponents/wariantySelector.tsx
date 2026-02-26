@@ -1,4 +1,4 @@
-import { Warianty } from "@/lib/models/Products";
+import { Warianty } from "@/lib/types/productTypes";
 
 interface WariantySelectorProps {
     warianty: Warianty;

@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import path from "path";
 
 export async function GET(req: NextRequest) {
-    const { val } = checkRequestAuth(req);
+    const { val } = await checkRequestAuth(req, ["admin:courses"]);
     if (!val) {
         return NextResponse.json(
             { status: 1, error: "Brak autoryzacji" },

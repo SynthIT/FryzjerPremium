@@ -374,7 +374,7 @@ export function Checkout({ stripePromise }: Props) {
                     <Elements
                         stripe={stripePromise}
                         options={{
-                            clientSecret: cs,
+                            clientSecret: cs || "",
                             appearance: { theme: "flat" },
                         }}>
                         <CheckoutForm></CheckoutForm>

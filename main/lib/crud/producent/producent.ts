@@ -20,7 +20,7 @@ export async function deleteProducentBySlug(slug: string) {
     await db();
     const producent = await Producent.findOne({ slug: slug }).orFail();
     const productsWithProd = await Product.find({
-        producent: new mongoose.Types.ObjectId(producent._id),
+        producent: producent._id.toString(),
     }).orFail();
     const cb: typeof productsWithProd = [];
     for (const doc of productsWithProd) {

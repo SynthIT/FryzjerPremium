@@ -36,7 +36,7 @@ export default function DeliveryMethod({
                         {deliver.darmowa_dostawa &&
                         price > deliver.kwota_darmowa
                             ? "Gratis"
-                            : deliver.ceny[0].cena}
+                            : deliver.rozmiary[0].cena}
                     </span>
                 </div>
                 <p className="text-sm text-gray-500 mt-1">{deliver.czas_dostawy}</p>

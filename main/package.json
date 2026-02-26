@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "create-example-course": "tsx scripts/create-example-course.ts",
-    "check-courses": "tsx scripts/check-courses.ts"
+    "check-courses": "tsx scripts/check-courses.ts",
+    "seed-courses-instructors": "node scripts/seed-courses-instructors.mjs",
+    "seed-courses-varied": "node scripts/seed-courses-varied.mjs"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.10",

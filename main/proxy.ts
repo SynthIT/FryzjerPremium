@@ -2,10 +2,10 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 // --- Rate limiter (in-memory, per Edge instance – bez Redis) ---
-const RATE_LIMIT_WINDOW_MS = 60_000; // 1 minuta
+const RATE_LIMIT_WINDOW_MS = 10_000; // 1 minuta
 const LIMITS = {
     "/api/v1/auth/login": 10,
-    "/api/v1/auth/register": 5,
+    "/api/v1/auth/register": 25,
     "/admin": 60,
 } as const;
 

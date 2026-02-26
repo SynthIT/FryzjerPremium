@@ -85,6 +85,7 @@ export default function NewCoursePage() {
         }
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleLessonPayloadChange = (index: number, key: keyof Lekcja, value: any) => {
         setCoursePayload((prev) => ({
             ...prev,
@@ -235,8 +236,8 @@ export default function NewCoursePage() {
         try {
             // Przygotuj kategorie
             const selectedCategories: (string | Categories)[] = [];
-            if (selectedMainCategory && categories[selectedMainCategory]) {
-                categories[selectedMainCategory].forEach((cat) => {
+            if (selectedMainCategory && uniqueCategories[selectedMainCategory]) {
+                uniqueCategories[selectedMainCategory].forEach((cat) => {
                     if (selectedSubCategories.includes(cat._id || "")) {
                         selectedCategories.push(cat);
                     }
@@ -664,6 +665,39 @@ export default function NewCoursePage() {
                             <label htmlFor="materialyDoPobrania" className="text-sm font-medium cursor-pointer">Materiały do pobrania</label>
                         </div>
                     </div>
+                    <div className="pt-4 border-t">
+                        <label className="block text-sm font-medium mb-2">Zawartość kursu</label>
+                        <p className="text-sm text-muted-foreground mb-2">Np. lekcje wideo, PDF, dostęp do grupy (dodaj/usuń).</p>
+                        {(coursePayload.zawartoscKursu ?? []).map((punkt, index) => (
+                            <div key={index} className="flex gap-2 mb-2">
+                                <input
+                                    type="text"
+                                    value={punkt}
+                                    onChange={(e) => {
+                                        const next = [...(coursePayload.zawartoscKursu ?? [])];
+                                        next[index] = e.target.value;
+                                        handleCoursePayloadChange("zawartoscKursu", next);
+                                    }}
+                                    className="flex-1 rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
+                                    placeholder="Np. 12 lekcji wideo, PDF (60 stron)"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => handleCoursePayloadChange("zawartoscKursu", (coursePayload.zawartoscKursu ?? []).filter((_, i) => i !== index))}
+                                    className="px-3 py-2 border rounded-md hover:bg-red-50 text-red-600"
+                                >
+                                    Usuń
+                                </button>
+                            </div>
+                        ))}
+                        <button
+                            type="button"
+                            onClick={() => handleCoursePayloadChange("zawartoscKursu", [...(coursePayload.zawartoscKursu ?? []), ""])}
+                            className="px-4 py-2 border rounded-md hover:bg-accent transition-colors text-sm"
+                        >
+                            + Dodaj pozycję zawartości
+                        </button>
+                    </div>
                 </div>
 
                 {/* Sekcja 3: Opis */}
@@ -824,7 +858,7 @@ export default function NewCoursePage() {
                                         className="w-full rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
                                         placeholder="0.00"
                                     />
-                                    {coursePayload.prowizja_typ === "procent" && <p className="text-xs text-muted-foreground mt-1">Kwota wyliczona na podstawie ceny szkolenia {coursePayload.cena && (coursePayload.cena * (coursePayload.prowizja / 100)).toFixed(2)} zł</p>}
+                                    {coursePayload.prowizja_typ === "procent" && <p className="text-xs text-muted-foreground mt-1">Kwota wyliczona na podstawie ceny szkolenia {coursePayload.cena && (coursePayload.cena * (coursePayload.prowizja! / 100)).toFixed(2)} zł</p>}
                                 </div>
 
                                 <div>

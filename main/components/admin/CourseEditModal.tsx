@@ -53,8 +53,8 @@ export default function CourseEditModal({
         // Konwertuj wartości 0 na undefined dla pól numerycznych
         const normalizedCourse = {
             ...course,
-            cena: course.cena === 0 ? undefined : course.cena,
-            ocena: course.ocena === 0 ? undefined : course.ocena,
+            cena: course.cena || 0,
+            ocena: course.ocena || 0,
         };
         setEditedCourse(normalizedCourse);
     }, [course]);
@@ -186,7 +186,7 @@ export default function CourseEditModal({
             } else {
                 alert(
                     "Błąd podczas zapisywania: " +
-                        (result.error || "Nieznany błąd"),
+                    (result.error || "Nieznany błąd"),
                 );
             }
         } catch (error) {
@@ -215,7 +215,7 @@ export default function CourseEditModal({
             } else {
                 alert(
                     "Błąd podczas usuwania kursu: " +
-                        (result.error || "Nieznany błąd"),
+                    (result.error || "Nieznany błąd"),
                 );
             }
         } catch (error) {
@@ -349,7 +349,7 @@ export default function CourseEditModal({
                                     onChange={(e) => {
                                         const val = e.target.value;
                                         if (val === "" || val === null || val === undefined) {
-                                            updateField("cena", undefined);
+                                            updateField("cena", 0);
                                         } else {
                                             const numVal = parseFloat(val);
                                             if (!isNaN(numVal)) {
@@ -379,7 +379,7 @@ export default function CourseEditModal({
                                         const val = e.target.value;
                                         updateField(
                                             "vat",
-                                            val === "" ? undefined : parseFloat(val) || undefined,
+                                            val === "" ? 0 : parseFloat(val) || 0,
                                         );
                                     }}
                                     className="w-full px-3 py-2 border rounded-md"
@@ -400,7 +400,7 @@ export default function CourseEditModal({
                                         const val = e.target.value;
                                         updateField(
                                             "ocena",
-                                            val === "" ? undefined : parseFloat(val) || undefined,
+                                            val === "" ? 0 : parseFloat(val) || 0,
                                         );
                                     }}
                                     className="w-full px-3 py-2 border rounded-md"

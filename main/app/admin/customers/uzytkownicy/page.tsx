@@ -41,9 +41,9 @@ export default function UzytkownicyPage() {
         setFilter(value);
         console.log(value);
         if (value === "admin") {
-            setFilteredUsers(users.filter((user) => user.role?.some((role) => (role as Roles).admin > 0)));
+            setFilteredUsers(users.filter((user) => user.role?.some((role) => (role as Roles).admin! > 0)));
         } else if (value === "discount") {
-            setFilteredUsers(users.filter((user) => user.role?.some((role) => (role as Roles).uzytkownik > 0)));
+            setFilteredUsers(users.filter((user) => user.role?.some((role) => (role as Roles).uzytkownik! > 0)));
         } else {
             setFilteredUsers(users);
         }

@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
                 },
             );
         } else {
-            const { val, user } = verifyJWT(req);
+            const { val, user } = await verifyJWT(req);
             if (!val || user === undefined) {
                 const existingPayment = await getPaymentIntent(koszyk);
                 if (existingPayment) {

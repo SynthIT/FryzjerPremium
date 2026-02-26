@@ -196,11 +196,7 @@ export default function CoursePage({ courseSlug }: CoursePageProps) {
                                 <div>
                                     <div className="text-xs text-gray-500">Poziom</div>
                                     <div className="font-medium text-gray-900">
-                                        {course.poziom === "poczatkujacy" ? "Początkujący" :
-                                            course.poziom === "sredniozaawansowany" ? "Średniozaawansowany" :
-                                                course.poziom === "zaawansowany" ? "Zaawansowany" :
-                                                    course.poziom === "wszystkie" ? "Wszystkie poziomy" :
-                                                        course.poziom || "Nie określono"}
+                                        {course.poziom || "Nie określono"}
                                     </div>
                                 </div>
                             </div>

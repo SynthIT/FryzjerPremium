@@ -54,11 +54,11 @@ export default function ProductEditModal({
         // Konwertuj wartości 0 na undefined dla pól numerycznych
         const normalizedProduct = {
             ...product,
-            cena: product.cena === 0 ? undefined : product.cena,
-            cena_skupu: product.cena_skupu === 0 ? undefined : product.cena_skupu,
-            ilosc: product.ilosc === 0 ? undefined : product.ilosc,
-            czas_wysylki: product.czas_wysylki === 0 ? undefined : product.czas_wysylki,
-            ocena: product.ocena === 0 ? undefined : product.ocena,
+            cena: product.cena || 0,
+            cena_skupu: product.cena_skupu || 0,
+            ilosc: product.ilosc || 0,
+            czas_wysylki: product.czas_wysylki || 0,
+            ocena: product.ocena || 0,
         };
         setEditedProduct(normalizedProduct);
     }, [product]);
@@ -169,7 +169,7 @@ export default function ProductEditModal({
             } else {
                 alert(
                     "Błąd podczas zapisywania produktu: " +
-                        (result.error || "Nieznany błąd"),
+                    (result.error || "Nieznany błąd"),
                 );
             }
         } catch (error) {
@@ -192,7 +192,7 @@ export default function ProductEditModal({
             } else {
                 alert(
                     "Błąd podczas usuwania produktu: " +
-                        (result.error || "Nieznany błąd"),
+                    (result.error || "Nieznany błąd"),
                 );
             }
         } catch (error) {
@@ -312,6 +312,7 @@ export default function ProductEditModal({
                 nazwa: "",
                 slug: "",
                 typ: "kolor",
+                ilosc: 0,
                 nadpisuje_cene: false,
                 inna_cena_skupu: false,
             },
@@ -404,7 +405,7 @@ export default function ProductEditModal({
                                     onChange={(e) => {
                                         const val = e.target.value;
                                         if (val === "" || val === null || val === undefined) {
-                                            updateField("cena", undefined);
+                                            updateField("cena", 0);
                                         } else {
                                             const numVal = parseFloat(val);
                                             if (!isNaN(numVal)) {
@@ -433,7 +434,7 @@ export default function ProductEditModal({
                                         const val = e.target.value;
                                         updateField(
                                             "cena_skupu",
-                                            val === "" ? undefined : parseFloat(val) || undefined,
+                                            val === "" ? 0 : parseFloat(val) || 0,
                                         );
                                     }}
                                     className="w-full px-3 py-2 border rounded-md"
@@ -451,7 +452,7 @@ export default function ProductEditModal({
                                         const val = e.target.value;
                                         updateField(
                                             "ilosc",
-                                            val === "" ? undefined : parseInt(val) || undefined,
+                                            val === "" ? 0 : parseInt(val) || 0,
                                         );
                                     }}
                                     className="w-full px-3 py-2 border rounded-md"
@@ -492,7 +493,7 @@ export default function ProductEditModal({
                                         const val = e.target.value;
                                         updateField(
                                             "czas_wysylki",
-                                            val === "" ? undefined : parseInt(val) || undefined,
+                                            val === "" ? 0 : parseInt(val) || 0,
                                         );
                                     }}
                                     className="w-full px-3 py-2 border rounded-md"
@@ -529,7 +530,7 @@ export default function ProductEditModal({
                                         const val = e.target.value;
                                         updateField(
                                             "ocena",
-                                            val === "" ? undefined : parseFloat(val) || undefined,
+                                            val === "" ? 0 : parseFloat(val) || 0,
                                         );
                                     }}
                                     className="w-full px-3 py-2 border rounded-md"
@@ -1020,27 +1021,27 @@ export default function ProductEditModal({
                                     {/* Permisje */}
                                     {(wariant.typ === "hurt" ||
                                         wariant.typ === "specjalna") && (
-                                        <div>
-                                            <label className="text-xs font-medium">
-                                                Permisje (opcjonalnie)
-                                            </label>
-                                            <input
-                                                type="number"
-                                                placeholder="Kod permisji"
-                                                value={wariant.permisje || ""}
-                                                onChange={(e) =>
-                                                    updateWariant(
-                                                        index,
-                                                        "permisje",
-                                                        parseInt(
-                                                            e.target.value,
-                                                        ) || undefined,
-                                                    )
-                                                }
-                                                className="w-full px-3 py-2 border rounded-md text-sm"
-                                            />
-                                        </div>
-                                    )}
+                                            <div>
+                                                <label className="text-xs font-medium">
+                                                    Permisje (opcjonalnie)
+                                                </label>
+                                                <input
+                                                    type="number"
+                                                    placeholder="Kod permisji"
+                                                    value={wariant.permisje || ""}
+                                                    onChange={(e) =>
+                                                        updateWariant(
+                                                            index,
+                                                            "permisje",
+                                                            parseInt(
+                                                                e.target.value,
+                                                            ) || undefined,
+                                                        )
+                                                    }
+                                                    className="w-full px-3 py-2 border rounded-md text-sm"
+                                                />
+                                            </div>
+                                        )}
 
                                     <button
                                         type="button"
