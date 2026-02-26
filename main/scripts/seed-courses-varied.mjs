@@ -268,8 +268,8 @@ async function main() {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      email: "patryksuchy57@gmail.com",
-      password: "PatryK2106!",
+      email: "x@gmail.com",
+      password: "x!",
     }),
     redirect: "manual",
   });
