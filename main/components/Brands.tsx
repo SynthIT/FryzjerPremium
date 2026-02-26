@@ -4,11 +4,11 @@ import Link from "next/link";
 export default function Brands({
     data,
 }: {
-    data: { products: Products[]; producents: Producents[] };
+    data?: { products: Products[]; producents: Producents[] };
 }) {
     const brands = () => {
         const brandSet = new Set<string>();
-        data.products?.forEach((product) => {
+        data?.products?.forEach((product) => {
             if (product.producent) {
                 brandSet.add(
                     JSON.stringify({

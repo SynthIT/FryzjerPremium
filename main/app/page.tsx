@@ -10,7 +10,6 @@ import { getProducts } from "@/lib/utils";
 import { Suspense } from "react";
 
 export default async function Home() {
-    const retrivetProducts = await getProducts();
 
     return (
         <>
@@ -19,9 +18,9 @@ export default async function Home() {
                 <QueryInfoBanner />
             </Suspense>
             <Hero />
-            <Brands data={retrivetProducts} />
-            <NewArrivals data={retrivetProducts} />
-            <Bestsellers data={retrivetProducts} />
+            <Brands/>
+            <NewArrivals/>
+            <Bestsellers/>
             <ProductCategories />
             <Footer />
         </>

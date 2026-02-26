@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useCart } from "@/contexts/CartContext";
 import { loginUser } from "@/lib/utils";
 import LoggedBadge from "./LoggedBadge";
-import { User } from "lucide-react";
+import { Search, User } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
 import { useNotification } from "@/contexts/NotificationContext";
 
@@ -117,6 +117,16 @@ export default function Header({ openLoginModal }: HeaderProps) {
         [searchQuery],
     );
 
+    useEffect(() => {
+        const callback = () => {
+            if (searchQuery.length > 0) {
+                console.log("Query:", searchQuery);
+            }
+        }
+        const scheduler = setInterval(callback, 5000);
+        return () => clearInterval(scheduler);
+    }, [searchQuery]);
+
     const closeMobileMenu = useCallback(() => {
         setIsMobileMenuOpen(false);
         setShowDropdown(false);
@@ -125,6 +135,7 @@ export default function Header({ openLoginModal }: HeaderProps) {
 
     const toggleMobileMenu = useCallback(() => {
         setIsMobileSearchOpen(false);
+        setShowDropdown(false);
         setIsMobileMenuOpen((prev) => !prev);
     }, []);
 
@@ -253,7 +264,7 @@ export default function Header({ openLoginModal }: HeaderProps) {
                     </Link>
                 </div>
 
-                <nav className={`hidden lg:flex items-center gap-8 ${isMobileMenuOpen ? "!flex flex-col absolute top-full left-0 right-0 bg-[rgba(240,232,221)] border-b border-[rgba(212,196,176,0.3)] py-6 shadow-lg" : ""}`}>
+                <nav className="hidden lg:flex items-center gap-8">
                     <Link href="/" className="text-sm font-medium text-gray-800 hover:text-[#D2B79B] relative py-2 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-[#D2B79B] after:transition-all hover:after:w-full" onClick={closeMobileMenu}>
                         Strona główna
                     </Link>
@@ -271,10 +282,6 @@ export default function Header({ openLoginModal }: HeaderProps) {
                             <div className="absolute top-full left-0 mt-1 py-2 min-w-[180px] bg-white rounded-lg shadow-[0_8px_24px_rgba(0,0,0,0.12)] border border-[rgba(212,196,176,0.2)] z-50">
                                 <Link href="/products" className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#f0e8dd] hover:text-[#D2B79B]" onClick={closeMobileMenu}>Kup Teraz</Link>
                                 <Link href="/courses" className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#f0e8dd] hover:text-[#D2B79B]" onClick={closeMobileMenu}>Kursy</Link>
-                                {/* <a href="#product-categories-section" className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#f0e8dd] hover:text-[#D2B79B]" onClick={(e) => { e.preventDefault(); smoothScrollTo("product-categories-section"); }}>Kategorie</a>
-                                <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#f0e8dd] hover:text-[#D2B79B]" onClick={(e) => { e.preventDefault(); closeMobileMenu(); }}>Promocje</a>
-                                <a href="#new-arrivals-section" className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#f0e8dd] hover:text-[#D2B79B]" onClick={(e) => { e.preventDefault(); smoothScrollTo("new-arrivals-section"); }}>Nowości</a>
-                                <a href="#bestsellers-section" className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#f0e8dd] hover:text-[#D2B79B]" onClick={(e) => { e.preventDefault(); smoothScrollTo("bestsellers-section"); }}>Bestsellery</a> */}
                             </div>
                         )}
                     </div>
@@ -284,14 +291,16 @@ export default function Header({ openLoginModal }: HeaderProps) {
                 </nav>
 
                 <div className={`${isMobileSearchOpen ? "flex absolute left-4 right-4 top-full mt-2 z-50 lg:!static lg:!mt-0 lg:!z-auto" : "hidden"} lg:!flex flex-1 max-w-md`} ref={searchContainerRef}>
-                    <form onSubmit={handleSearch} className="w-full" onClick={(e) => e.stopPropagation()}>
+                    <form onSubmit={handleSearch} className="w-full pl-5 flex flex-row items-center gap-2 rounded-lg  border border-[rgba(212,196,176,0.4)] bg-white/80 text-gray-800 " onClick={(e) => e.stopPropagation()}>
+                        <Search className="w-5 h-5 text-gray-500" />
                         <input
+                            id="searchbox"
                             ref={searchInputRef}
                             type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder="Wyszukaj produkt..."
-                            className="w-full pl-10 pr-4 py-2 rounded-lg border border-[rgba(212,196,176,0.4)] bg-white/80 text-gray-800 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#D2B79B]"
+                            placeholder="Wyszukaj..."
+                            className="w-full pl-5 pr-4 py-2 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#D2B79B]"
                         />
                     </form>
                 </div>
@@ -384,42 +393,121 @@ export default function Header({ openLoginModal }: HeaderProps) {
                 </div>
             </div>
 
-            {isMobileMenuOpen && <div className="fixed inset-0 bg-black/30 z-[1099] lg:hidden" onClick={closeMobileMenu} aria-hidden="true" />}
             {isMobileSearchOpen && <div className="fixed inset-0 bg-black/30 z-[1099] lg:hidden" onClick={() => setIsMobileSearchOpen(false)} aria-hidden="true" />}
 
-            {mounted && showLoginModal && createPortal(
-                <div className="fixed inset-0 z-[1200] flex items-center justify-center p-4 bg-black/50" onClick={() => setShowLoginModal(false)}>
-                    <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-6" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-xl font-bold text-gray-900">Zaloguj się</h2>
-                            <button type="button" className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-800" onClick={() => setShowLoginModal(false)} aria-label="Zamknij">
+            {mounted && isMobileMenuOpen && createPortal(
+                <div
+                    className="fixed inset-0 lg:hidden"
+                    style={{
+                        zIndex: 99999,
+                        width: "100vw",
+                        height: "100vh",
+                        minHeight: "100dvh",
+                        left: 0,
+                        top: 0,
+                        right: 0,
+                        bottom: 0,
+                    }}
+                >
+                    <div
+                        className="absolute inset-0 bg-black/30"
+                        style={{ zIndex: 1 }}
+                        onClick={closeMobileMenu}
+                        aria-hidden="true"
+                    />
+                    <div
+                        className="absolute inset-0 flex flex-col bg-white"
+                        style={{
+                            zIndex: 2,
+                            paddingTop: "env(safe-area-inset-top)",
+                            backgroundColor: "#ffffff",
+                        }}
+                    >
+                        <div
+                            className="flex flex-nowrap items-center justify-end gap-2 w-full px-6 py-4 border-b border-gray-100 shrink-0 min-h-[52px]"
+                            style={{ backgroundColor: "#ffffff" }}
+                        >
+                            <button type="button" className="p-2 rounded-lg text-gray-700 hover:bg-gray-100" onClick={handleSearchToggle} aria-label="Wyszukaj">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                            </button>
+                            <Link href="/cart" className="relative p-2 rounded-lg text-gray-700 hover:bg-gray-100" onClick={closeMobileMenu} aria-label="Koszyk">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                                {cartItemsCount > 0 && <span className="absolute top-0.5 right-0.5 min-w-[16px] h-[16px] flex items-center justify-center text-[10px] font-bold text-white bg-[#D2B79B] rounded-full">{cartItemsCount}</span>}
+                            </Link>
+                            {userData ? (
+                                <Link href="/zamowienia" className="p-2 rounded-lg text-gray-700 hover:bg-gray-100" onClick={closeMobileMenu} aria-label="Konto">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                                </Link>
+                            ) : (
+                                <button type="button" className="p-2 rounded-lg text-gray-700 hover:bg-gray-100" onClick={() => { setShowLoginModal(true); closeMobileMenu(); }} aria-label="Zaloguj się">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                                </button>
+                            )}
+                            <button type="button" className="p-2 rounded-lg text-gray-700 hover:bg-gray-100" onClick={closeMobileMenu} aria-label="Zamknij menu">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                             </button>
                         </div>
-                        <form onSubmit={(e) => { e.preventDefault(); console.log("Login submitted:", loginForm); setShowLoginModal(false); setLoginForm({ email: "", password: "", refreshToken: false }); }} className="space-y-4">
+                        <div className="flex flex-col w-full px-6 py-6 gap-1 overflow-y-auto flex-1 bg-white">
+                            <Link href="/" className="block py-2 text-sm font-medium text-gray-800 hover:text-[#D2B79B]" onClick={closeMobileMenu}>Strona główna</Link>
                             <div>
-                                <label htmlFor="login-email" className="block text-sm font-medium text-gray-700 mb-1">Adres e-mail *</label>
-                                <input id="login-email" type="email" className="w-full px-4 py-2 rounded-lg border border-gray-300 text-gray-900 focus:ring-2 focus:ring-[#D2B79B] focus:border-[#D2B79B]" value={loginForm.email} onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })} placeholder="twoj@email.pl" required />
+                                <button type="button" className="flex items-center gap-1 py-2 text-sm font-medium text-gray-800 hover:text-[#D2B79B] w-full text-left" onClick={toggleDropdown} aria-expanded={showDropdown}>
+                                    <span>Sklep</span>
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className={`w-4 h-4 transition-transform ${showDropdown ? "rotate-180" : ""}`}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+                                {showDropdown && (
+                                    <>
+                                        <Link href="/products" className="block py-2 pl-6 text-sm font-medium text-gray-800 hover:text-[#D2B79B]" onClick={closeMobileMenu}>Kup Teraz</Link>
+                                        <Link href="/courses" className="block py-2 pl-6 text-sm font-medium text-gray-800 hover:text-[#D2B79B]" onClick={closeMobileMenu}>Kursy</Link>
+                                    </>
+                                )}
+                            </div>
+                            <Link href="/blog" className="block py-2 text-sm font-medium text-gray-800 hover:text-[#D2B79B]" onClick={closeMobileMenu}>Blog</Link>
+                            <Link href="/o-nas" className="block py-2 text-sm font-medium text-gray-800 hover:text-[#D2B79B]" onClick={closeMobileMenu}>O nas</Link>
+                            <Link href="/kontakt" className="block py-2 text-sm font-medium text-gray-800 hover:text-[#D2B79B]" onClick={closeMobileMenu}>Kontakt</Link>
+                        </div>
+                    </div>
+                </div>,
+                document.body
+            )}
+
+            {mounted && showLoginModal && createPortal(
+                <div className="fixed inset-0 z-[1200] flex items-center justify-center p-4 bg-black/60" onClick={() => setShowLoginModal(false)}>
+                    <div className="w-full max-w-[400px] bg-white rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] p-6 sm:p-8" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-between mb-6">
+                            <h2 className="text-2xl font-bold text-[#1A1A1A]">Zaloguj się</h2>
+                            <button type="button" className="p-2 rounded-full bg-[#EEEEEE] text-[#666666] hover:bg-[#E0E0E0] hover:text-[#333333] transition-colors" onClick={() => setShowLoginModal(false)} aria-label="Zamknij">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                            </button>
+                        </div>
+                        <form onSubmit={(e) => { e.preventDefault(); handleLogin(); }} className="space-y-4">
+                            <div>
+                                <label htmlFor="login-email" className="block text-sm font-medium text-[#333333] mb-1.5">Adres e-mail *</label>
+                                <input id="login-email" type="email" className="w-full h-12 px-4 rounded-xl border border-[#DEDEDE] bg-[#FDFBF5] text-[#333333] placeholder:text-[#B0B0B0] focus:outline-none focus:ring-2 focus:ring-[#B8A79B]/40 focus:border-[#B8A79B]" value={loginForm.email} onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })} placeholder="twoj@email.pl" required />
                             </div>
                             <div>
-                                <label htmlFor="login-password" className="block text-sm font-medium text-gray-700 mb-1">Hasło *</label>
-                                <input id="login-password" type="password" className="w-full px-4 py-2 rounded-lg border border-gray-300 text-gray-900 focus:ring-2 focus:ring-[#D2B79B] focus:border-[#D2B79B]" value={loginForm.password} onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })} placeholder="Wpisz hasło" required />
+                                <label htmlFor="login-password" className="block text-sm font-medium text-[#333333] mb-1.5">Hasło *</label>
+                                <input id="login-password" type="password" className="w-full h-12 px-4 rounded-xl border border-[#DEDEDE] bg-[#FDFBF5] text-[#333333] placeholder:text-[#B0B0B0] focus:outline-none focus:ring-2 focus:ring-[#B8A79B]/40 focus:border-[#B8A79B]" value={loginForm.password} onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })} placeholder="Wpisz hasło" required />
                             </div>
-                            <div className="flex flex-wrap items-center justify-between gap-2">
-                                <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
-                                    <input type="checkbox" checked={loginForm.refreshToken} onChange={() => setLoginForm({ ...loginForm, refreshToken: !loginForm.refreshToken })} aria-label="Zapamiętaj mnie" className="rounded border-gray-300 text-[#D2B79B] focus:ring-[#D2B79B]" />
+                            <div className="flex items-center justify-between gap-2">
+                                <label className="flex items-center gap-2 text-sm text-[#333333] cursor-pointer">
+                                    <input type="checkbox" checked={loginForm.refreshToken} onChange={() => setLoginForm({ ...loginForm, refreshToken: !loginForm.refreshToken })} aria-label="Zapamiętaj mnie" className="rounded border-[#DEDEDE] text-[#B8A79B] focus:ring-[#B8A79B]" />
                                     <span>Zapamiętaj mnie</span>
                                 </label>
-                                <div className="flex items-center gap-2 text-sm">
-                                    <a href="#" className="text-[#D2B79B] hover:underline" onClick={(e) => e.preventDefault()}>Zapomniałeś hasła?</a>
-                                    <span className="text-gray-400">|</span>
-                                    <Link href="/rejestracja" className="text-[#D2B79B] hover:underline" onClick={() => setShowLoginModal(false)}>Zarejestruj się</Link>
-                                </div>
+                                <a href="#" className="text-sm text-[#333333] hover:underline" onClick={(e) => e.preventDefault()}>Zapomniałeś hasła?</a>
                             </div>
-                            <div className="flex gap-3 pt-2">
-                                <button type="submit" className="flex-1 py-2.5 rounded-lg bg-[#D2B79B] text-black font-semibold hover:bg-[#b89a7f] transition-colors disabled:opacity-50" disabled={!loginForm.email || !loginForm.password} onClick={handleLogin}>Zaloguj się</button>
-                                <button type="button" className="flex-1 py-2.5 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors" onClick={() => { setShowLoginModal(false); setLoginForm({ email: "", password: "", refreshToken: false }); }}>Anuluj</button>
+                            <button type="submit" className="w-full h-12 rounded-xl bg-[#B8A79B] text-white font-medium text-base hover:bg-[#A89688] transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled={!loginForm.email || !loginForm.password}>Zaloguj się</button>
+                            <button type="button" className="w-full h-12 rounded-xl bg-[#F0EAE3] text-[#333333] font-medium text-base hover:bg-[#E8E0D8] transition-colors" onClick={() => { setShowLoginModal(false); setLoginForm({ email: "", password: "", refreshToken: false }); }}>Anuluj</button>
+                            <div className="flex items-center gap-3 py-2">
+                                <span className="flex-1 h-px bg-[#DDDDDD]" />
+                                <span className="text-sm text-[#333333]">lub</span>
+                                <span className="flex-1 h-px bg-[#DDDDDD]" />
                             </div>
+                            <p className="text-center text-sm text-[#333333]">
+                                Nie masz konta?{" "}
+                                <Link href="/rejestracja" className="font-bold text-[#333333] hover:underline" onClick={() => setShowLoginModal(false)}>Zarejestruj się</Link>
+                            </p>
                         </form>
                     </div>
                 </div>,

@@ -4,16 +4,19 @@ import { useState, useEffect } from "react";
 import ProductElement from "./productsComponents/ProductElement";
 import Link from "next/link";
 
-export default function NewArrivals({ data }: { data: { status: number; products?: Products[] } }) {
+export default function NewArrivals({ data }: { data?: { status: number; products?: Products[] } }) {
     const [products, setProducts] = useState<Products[] | null>(null);
     useEffect(() => {
-        if (data.products?.length) {
-            setProducts(
-                [...data.products]
-                    .sort((a, b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime())
-                    .slice(0, 4),
-            );
+        function fetchProducts() {
+            if (data?.products?.length) {
+                setProducts(
+                    [...data?.products]
+                        .sort((a, b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime())
+                        .slice(0, 4),
+                );
+            }
         }
+        fetchProducts();
     }, [data]);
 
     return (

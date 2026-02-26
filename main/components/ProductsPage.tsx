@@ -8,13 +8,10 @@ import {
     getCategoryDisplayName,
     decodeCategory,
     getProducts,
-    getCourses,
 } from "@/lib/utils";
 import { Producents, Products } from "@/lib/types/productTypes";
 import { Categories } from "@/lib/types/shared";
-import { Courses } from "@/lib/types/coursesTypes";
 import ProductElement from "./productsComponents/ProductElement";
-import CourseElement from "./coursesComponents/CourseElement";
 
 interface ProductsPageProps {
     categoryName?: string;
@@ -22,7 +19,6 @@ interface ProductsPageProps {
 
 export default function ProductsPage({ categoryName }: ProductsPageProps) {
     const [allProducts, setAllProduct] = useState<Products[]>([]);
-    const [allCourses, setAllCourses] = useState<Courses[]>([]);
 
     const params = useParams();
     const urlCategoryParam = categoryName || (params?.category as string) || "";
@@ -30,7 +26,6 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
         () => decodeCategory(urlCategoryParam),
         [urlCategoryParam],
     );
-    const isCoursesPage = urlCategory.toLowerCase() === "szkolenia";
     const [selectedCategory, setSelectedCategory] =
         useState("Wszystkie produkty");
 
@@ -47,119 +42,6 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
         getProduct();
     }, []);
 
-    useEffect(() => {
-        async function fetchCourses() {
-            if (isCoursesPage) {
-                try {
-                    console.log(
-                        "🔄 Pobieranie szkoleń dla strony /products/szkolenia",
-                    );
-                    const data = await getCourses();
-                    console.log("📦 Otrzymane dane z API:", data);
-                    console.log("📦 Typ danych:", typeof data);
-                    console.log(
-                        "📦 Czy to obiekt:",
-                        data && typeof data === "object",
-                    );
-                    console.log(
-                        "📦 Czy ma courses:",
-                        data && "courses" in data,
-                    );
-                    console.log("📦 Czy to tablica:", Array.isArray(data));
-                    console.log("📊 Status:", data?.status);
-                    console.log(
-                        "📚 Liczba szkoleń:",
-                        data?.courses?.length || 0,
-                    );
-
-                    // Sprawdź różne możliwe formaty odpowiedzi
-                    let coursesToSet: Courses[] = [];
-
-                    if (data && data.courses && Array.isArray(data.courses)) {
-                        coursesToSet = data.courses;
-                        console.log("✅ Format: data.courses (tablica)");
-                    } else if (data && Array.isArray(data)) {
-                        coursesToSet = data;
-                        console.log("✅ Format: data jest tablicą");
-                    } else if (
-                        data &&
-                        data.status === 200 &&
-                        Array.isArray(data.courses)
-                    ) {
-                        coursesToSet = data.courses;
-                        console.log("✅ Format: data.status === 200");
-                    } else if (
-                        data &&
-                        typeof data === "object" &&
-                        "courses" in data
-                    ) {
-                        coursesToSet = Array.isArray(data.courses)
-                            ? data.courses
-                            : [];
-                        console.log(
-                            "✅ Format: data.courses (sprawdzam czy tablica)",
-                        );
-                    } else {
-                        console.warn(
-                            "⚠️ Nieznany format danych. Pełne dane:",
-                            JSON.stringify(data, null, 2),
-                        );
-                        coursesToSet = [];
-                    }
-
-                    console.log("🎯 Ustawiam szkolenia:", coursesToSet.length);
-                    setAllCourses(coursesToSet);
-
-                    // Jeśli nie ma szkoleń, spróbuj utworzyć przykładowe
-                    if (coursesToSet.length === 0) {
-                        console.log(
-                            "⚠️ Brak szkoleń - próbuję utworzyć przykładowe...",
-                        );
-                        try {
-                            const initResponse = await fetch(
-                                "/api/v1/courses/init",
-                                {
-                                    method: "POST",
-                                    credentials: "include",
-                                },
-                            );
-                            const initData = await initResponse.json();
-                            console.log("📝 Odpowiedź z init:", initData);
-
-                            if (initData.status === 0) {
-                                // Odśwież dane
-                                const newData = await getCourses();
-                                if (
-                                    newData &&
-                                    newData.courses &&
-                                    Array.isArray(newData.courses)
-                                ) {
-                                    setAllCourses(newData.courses);
-                                }
-                            }
-                        } catch (initError) {
-                            console.error(
-                                "❌ Błąd podczas inicjalizacji:",
-                                initError,
-                            );
-                        }
-                    }
-                } catch (error) {
-                    console.error("❌ Błąd podczas ładowania szkoleń:", error);
-                    console.error(
-                        "❌ Szczegóły błędu:",
-                        error instanceof Error ? error.message : error,
-                    );
-                    setAllCourses([]);
-                }
-            } else {
-                console.log(
-                    "ℹ️ To nie jest strona szkoleń, nie pobieram danych",
-                );
-            }
-        }
-        fetchCourses();
-    }, [isCoursesPage]);
     const [sortBy, setSortBy] = useState("Najpopularniejsze");
     const [currentPage, setCurrentPage] = useState(1);
     const productsPerPage = 9;
@@ -176,31 +58,24 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
 
     useEffect(() => {
         async function setSelected(urlCategory: string) {
-            if (urlCategory.toLowerCase() === "szkolenia") {
-                setSelectedCategory("Szkolenia");
-            } else {
-                try {
-                    const displayName =
-                        await getCategoryDisplayName(urlCategory);
-                    setSelectedCategory(displayName);
-                } catch (error) {
-                    console.error(
-                        "Błąd podczas ładowania nazwy kategorii:",
-                        error,
-                    );
-                    setSelectedCategory(
-                        urlCategory
-                            ? urlCategory.charAt(0).toUpperCase() +
-                                  urlCategory.slice(1)
-                            : "Wszystkie produkty",
-                    );
-                }
+            try {
+                const displayName =
+                    await getCategoryDisplayName(urlCategory);
+                setSelectedCategory(displayName);
+            } catch (error) {
+                console.error(
+                    "Błąd podczas ładowania nazwy kategorii:",
+                    error,
+                );
+                setSelectedCategory(
+                    urlCategory
+                        ? urlCategory.charAt(0).toUpperCase() +
+                        urlCategory.slice(1)
+                        : "Wszystkie produkty",
+                );
             }
-            // Dla szkoleń ustaw większy zakres cen
-            const maxPrice =
-                urlCategory.toLowerCase() === "szkolenia" ? 5000 : 15000;
             setFilters({
-                priceRange: { min: 0, max: maxPrice },
+                priceRange: { min: 0, max: 15000 },
                 selectedSubcategories: [],
                 selectedBrands: [],
                 selectedSizes: [],
@@ -244,49 +119,6 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
         });
     }, [allProducts, sortBy]);
 
-    // Sortowanie szkoleń - memoized
-    const sortedCourses = useMemo(() => {
-        if (!isCoursesPage) return [];
-        if (!Array.isArray(allCourses)) {
-            console.log("⚠️ allCourses nie jest tablicą:", allCourses);
-            return [];
-        }
-        if (allCourses.length === 0) {
-            console.log("⚠️ allCourses jest pustą tablicą");
-            return [];
-        }
-        console.log(
-            "🔄 Sortowanie",
-            allCourses.length,
-            "szkoleń według:",
-            sortBy,
-        );
-        const sorted = [...allCourses].sort((a, b) => {
-            switch (sortBy) {
-                case "Cena: od najniższej":
-                    return a.cena - b.cena;
-                case "Cena: od najwyższej":
-                    return b.cena - a.cena;
-                case "Ocena":
-                    return (b.ocena || 0) - (a.ocena || 0);
-                case "Najnowsze":
-                    const dateA =
-                        a.createdAt instanceof Date
-                            ? a.createdAt.getTime()
-                            : new Date(a.createdAt || 0).getTime();
-                    const dateB =
-                        b.createdAt instanceof Date
-                            ? b.createdAt.getTime()
-                            : new Date(b.createdAt || 0).getTime();
-                    return dateB - dateA;
-                default: // 'Najpopularniejsze'
-                    return (b.ocena || 0) - (a.ocena || 0);
-            }
-        });
-        console.log("✅ Posortowano", sorted.length, "szkoleń");
-        return sorted;
-    }, [allCourses, sortBy, isCoursesPage]);
-
     // Tworzymy mapę nazwa -> slug dla wszystkich kategorii w produktach
     const categoryNameToSlugMap = useMemo(() => {
         const map = new Map<string, string>();
@@ -321,71 +153,14 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
         return map;
     }, [allProducts]);
 
-    // Filtruj szkolenia według ceny - memoized
-    const filteredCourses = useMemo(() => {
-        if (!isCoursesPage) {
-            console.log("⚠️ To nie jest strona szkoleń, zwracam pustą tablicę");
-            return [];
-        }
-        if (sortedCourses.length === 0) {
-            console.log("⚠️ sortedCourses jest pusty - nie ma czego filtrować");
-            return [];
-        }
-        console.log("🔄 Filtrowanie", sortedCourses.length, "szkoleń");
-        console.log(
-            "💰 Zakres ceny:",
-            filters.priceRange.min,
-            "-",
-            filters.priceRange.max,
-        );
-
-        // Sprawdź ceny wszystkich kursów przed filtrowaniem
-        sortedCourses.forEach((course, idx) => {
-            console.log(
-                `  Kurs ${idx + 1}: ${course.nazwa}, cena: ${course.cena}, aktywny: ${course.aktywne !== false}`,
-            );
-        });
-
-        const filtered = sortedCourses.filter((course) => {
-            // Filtrowanie według ceny
-            const coursePrice = course.cena || 0;
-            if (
-                coursePrice < filters.priceRange.min ||
-                coursePrice > filters.priceRange.max
-            ) {
-                console.log(
-                    `❌ Kurs "${course.nazwa}" odfiltrowany - cena ${coursePrice} poza zakresem ${filters.priceRange.min}-${filters.priceRange.max}`,
-                );
-                return false;
-            }
-            // Filtrowanie aktywnych szkoleń
-            if (course.aktywne === false) {
-                console.log(
-                    `❌ Kurs "${course.nazwa}" odfiltrowany - nieaktywny`,
-                );
-                return false;
-            }
-            console.log(`✅ Kurs "${course.nazwa}" przeszedł filtry`);
-            return true;
-        });
-        console.log(
-            "✅ Po filtrowaniu zostało",
-            filtered.length,
-            "szkoleń z",
-            sortedCourses.length,
-        );
-        return filtered;
-    }, [sortedCourses, filters, isCoursesPage]);
-
     // Filtruj produkty według kategorii i wszystkich filtrów - memoized
     const filteredProducts = useMemo(() => {
-        if (isCoursesPage) return [];
         return sortedProducts.filter((product) => {
             // Filtrowanie według kategorii
             if (
                 urlCategory &&
                 (product.kategoria as Categories[])[0].slug.toLowerCase() !==
-                    urlCategory.toLowerCase()
+                urlCategory.toLowerCase()
             ) {
                 return false;
             }
@@ -471,7 +246,6 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
             return true;
         });
     }, [
-        isCoursesPage,
         sortedProducts,
         urlCategory,
         filters.priceRange.min,
@@ -490,49 +264,17 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
     }, [filters]);
 
     // Paginacja - memoized
-    const itemsToDisplay = isCoursesPage ? filteredCourses : filteredProducts;
-    const totalItems = Array.isArray(itemsToDisplay)
-        ? itemsToDisplay.length
+    const totalItems = Array.isArray(filteredProducts)
+        ? filteredProducts.length
         : 0;
     const startIndex = (currentPage - 1) * productsPerPage;
     const endIndex = startIndex + productsPerPage;
     const displayedItems = useMemo(() => {
-        const items = Array.isArray(itemsToDisplay)
-            ? itemsToDisplay.slice(startIndex, endIndex)
+        return Array.isArray(filteredProducts)
+            ? filteredProducts.slice(startIndex, endIndex)
             : [];
-        console.log(
-            "📄 Paginacja - wyświetlam",
-            items.length,
-            "z",
-            totalItems,
-            "elementów (strona",
-            currentPage,
-            ")",
-        );
-        return items;
-    }, [itemsToDisplay, startIndex, endIndex, totalItems, currentPage]);
+    }, [filteredProducts, startIndex, endIndex]);
     const totalPages = Math.ceil(totalItems / productsPerPage);
-
-    // Debug log
-    useEffect(() => {
-        if (isCoursesPage) {
-            console.log("🔍 DEBUG SZKOLENIA:");
-            console.log("  allCourses:", allCourses.length);
-            console.log("  sortedCourses:", sortedCourses.length);
-            console.log("  filteredCourses:", filteredCourses.length);
-            console.log("  itemsToDisplay:", itemsToDisplay.length);
-            console.log("  displayedItems:", displayedItems.length);
-            console.log("  filters.priceRange:", filters.priceRange);
-        }
-    }, [
-        isCoursesPage,
-        allCourses.length,
-        sortedCourses.length,
-        filteredCourses.length,
-        itemsToDisplay.length,
-        displayedItems.length,
-        filters,
-    ]);
 
     // Handlery - memoized
     const handleSortChange = useCallback(
@@ -555,64 +297,38 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
     }, [totalPages]);
 
     return (
-        <div className="min-h-screen pt-[120px] pb-16 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-white pt-[120px] mt-5 pb-16 px-4 sm:px-6 lg:px-8">
             <div className="max-w-[1400px] mx-auto">
-                <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600 mb-6">
-                    <Link href="/" className="text-[#D2B79B] hover:underline">Strona główna</Link>
-                    <span>&gt;</span>
-                    <span className="text-gray-900">{selectedCategory}</span>
+                <div className="flex flex-wrap items-center gap-2 text-sm text-gray-500 mb-4">
+                    <Link href="/" className="text-gray-500 text-[15px] hover:underline">Strona główna</Link>
+                    <span className="text-gray text-[16px]">&gt;</span>
+                    <span className="text-gray-900 bg-[#D2B79B1f] font-bold text-[15px] px-2 py-1 rounded-md">{selectedCategory}</span>
                 </div>
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-                    <h1 className="text-2xl sm:text-3xl font-bold text-black">{selectedCategory}</h1>
-                    <div className="flex flex-wrap items-center gap-4">
-                        <span className="text-sm text-gray-600">
-                            Wyświetlanie {startIndex + 1}-{Math.min(endIndex, totalItems)} z {totalItems} {isCoursesPage ? "szkoleń" : "produktów"}
-                        </span>
-                        <div className="flex items-center gap-2">
-                            <label className="text-sm font-medium text-gray-700">Sortuj:</label>
-                            <select value={sortBy} onChange={handleSortChange} className="rounded-lg border border-[rgba(212,196,176,0.5)] bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-[#D2B79B]">
-                                <option>Najpopularniejsze</option>
-                                <option>Cena: od najniższej</option>
-                                <option>Cena: od najwyższej</option>
-                                <option>Najnowsze</option>
-                                <option>Ocena</option>
-                            </select>
-                        </div>
+                <div className="flex flex-row justify-between items-center gap-6 my-15 text-sm text-gray-600">
+                    <h1 className="text-5xl font-bold text-gray-900 mb-1">{selectedCategory}</h1>
+                    <div className="flex flex-row items-center gap-2">
+                        <span>Wyników: {startIndex + 1}-{Math.min(endIndex, totalItems)} z {totalItems} produktów.</span>
+                        <span className="text-gray-400">Sortuj:</span>
+                        <select value={sortBy} onChange={handleSortChange} className="rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-sm text-gray-700 focus:border-[#D2B79B] focus:ring-1 focus:ring-[#D2B79B] align-middle">
+                            <option>Najpopularniejsze</option>
+                            <option>Cena: od najniższej</option>
+                            <option>Cena: od najwyższej</option>
+                            <option>Najnowsze</option>
+                            <option>Ocena</option>
+                        </select>
                     </div>
                 </div>
                 <div className="flex flex-col lg:flex-row gap-8">
                     <FiltersSidebar category={urlCategory} products={allProducts} filters={filters} onFiltersChange={setFilters} />
                     <div className="flex-1 min-w-0">
-                        {isCoursesPage && process.env.NODE_ENV === "development" && (
-                            <div className="p-4 mb-5 rounded-lg bg-gray-100 text-xs text-gray-600">
-                                <p><strong>Debug:</strong> isCoursesPage: {String(isCoursesPage)}, allCourses: {allCourses.length}, filtered: {filteredCourses.length}, displayed: {displayedItems.length}</p>
-                            </div>
-                        )}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                            {isCoursesPage ? (
-                                displayedItems.length > 0 ? (
-                                    displayedItems.map((course, index) => (
-                                        <CourseElement
-                                            key={course.slug || index}
-                                            course={course as Courses}
-                                            index={index}
-                                        />
-                                    ))
-                                ) : (
-                                    <div className="col-span-full py-12 text-center">
-                                        <p className="text-lg mb-2">Brak szkoleń do wyświetlenia</p>
-                                        <p className="text-sm text-gray-500">allCourses: {allCourses.length}, filtered: {filteredCourses.length}</p>
-                                    </div>
-                                )
-                            ) : (
-                                displayedItems.map((product, index) => (
-                                    <ProductElement
-                                        index={index}
-                                        key={index}
-                                        product={product as Products}
-                                    />
-                                ))
-                            )}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                            {displayedItems.map((product, index) => (
+                                <ProductElement
+                                    index={index}
+                                    key={product.slug ?? index}
+                                    product={product as Products}
+                                />
+                            ))}
                         </div>
 
                         {/* Pagination */}

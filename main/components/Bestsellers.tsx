@@ -4,12 +4,15 @@ import { Products } from "@/lib/types/productTypes";
 import ProductElement from "./productsComponents/ProductElement";
 import Link from "next/link";
 
-export default function Bestsellers({ data }: { data: { status: number; products?: Products[] } }) {
+export default function Bestsellers({ data }: { data?: { status: number; products?: Products[] } }) {
     const [products, setProducts] = useState<Products[] | null>(null);
     useEffect(() => {
-        if (data.status === 200 && data.products?.length) {
-            setProducts([...data.products].sort((a, b) => b.ocena - a.ocena).slice(0, 4));
+        function fetchProducts() {
+            if (data?.status === 200 && data?.products?.length) {
+                setProducts([...data?.products].sort((a, b) => b.ocena - a.ocena).slice(0, 4));
+            }
         }
+        fetchProducts();
     }, [data]);
 
     return (

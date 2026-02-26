@@ -133,9 +133,9 @@ export default function FiltersSidebar({ category, products, filters, onFiltersC
   }, [products, category]);
 
   const [expandedSections, setExpandedSections] = useState<{ [key: string]: boolean }>({
-    subcategory: true,
-    price: true,
-    brand: true,
+    subcategory: false,
+    price: false,
+    brand: false,
     size: false,
     type: false,
   });
@@ -173,20 +173,20 @@ export default function FiltersSidebar({ category, products, filters, onFiltersC
   }, []);
 
   return (
-    <aside className="w-full lg:w-64 shrink-0 rounded-xl border border-[rgba(212,196,176,0.3)] bg-white/60 p-4 h-fit">
-      <div className="flex items-center gap-2 mb-4">
-        <svg className="w-5 h-5 text-[#D2B79B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <aside className="w-full lg:w-64 shrink-0 rounded-lg border border-gray-200 bg-white p-5 h-fit">
+      <div className="flex items-center gap-2 mb-5">
+        <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
         </svg>
-        <h2 className="font-semibold text-gray-900">Filtry</h2>
+        <h2 className="text-base font-semibold text-gray-900">Filtry</h2>
       </div>
 
       {/* Subcategories */}
       {categoryFilters.subcategories && categoryFilters.subcategories.length > 0 && (
         <div className="border-b border-gray-200 pb-3 mb-3">
-          <button type="button" className="w-full flex items-center justify-between py-2 text-left font-medium text-gray-800 hover:text-[#D2B79B] transition-colors" onClick={() => toggleSection('subcategory')}>
+          <button type="button" className="w-full flex items-center justify-between py-2 text-left text-base font-medium text-gray-800 hover:text-gray-600 transition-colors" onClick={() => toggleSection('subcategory')}>
             <span>Podkategorie</span>
-            <svg className={`w-4 h-4 transition-transform ${expandedSections.subcategory ? 'rotate-180' : ''}`}
+            <svg className={`w-5 h-5 transition-transform ${expandedSections.subcategory ? 'rotate-180' : ''}`}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -195,11 +195,11 @@ export default function FiltersSidebar({ category, products, filters, onFiltersC
             </svg>
           </button>
           {expandedSections.subcategory && (
-            <div className="pl-2 space-y-1">
+            <div className="pl-2 space-y-1.5">
               {categoryFilters.subcategories?.map((subcategory) => {
                 const isSelected = filters.selectedSubcategories.includes(subcategory.nazwa);
                 return (
-                  <div key={subcategory.slug} className={`flex items-center gap-2 py-1.5 px-2 rounded-lg cursor-pointer ${isSelected ? 'bg-[#D2B79B]/20 text-[#D2B79B]' : 'hover:bg-gray-100'}`} onClick={() => onFiltersChange({ ...filters, selectedSubcategories: toggleFilter(filters.selectedSubcategories, subcategory.nazwa) })}>
+                  <div key={subcategory.slug} className={`flex items-center gap-2 py-2 px-2 rounded-lg cursor-pointer text-[15px] ${isSelected ? 'bg-[#D2B79B]/20 text-[#D2B79B]' : 'hover:bg-gray-100'}`} onClick={() => onFiltersChange({ ...filters, selectedSubcategories: toggleFilter(filters.selectedSubcategories, subcategory.nazwa) })}>
                     <input type="checkbox" checked={isSelected} onChange={() => { }} onClick={(e) => e.stopPropagation()} className="rounded border-gray-300 text-[#D2B79B] focus:ring-[#D2B79B]" />
                     <span>{subcategory.nazwa}</span>
                   </div>
@@ -212,9 +212,9 @@ export default function FiltersSidebar({ category, products, filters, onFiltersC
 
       {/* Price Range */}
       <div className="border-b border-gray-200 pb-3 mb-3">
-        <button type="button" className="w-full flex items-center justify-between py-2 text-left font-medium text-gray-800 hover:text-[#D2B79B] transition-colors" onClick={() => toggleSection('price')}>
+        <button type="button" className="w-full flex items-center justify-between py-2 text-left text-base font-medium text-gray-800 hover:text-gray-600 transition-colors" onClick={() => toggleSection('price')}>
           <span>Cena</span>
-          <svg className={`w-4 h-4 transition-transform ${expandedSections.price ? 'rotate-180' : ''}`}
+          <svg className={`w-5 h-5 transition-transform ${expandedSections.price ? 'rotate-180' : ''}`}
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -224,7 +224,7 @@ export default function FiltersSidebar({ category, products, filters, onFiltersC
         </button>
         {expandedSections.price && categoryFilters.priceRange && (
           <div className="pl-2 pt-2">
-            <div className="flex justify-between text-sm text-gray-600 mb-2">
+            <div className="flex justify-between text-base text-gray-600 mb-2">
               <span>{filters.priceRange.min} zł</span>
               <span>{filters.priceRange.max} zł</span>
             </div>
@@ -239,9 +239,9 @@ export default function FiltersSidebar({ category, products, filters, onFiltersC
       {/* Brands */}
       {categoryFilters.brands && categoryFilters.brands.length > 0 && (
         <div className="border-b border-gray-200 pb-3 mb-3">
-          <button type="button" className="w-full flex items-center justify-between py-2 text-left font-medium text-gray-800 hover:text-[#D2B79B] transition-colors" onClick={() => toggleSection('brand')}>
+          <button type="button" className="w-full flex items-center justify-between py-2 text-left text-base font-medium text-gray-800 hover:text-gray-600 transition-colors" onClick={() => toggleSection('brand')}>
             <span>Marka</span>
-            <svg className={`w-4 h-4 transition-transform ${expandedSections.brand ? 'rotate-180' : ''}`}
+            <svg className={`w-5 h-5 transition-transform ${expandedSections.brand ? 'rotate-180' : ''}`}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -250,11 +250,11 @@ export default function FiltersSidebar({ category, products, filters, onFiltersC
             </svg>
           </button>
           {expandedSections.brand && (
-            <div className="pl-2 space-y-1">
+            <div className="pl-2 space-y-1.5">
               {categoryFilters.brands.map((brand) => {
                 const isSelected = filters.selectedBrands.includes(brand);
                 return (
-                  <div key={brand} className={`flex items-center gap-2 py-1.5 px-2 rounded-lg cursor-pointer ${isSelected ? 'bg-[#D2B79B]/20 text-[#D2B79B]' : 'hover:bg-gray-100'}`} onClick={() => onFiltersChange({ ...filters, selectedBrands: toggleFilter(filters.selectedBrands, brand) })}>
+                  <div key={brand} className={`flex items-center gap-2 py-2 px-2 rounded-lg cursor-pointer text-[15px] ${isSelected ? 'bg-[#D2B79B]/20 text-[#D2B79B]' : 'hover:bg-gray-100'}`} onClick={() => onFiltersChange({ ...filters, selectedBrands: toggleFilter(filters.selectedBrands, brand) })}>
                     <input type="checkbox" checked={isSelected} onChange={() => { }} onClick={(e) => e.stopPropagation()} className="rounded border-gray-300 text-[#D2B79B] focus:ring-[#D2B79B]" />
                     <span>{brand}</span>
                   </div>
@@ -268,9 +268,9 @@ export default function FiltersSidebar({ category, products, filters, onFiltersC
       {/* Sizes - tylko dla Meble */}
       {categoryFilters.sizes && categoryFilters.sizes.length > 0 && (
         <div className="border-b border-gray-200 pb-3 mb-3">
-          <button type="button" className="w-full flex items-center justify-between py-2 text-left font-medium text-gray-800 hover:text-[#D2B79B] transition-colors" onClick={() => toggleSection('size')}>
+          <button type="button" className="w-full flex items-center justify-between py-2 text-left text-base font-medium text-gray-800 hover:text-gray-600 transition-colors" onClick={() => toggleSection('size')}>
             <span>Rozmiar</span>
-            <svg className={`w-4 h-4 transition-transform ${expandedSections.size ? 'rotate-180' : ''}`}
+            <svg className={`w-5 h-5 transition-transform ${expandedSections.size ? 'rotate-180' : ''}`}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -284,7 +284,7 @@ export default function FiltersSidebar({ category, products, filters, onFiltersC
                 {categoryFilters.sizes.map((size) => {
                   const isSelected = filters.selectedSizes.includes(size);
                   return (
-                    <button key={size} type="button" className={`flex items-center gap-1 px-3 py-1.5 rounded-lg border text-sm transition-colors ${isSelected ? 'border-[#D2B79B] bg-[#D2B79B]/20 text-[#D2B79B]' : 'border-gray-300 hover:border-[#D2B79B]'}`} onClick={() => onFiltersChange({ ...filters, selectedSizes: toggleFilter(filters.selectedSizes, size) })}>
+                    <button key={size} type="button" className={`flex items-center gap-1 px-3 py-2 rounded-lg border text-base transition-colors ${isSelected ? 'border-[#D2B79B] bg-[#D2B79B]/20 text-[#D2B79B]' : 'border-gray-300 hover:border-[#D2B79B]'}`} onClick={() => onFiltersChange({ ...filters, selectedSizes: toggleFilter(filters.selectedSizes, size) })}>
                       <input type="checkbox" checked={isSelected} onChange={() => { }} onClick={(e) => e.stopPropagation()} className="rounded border-gray-300 text-[#D2B79B]" />
                       {size}
                     </button>
@@ -299,9 +299,9 @@ export default function FiltersSidebar({ category, products, filters, onFiltersC
       {/* Types */}
       {categoryFilters.types && categoryFilters.types.length > 0 && (
         <div className="border-b border-gray-200 pb-3 mb-3">
-          <button type="button" className="w-full flex items-center justify-between py-2 text-left font-medium text-gray-800 hover:text-[#D2B79B] transition-colors" onClick={() => toggleSection('type')}>
+          <button type="button" className="w-full flex items-center justify-between py-2 text-left text-base font-medium text-gray-800 hover:text-gray-600 transition-colors" onClick={() => toggleSection('type')}>
             <span>Typ</span>
-            <svg className={`w-4 h-4 transition-transform ${expandedSections.type ? 'rotate-180' : ''}`}
+            <svg className={`w-5 h-5 transition-transform ${expandedSections.type ? 'rotate-180' : ''}`}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -310,11 +310,11 @@ export default function FiltersSidebar({ category, products, filters, onFiltersC
             </svg>
           </button>
           {expandedSections.type && (
-            <div className="pl-2 space-y-1">
+            <div className="pl-2 space-y-1.5">
               {categoryFilters.types.map((type) => {
                 const isSelected = filters.selectedTypes.includes(type);
                 return (
-                  <div key={type} className={`flex items-center gap-2 py-1.5 px-2 rounded-lg cursor-pointer ${isSelected ? 'bg-[#D2B79B]/20 text-[#D2B79B]' : 'hover:bg-gray-100'}`} onClick={() => onFiltersChange({ ...filters, selectedTypes: toggleFilter(filters.selectedTypes, type) })}>
+                  <div key={type} className={`flex items-center gap-2 py-2 px-2 rounded-lg cursor-pointer text-[15px] ${isSelected ? 'bg-[#D2B79B]/20 text-[#D2B79B]' : 'hover:bg-gray-100'}`} onClick={() => onFiltersChange({ ...filters, selectedTypes: toggleFilter(filters.selectedTypes, type) })}>
                     <input type="checkbox" checked={isSelected} onChange={() => { }} onClick={(e) => e.stopPropagation()} className="rounded border-gray-300 text-[#D2B79B] focus:ring-[#D2B79B]" />
                     <span>{type}</span>
                   </div>
@@ -325,7 +325,7 @@ export default function FiltersSidebar({ category, products, filters, onFiltersC
         </div>
       )}
 
-      <button type="button" className="w-full mt-4 py-2.5 rounded-lg border border-[#D2B79B] text-[#D2B79B] font-medium hover:bg-[#D2B79B]/10 transition-colors"
+      <button type="button" className="w-full mt-5 py-2.5 rounded-lg bg-[#D2B79B] text-gray-900 font-medium text-base hover:bg-[#c4a882] transition-colors"
         onClick={() => onFiltersChange({
           priceRange: categoryFilters.priceRange || { min: 0, max: 0 },
           selectedSubcategories: [],
