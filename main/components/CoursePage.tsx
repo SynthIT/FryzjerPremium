@@ -408,7 +408,8 @@ export default function CoursePage({ courseSlug }: CoursePageProps) {
                                                     <PlayCircle className="h-4 w-4 text-[#D2B79B]" />
                                                     <span className="text-gray-700">Lekcja {i + 1}: {lekcja.tytul}</span>
                                                 </div>
-                                                <span className="text-sm text-gray-500">{lekcja.dlugosc || "—"}</span>
+                                                <span className="text-sm text-gray-500">{lekcja.dlugosc || "—"}</span><br></br>
+                                                <span className="text-sm text-gray-500">{lekcja.opis || "—"}</span>
                                             </div>
                                         ))}
                                     </div>
