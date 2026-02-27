@@ -19,12 +19,14 @@ export async function PUT(req: NextRequest) {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
+        path: "/",
     });
     if (refreshToken) {
         res.cookies.set("Refresh-Token", `Bearer ${refreshToken}`, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             sameSite: "lax",
+            path: "/",
         });
     }
     return res;

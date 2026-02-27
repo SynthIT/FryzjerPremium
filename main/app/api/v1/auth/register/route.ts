@@ -26,6 +26,7 @@ export async function POST(req: NextRequest) {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === "production",
                 sameSite: "lax",
+                path: "/",
             });
             nextResponse.cookies.set(
                 "Refresh-Token",
@@ -34,6 +35,7 @@ export async function POST(req: NextRequest) {
                     httpOnly: true,
                     secure: process.env.NODE_ENV === "production",
                     sameSite: "lax",
+                    path: "/",
                 },
             );
             return nextResponse;

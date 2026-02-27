@@ -10,9 +10,11 @@ export async function DELETE(req: NextRequest) {
         );
     const res = NextResponse.json({}, { status: 200 });
     res.cookies.set("Authorization", "", {
+        path: "/",
         expires: Math.floor(Date.now() / 1000) - 10,
     });
     res.cookies.set("Refresh-Token", "", {
+        path: "/",
         expires: Math.floor(Date.now() / 1000) - 10,
     });
     return res;

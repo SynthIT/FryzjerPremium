@@ -24,12 +24,14 @@ export async function POST(req: NextRequest) {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
+        path: "/",
     });
     if (jwt![1]) {
         res.cookies.set("Refresh-Token", `Bearer ${jwt![1]}`, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             sameSite: "lax",
+            path: "/",
         });
     }
     return res;
