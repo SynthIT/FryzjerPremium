@@ -280,7 +280,9 @@ export default function CoursePage({ courseSlug }: CoursePageProps) {
                         <div className="rounded-xl border border-[rgba(212,196,176,0.3)] bg-white/60 p-6">
                             <h3 className="text-lg font-bold text-gray-900 mb-3">Opis szkolenia</h3>
                             <div className="text-gray-700 leading-relaxed">
-                                <p>{course.opis}</p>
+                                <p>{course.opis.split("\\n").map((text) => (
+                                    <span key={text}>{text}<br /></span>
+                                ))}</p>
                             </div>
                         </div>
                     </div>
