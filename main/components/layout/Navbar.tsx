@@ -40,6 +40,7 @@ export function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
                         <span className="h-6 w-6 rounded bg-linear-to-br from-zinc-900 to-zinc-500 shadow-sm" />
                         <span className="font-semibold tracking-tight text-sm sm:text-base">
                             Panel Administracyjny
+                            {process.env.NODE_ENV === "development" ? (<sup>(DEV)</sup>) : ""}
                         </span>
                     </Link>
                 </div>

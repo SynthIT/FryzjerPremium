@@ -47,7 +47,7 @@ const courseSchema = new Schema<Courses>(
             ref: "Categories",
         },
         lekcje: { type: [LekcjaSchema], default: [] },
-        firma: { type: Types.ObjectId, ref: "Firmy", required: true },
+        firma: { type: Types.ObjectId, ref: "Firmy" },
         media: { type: [mediaProductSchema], default: [] },
         promocje: { type: Types.ObjectId, ref: "Promos" },
         opis: { type: String, required: true },

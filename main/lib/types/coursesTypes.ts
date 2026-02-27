@@ -46,7 +46,7 @@ export const zodCourses = z.object({
         z.union([z.string(), zodCategories]),
     ),
     lekcje: z.array(zodLekcja).optional(),
-    firma: z.union([z.string(), zodFirmy]),
+    firma: z.union([z.string(), zodFirmy, z.null()]).optional(),
     media: z.array(zodMedia),
     promocje: z
         .union([z.string(), zodPromocje])
