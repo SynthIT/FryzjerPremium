@@ -13,7 +13,6 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({
             image: {
                 url: blob.url,
-                downloadUrl: blob.downloadUrl ?? blob.url,
                 pathname: blob.pathname,
             },
         });

@@ -274,13 +274,13 @@ export default function NewCoursePage() {
                     throw new Error(err.error || "Błąd uploadu");
                 }
                 const data = await res.json();
-                const url = data?.image?.downloadUrl ?? data?.image?.url;
+                const url = data?.image?.url ?? null;
                 if (!url) throw new Error("Brak URL w odpowiedzi uploadu");
                 return url;
             };
 
             const mediaData: Media[] = [];
-            const parentFolder = "courses";
+            const parentFolder = `courses/${coursePayload.slug}`;
 
             if (mainImageFile) {
                 const path = await uploadFile(mainImageFile, parentFolder);
