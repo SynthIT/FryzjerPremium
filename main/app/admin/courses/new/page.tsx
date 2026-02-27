@@ -258,26 +258,50 @@ export default function NewCoursePage() {
                 return;
             }
 
-            // Przygotuj media - główne zdjęcie + galeria (nazwa z coursePayload.nazwa)
+            // Upload zdjęć do blob i zbierz ścieżki (downloadUrl)
+            const uploadFile = async (file: File, parent: string): Promise<string> => {
+                const res = await fetch("/admin/api/v1/upload", {
+                    method: "POST",
+                    credentials: "include",
+                    headers: {
+                        "X-File-Name": encodeURIComponent(file.name),
+                        "X-File-Parent": encodeURIComponent(parent),
+                    },
+                    body: file,
+                });
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.error || "Błąd uploadu");
+                }
+                const data = await res.json();
+                const url = data?.image?.downloadUrl ?? data?.image?.url;
+                if (!url) throw new Error("Brak URL w odpowiedzi uploadu");
+                return url;
+            };
+
             const mediaData: Media[] = [];
+            const parentFolder = "courses";
+
             if (mainImageFile) {
+                const path = await uploadFile(mainImageFile, parentFolder);
                 mediaData.push({
                     nazwa: coursePayload.nazwa || mainImageFile.name,
                     slug: generateSlug(coursePayload.nazwa || mainImageFile.name),
                     typ: "image",
                     alt: coursePayload.nazwa || "Główne zdjęcie szkolenia",
-                    path: "",
+                    path,
                 });
             }
-            galleryFiles.forEach((file) => {
+            for (const file of galleryFiles) {
+                const path = await uploadFile(file, parentFolder);
                 mediaData.push({
                     nazwa: file.name,
                     slug: generateSlug(file.name),
                     typ: "image",
                     alt: file.name,
-                    path: "",
+                    path,
                 });
-            });
+            }
 
             const courseData = {
                 ...coursePayload,

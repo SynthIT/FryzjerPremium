@@ -220,18 +220,38 @@ export default function NewProductPage() {
                     }
                 });
             }
-            for (const media of mediaFiles) {
-                try {
-                    await fetch("/admin/api/v1/media", {
-                        method: "POST",
-                        credentials: "include",
-                        headers: {
-                            "Content-Type": "image/png",
-                        },
-                    });
-                } catch (error) {
-                    console.error("Błąd podczas uploadu mediów:", error);
+            // Upload zdjęć do blob i zbierz ścieżki (downloadUrl)
+            const uploadFile = async (file: File, parent: string): Promise<string> => {
+                const res = await fetch("/admin/api/v1/upload", {
+                    method: "POST",
+                    credentials: "include",
+                    headers: {
+                        "X-File-Name": encodeURIComponent(file.name),
+                        "X-File-Parent": encodeURIComponent(parent),
+                    },
+                    body: file,
+                });
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.error || "Błąd uploadu");
                 }
+                const data = await res.json();
+                const url = data?.image?.downloadUrl ?? data?.image?.url;
+                if (!url) throw new Error("Brak URL w odpowiedzi uploadu");
+                return url;
+            };
+
+            const mediaData: Array<{ nazwa: string; slug: string; typ: "image"; alt: string; path: string }> = [];
+            const parentFolder = "products";
+            for (const file of mediaFiles) {
+                const path = await uploadFile(file, parentFolder);
+                mediaData.push({
+                    nazwa: file.name,
+                    slug: generateSlug(file.name),
+                    typ: "image",
+                    alt: file.name,
+                    path,
+                });
             }
 
             // Przygotuj producent - musi być ObjectId lub pełny obiekt
@@ -244,16 +264,6 @@ export default function NewProductPage() {
                 return;
             }
 
-            // Przygotuj media - na razie tylko podstawowe dane, upload będzie osobno
-            const mediaData = mediaFiles.map((file, index) => ({
-                nazwa: file.name,
-                slug: generateSlug(file.name),
-                typ: "image" as const,
-                alt: file.name,
-                path: "", // Będzie wypełnione po uploadzie
-            }));
-            console.log(warianty);
-            console.log(typeof warianty);
             // Przygotuj produkt zgodny ze schematem
             const productData: Products = {
                 slug,
