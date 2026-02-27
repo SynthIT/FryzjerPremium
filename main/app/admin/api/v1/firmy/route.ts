@@ -9,14 +9,6 @@ import { checkRequestAuth } from "@/lib/admin_utils";
 import { LogService } from "@/lib/log_service";
 
 export async function GET(req: NextRequest) {
-    const { val } = await checkRequestAuth(req);
-    if (!val) {
-        return NextResponse.json(
-            { status: 1, error: "Brak autoryzacji" },
-            { status: 401 },
-        );
-    }
-
     try {
         const firmy = await collectFirmy();
         const parsedFirmy = JSON.parse(firmy);

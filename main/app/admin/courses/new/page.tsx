@@ -134,6 +134,7 @@ export default function NewCoursePage() {
             return { ...prev, lekcje: next };
         });
     }, [coursePayload.liczbaLekcji]);
+    
     useEffect(() => {
         if (coursePayload.nazwa) {
             setCoursePayload((prev) => ({
@@ -809,18 +810,18 @@ export default function NewCoursePage() {
                                 <label className="block text-sm font-medium mb-2">
                                     Instruktor
                                 </label>
-                                {coursePayload.firma && coursePayload.firma !== "inna" && <select
-                                    value={coursePayload.instruktor || ""}
-                                    onChange={(e) => handleCoursePayloadChange("instruktor", e.target.value)}
-                                    className="w-full rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
-                                >
-                                    <option value="">Wybierz instruktora</option>
-                                    {selectedFirm.map((instruktor) => (
-                                        <option key={(instruktor as User)._id || ""} value={(instruktor as User)._id || ""}>
-                                            {(instruktor as User).imie} {(instruktor as User).nazwisko}
-                                        </option>
-                                    ))}
-                                </select>}
+                                {coursePayload.firma && coursePayload.firma !== "inna" &&
+                                    <select
+                                        value={coursePayload.instruktor || ""}
+                                        onChange={(e) => handleCoursePayloadChange("instruktor", e.target.value)}
+                                        className="w-full rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring">
+                                        <option value="">Wybierz instruktora</option>
+                                        {selectedFirm.map((instruktor) => (
+                                            <option key={(instruktor as User)._id || ""} value={`${(instruktor as User).imie} ${(instruktor as User).nazwisko}`}>
+                                                {(instruktor as User).imie} {(instruktor as User).nazwisko}
+                                            </option>
+                                        ))}
+                                    </select>}
                                 {coursePayload.firma && coursePayload.firma === "inna" && (
                                     <input type="text" placeholder="np. Jan Kowalski" value={coursePayload.instruktor || ""} onChange={(e) => handleCoursePayloadChange("instruktor", e.target.value)} className="w-full rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring" />
                                 )}
