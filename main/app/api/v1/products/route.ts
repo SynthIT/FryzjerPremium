@@ -3,6 +3,7 @@ import path from "path";
 import { readFileSync, writeFileSync } from "fs";
 import { NextRequest, NextResponse } from "next/server";
 import { checkRequestAuth, returnAvailableWariant } from "@/lib/admin_utils";
+import { collectProducts } from "@/lib/crud/products/product";
 
 export async function GET(req: NextRequest) {
     const url = req.url.split("/");
@@ -11,12 +12,12 @@ export async function GET(req: NextRequest) {
             ? url[url.length - 1].split("?")[1]
             : false;
 
-    const file = readFileSync(
-        path.join(process.cwd(), "data", "produkty.json"),
-        "utf8",
-    );
+    // const file = readFileSync(
+    //     path.join(process.cwd(), "data", "produkty.json"),
+    //     "utf8",
+    // );
     if (querystring) {
-        const products: Products[] = JSON.parse(file);
+        const products: Products[] = JSON.parse(await collectProducts());
         const productf: Products | undefined = products.find((p) => {
             return p.slug == querystring.split("=")[1];
         });
@@ -27,7 +28,7 @@ export async function GET(req: NextRequest) {
         };
         return NextResponse.json(response);
     }
-    const products: Products[] = JSON.parse(file);
+    const products: Products[] = JSON.parse(await collectProducts());
     const response = {
         status: 200,
         products: products,

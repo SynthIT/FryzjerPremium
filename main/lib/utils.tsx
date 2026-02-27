@@ -58,8 +58,6 @@ export const getCourses = async (slug?: string) => {
 
 export const updateProduct = async (product: Products) => {
     const bd = new URL("/admin/api/v1/products");
-    const url = new URL("/api/v1/products");
-
     const response = await fetch(bd, {
         method: "PUT",
         headers: {
@@ -71,19 +69,11 @@ export const updateProduct = async (product: Products) => {
     if (data.status !== 0) {
         throw new Error(data.error || "Błąd podczas aktualizacji produktu");
     }
-    await fetch(url, {
-        method: "PUT",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(product),
-    });
     return data;
 };
 
 export const deleteProduct = async (slug: string) => {
     const bd = new URL("/admin/api/v1/products");
-    const url = new URL("/api/v1/products");
 
     bd.searchParams.append("slug", slug);
     const response = await fetch(bd, {
@@ -93,10 +83,6 @@ export const deleteProduct = async (slug: string) => {
     if (data.status !== 0) {
         throw new Error(data.error || "Błąd podczas usuwania produktu");
     }
-    url.searchParams.append("slug", slug);
-    await fetch(url, {
-        method: "DELETE",
-    });
     return data;
 };
 
