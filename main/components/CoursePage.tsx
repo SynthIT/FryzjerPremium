@@ -388,8 +388,9 @@ export default function CoursePage({ courseSlug }: CoursePageProps) {
                         {activeTab === "overview" && (
                             <div className="space-y-4">
                                 <h3 className="text-lg font-bold text-gray-900">O tym szkoleniu</h3>
-                                <p className="text-gray-700 leading-relaxed">{course.opis}</p>
-
+                                <p>{course.opis.split("\\n").map((text) => (
+                                    <span key={text}>{text}<br /></span>
+                                ))}</p>
                                 {course.firma && typeof course.firma === "object" && "nazwa" in course.firma && (
                                     <div className="pt-4 border-t border-gray-200">
                                         <h4 className="font-bold text-gray-900">Instruktor</h4>
