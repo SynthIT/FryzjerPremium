@@ -41,6 +41,7 @@ export default function CoursePage({ courseSlug }: CoursePageProps) {
                 if (data) {
                     const json = JSON.parse(data);
                     setCourse(json);
+                    console.log(json);
                     setSelectedPrice(finalPrice(json.cena, json.vat, undefined, json.promocje as Promos));
                 } else {
                     setError("Kurs nie został znaleziony");

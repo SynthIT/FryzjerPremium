@@ -40,6 +40,11 @@ const nextConfig: NextConfig = {
                 port: "",
                 pathname: "/**",
             },
+            {
+                protocol: "https",
+                hostname: "0drz1wfqr4mpnehu.public.blob.vercel-storage.com",
+                pathname: "/**",
+            }
         ],
     },
     turbopack: {

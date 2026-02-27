@@ -10,14 +10,6 @@ import { LogService } from "@/lib/log_service";
 import { roleSchema } from "@/lib/types/userTypes";
 
 export async function GET(req: NextRequest) {
-    // Dla GET requestów sprawdzamy tylko, czy użytkownik jest zalogowany
-    const { val } = await checkRequestAuth(req);
-    if (!val) {
-        return NextResponse.json(
-            { status: 1, error: "Brak autoryzacji" },
-            { status: 401 }
-        );
-    }
     const roles = await collectRoles();
     return NextResponse.json({ status: 0, roles: JSON.parse(roles) });
 }

@@ -10,16 +10,6 @@ import { LogService } from "@/lib/log_service";
 
 
 export async function GET(req: NextRequest) {
-    // Dla GET requestów sprawdzamy tylko, czy użytkownik jest zalogowany (ma ważny JWT)
-    // Nie sprawdzamy konkretnych uprawnień - to jest tylko do wyświetlania listy produktów
-    const { val } = await checkRequestAuth(req);
-    if (!val) {
-        return NextResponse.json(
-            { status: 1, error: "Brak autoryzacji" },
-            { status: 401 }
-        );
-    }
-
     try {
         const products = await collectProducts();
         const parsedProducts = JSON.parse(products);

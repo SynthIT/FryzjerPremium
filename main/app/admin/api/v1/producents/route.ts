@@ -9,14 +9,6 @@ import { LogService } from "@/lib/log_service";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
-    // Dla GET requestów sprawdzamy tylko, czy użytkownik jest zalogowany
-    const { val } = await checkRequestAuth(req);
-    if (!val) {
-        return NextResponse.json(
-            { status: 1, error: "Brak autoryzacji" },
-            { status: 401 }
-        );
-    }
     try {
         const producents = await collectProducents();
         const parsedProducents = JSON.parse(producents);

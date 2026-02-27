@@ -5,14 +5,6 @@ import { Users, userSchema } from "@/lib/types/userTypes";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
-    // Dla GET requestów sprawdzamy tylko, czy użytkownik jest zalogowany
-    const { val } = await checkRequestAuth(req);
-    if (!val) {
-        return NextResponse.json(
-            { status: 1, error: "Brak autoryzacji" },
-            { status: 401 },
-        );
-    }
     const uzytkownik = await collectUsers();
     return NextResponse.json({ status: 0, users: JSON.stringify(uzytkownik) });
 }

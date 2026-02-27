@@ -1,17 +1,9 @@
-import { checkRequestAuth } from "@/lib/admin_utils";
 import { collectCourses } from "@/lib/crud/courses/course";
 import { access, writeFileSync, constants, rmSync } from "fs";
 import { NextRequest, NextResponse } from "next/server";
 import path from "path";
 
 export async function GET(req: NextRequest) {
-    const { val } = await checkRequestAuth(req, ["admin:courses"]);
-    if (!val) {
-        return NextResponse.json(
-            { status: 1, error: "Brak autoryzacji" },
-            { status: 401 }
-        );
-    }
     let result = "";
     const courses = await collectCourses();
     access(path.join(process.cwd(), "data", "kursy.json"), constants.F_OK, (err) => {

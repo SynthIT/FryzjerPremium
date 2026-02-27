@@ -9,14 +9,6 @@ import { checkRequestAuth } from "@/lib/admin_utils";
 import { LogService } from "@/lib/log_service";
 
 export async function GET(req: NextRequest) {
-    // Dla GET requestów sprawdzamy tylko, czy użytkownik jest zalogowany
-    const { val } = await checkRequestAuth(req);
-    if (!val) {
-        return NextResponse.json(
-            { status: 1, error: "Brak autoryzacji" },
-            { status: 401 }
-        );
-    }
     const promos = await collectPromo();
     return NextResponse.json({ status: 0, promos: JSON.parse(promos) });
 }
