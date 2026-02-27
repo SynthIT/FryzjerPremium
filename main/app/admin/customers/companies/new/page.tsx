@@ -42,10 +42,6 @@ export default function NewCompanyPage() {
         prowizja_vat: "brutto",
         strona_internetowa: null,
         instruktorzy: [],
-        _id: "",
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        __v: 0,
     });
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -98,7 +94,7 @@ export default function NewCompanyPage() {
                 alt: firmPayload.logo.alt || firmPayload.nazwa,
                 path: firmPayload.logo.path,
             };
-
+            firmPayload.logo = logo;
             const response = await fetch("/admin/api/v1/firmy", {
                 method: "POST",
                 headers: {

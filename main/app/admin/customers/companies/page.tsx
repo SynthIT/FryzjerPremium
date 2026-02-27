@@ -30,7 +30,7 @@ export default function CompaniesPage() {
                     return;
                 }
                 const data = await res.json();
-                setCompanies(Array.isArray(data) ? data : []);
+                setCompanies(data.firmy ?? []);
             } catch (error) {
                 console.error("Błąd podczas ładowania firm:", error);
                 setCompanies([]);

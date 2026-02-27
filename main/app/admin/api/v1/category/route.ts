@@ -135,6 +135,8 @@ export async function POST(req: NextRequest) {
         "admin:categories",
     ]);
     if (!val) {
+        console.log(mess);
+        console.log(val);
         new LogService({
             path: req.url,
             kind: "error",
@@ -155,6 +157,7 @@ export async function POST(req: NextRequest) {
                 { status: 500 },
             );
         }
+        console.log(res);
         new LogService({
             path: req.url,
             kind: "log",

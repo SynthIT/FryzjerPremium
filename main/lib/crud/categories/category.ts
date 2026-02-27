@@ -16,18 +16,18 @@ export async function createCategory(catData: Categories): Promise<Categories | 
         return { error: ok.error.message };
     }
     await db();
+    const imagePayload = ok.data.image ?? {
+        nazwa: ok.data.nazwa,
+        slug: ok.data.slug,
+        typ: "image" as const,
+        alt: ok.data.nazwa,
+        path: Math.random().toString(36).substring(2, 15),
+    };
     const newCat = await Category.create({
         ...ok.data,
-        image: {
-            nazwa: ok.data.nazwa,
-            slug: ok.data.slug,
-            typ: "image",
-            alt: ok.data.nazwa,
-            path: Math.random().toString(36).substring(2, 15),
-        },
+        image: imagePayload,
     });
     return newCat;
-
 }
 
 export async function deleteCatBySlug(slug: string) {
