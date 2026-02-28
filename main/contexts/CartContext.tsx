@@ -9,13 +9,16 @@ import React, {
 } from "react";
 import { Products, Warianty } from "@/lib/types/productTypes";
 import { CartItem, Cart } from "@/lib/types/cartTypes";
+import { Courses } from "@/lib/types/coursesTypes";
+import { Promos } from "@/lib/types/shared";
 
 
 interface CartContextType {
     getCart: () => Cart;
     lastAddedItem: CartItem | null;
     addToCart: (
-        product: Products,
+        type: "produkt" | "kursy",
+        object: Products | Courses,
         quantity: number,
         price: number,
         wariant?: Warianty,
@@ -54,7 +57,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                 if (parsedCart.items.length == 0) return;
                 const ci = parsedCart.items.map((item) => {
                     if (item.id) return item;
-                    item.id = getItemId(item.product.slug!, item.wariant);
+                    item.id = getItemId(item.object.slug!, item.wariant);
                     return item;
                 });
                 parsedCart.items = ci;
@@ -83,12 +86,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
     const addToCart = useCallback(
         (
-            product: Products,
+            type: "produkt" | "kursy",
+            object: Products | Courses,
             quantity: number,
             price: number,
             wariant?: Warianty,
         ) => {
-            const itemId = getItemId(product.slug, wariant);
+            const itemId = getItemId(type + "_" + object.slug, wariant);
             setCart((prev) => {
                 const existingItemIndex = prev.items.findIndex(
                     (item) => item.id === itemId,
@@ -106,12 +110,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                     // Dodaj nowy produkt
                     newItem = {
                         id: itemId,
-                        product: {
-                            slug: product.slug,
-                            nazwa: product.nazwa,
-                            media: product.media,
-                            cena: product.cena,
-                            sku: product.sku,
+                        type,
+                        object: {
+                            vat: object.vat,
+                            promocje: object.promocje as Promos | undefined,
+                            slug: object.slug,
+                            nazwa: object.nazwa,
+                            media: object.media,
+                            cena: object.cena,
+                            sku: object.sku || "",
                         },
                         quantity,
                         price,
@@ -122,12 +129,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             });
             setLastAddedItem({
                 id: itemId,
-                product: {
-                    slug: product.slug,
-                    nazwa: product.nazwa,
-                    media: product.media,
-                    cena: product.cena,
-                    sku: product.sku,
+                type,
+                object: {
+                    vat: object.vat,
+                    promocje: object.promocje as Promos | undefined,
+                    slug: object.slug,
+                    nazwa: object.nazwa,
+                    media: object.media,
+                    cena: object.cena,
+                    sku: object.sku ?? "",
                 },
                 quantity,
                 price,
@@ -171,7 +181,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }, [cart.items]);
 
     const getTotalItems = useCallback(() => {
-        console.log(cart.items);
         return cart.items.reduce((total, item) => total + item.quantity, 0);
     }, [cart.items]);
 

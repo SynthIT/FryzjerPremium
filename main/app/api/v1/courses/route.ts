@@ -2,7 +2,7 @@ import { Courses } from "@/lib/types/coursesTypes";
 import path from "path";
 import { readFileSync } from "fs";
 import { NextRequest, NextResponse } from "next/server";
-import { collectCourses } from "@/lib/crud/courses/course";
+import { collectCourses, updateCourse, updateCourseOpinie } from "@/lib/crud/courses/course";
 
 export async function GET(req: NextRequest) {
     try {

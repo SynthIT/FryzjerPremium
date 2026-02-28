@@ -1,13 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
-import { addAndUpdateOrderToUser, createOrder, retriveUserCartOrders } from "@/lib/crud/users/users";
+import { addAndUpdateOrderToUser, retriveUserCartOrders, retriveUserCartOrdersByEmail } from "@/lib/crud/users/users";
 import { Cart, CartItem } from "@/lib/types/cartTypes";
 import { OrderList } from "@/lib/types/userTypes";
 
-import { randomBytes } from "crypto";
+import { createHash, randomBytes } from "crypto";
 import { Product } from "@/lib/models/Products";
-import { getDeliveryMethods } from "@/lib/crud/delivery/delivery";
 import { Orders } from "@/lib/models/Users";
 import { verifyJWT } from "@/lib/admin_utils";
+import { Course } from "@/lib/models/Courses";
+
+/** Cache odpowiedzi POST /cart – deduplikacja przy podwójnym mount (np. Strict Mode). TTL 3s. */
+const cartPostCache = new Map<string, { response: Response; at: number }>();
+const CART_POST_CACHE_TTL_MS = 3000;
+
+function getCartPostCacheKey(userId: string | undefined, email: string | undefined, koszyk: Cart): string {
+    const user = userId ?? email ?? "anon";
+    const bodyHash = createHash("sha256").update(JSON.stringify(koszyk)).digest("hex");
+    return `${user}-${bodyHash}`;
+}
 
 function createOrderNumber() {
     const h = randomBytes(2 ** 3).toString("hex");
@@ -32,20 +42,27 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
     const { val, user } = await verifyJWT(request);
-    if (val && user) {
-        const body = await request.json();
-        const { userId, koszyk }: { userId: string, koszyk: Cart } = body;
-        if (!koszyk) {
-            return NextResponse.json({ error: "Nie podano koszyka" }, { status: 400 });
-        }
+    const body = await request.json();
+    const { userId, email, koszyk }: { userId?: string, email?: string, koszyk: Cart } = body;
+    if (!koszyk) {
+        return NextResponse.json({ error: "Nie podano koszyka" }, { status: 400 });
+    }
 
-        const changedEntries: { reason: string, item: CartItem }[] = [];
-        const refProducts = [];
-        const updatedCart: CartItem[] = [];
+    const cacheKey = getCartPostCacheKey(userId ?? user?._id, email ?? user?.email, koszyk);
+    const now = Date.now();
+    const cached = cartPostCache.get(cacheKey);
+    if (cached && now - cached.at < CART_POST_CACHE_TTL_MS) {
+        return cached.response;
+    }
 
-        for (const item of koszyk.items) {
-            try {
-                const product = await Product.findOne({ sku: item.product.sku, aktywne: true }).orFail();
+    const changedEntries: { reason: string, item: CartItem }[] = [];
+    const refProducts = [];
+    const refCourses = [];
+    const updatedCart: CartItem[] = [];
+    for (const item of koszyk.items) {
+        try {
+            if (item.type === "produkt") {
+                const product = await Product.findOne({ sku: item.object.sku, aktywne: true }).orFail();
                 if (item.quantity > product.ilosc) {
                     item.quantity = product.ilosc;
                     refProducts.push(product._id);
@@ -79,59 +96,76 @@ export async function POST(request: NextRequest) {
                 }
                 refProducts.push(product._id);
                 updatedCart.push(item);
-            } catch (_) {
-                changedEntries.push({ reason: "Produkt niedostępny", item });
-                continue;
+            } else if (item.type === "kursy") {
+                const course = await Course.findOne({ slug: item.object.slug, aktywne: true }).orFail();
+                refCourses.push(course._id);
+                updatedCart.push(item);
             }
+        } catch (_) {
+            changedEntries.push({ reason: "Wynik w koszyku jest już niedostępny", item });
+            continue;
         }
-        console.log(updatedCart);
-        console.log(changedEntries);
-        const deliveryMethod = await getDeliveryMethods();
-        const existingOrder = await Orders.findOne({ numer_zamowienia: koszyk.id });
-        if (existingOrder) {
-            await Orders
-                .findOneAndUpdate(
-                    { _id: existingOrder._id },
-                    {
-                        $set:
-                        {
-                            produkty: refProducts,
-                            suma: Math.round(koszyk.items.reduce((sum, item) => sum + item.price * item.quantity, 0) * 100) / 100
-                        }
-                    }, { new: true });
-            return NextResponse.json({ status: 0, koszyk: { id: existingOrder.numer_zamowienia, items: updatedCart }, changedEntries: changedEntries ?? '' });
+    }
+    if (val && user) {
+        if (userId != user._id) {
+            return NextResponse.json({ error: "Nie możesz dodać koszyka do innego użytkownika" }, { status: 400 });
         }
-        if (!userId) {
-            const order: OrderList = {
-                user: "",
-                email: "",
-                numer_zamowienia: createOrderNumber(),
-                status: "w_koszyku",
-                produkty: updatedCart,
-                sposob_dostawy: deliveryMethod[0]._id as unknown as string,
-                suma: koszyk.items.reduce((sum, item) => sum + item.price * item.quantity, 0),
-            }
-            const cart = await createOrder(order);
-            if (!cart) {
-                return NextResponse.json({ error: "Nie udało się utworzyć koszyka" }, { status: 400 });
-            }
-            return NextResponse.json({ status: 0, koszyk: { id: order.numer_zamowienia, items: updatedCart }, changedEntries: changedEntries ?? '' });
-        }
-        const existingOrders = await retriveUserCartOrders(userId);
+        const existingOrders = await retriveUserCartOrders(user._id as string);
         if (!existingOrders) {
             const order: OrderList = {
-                user: "",
-                email: "",
+                user: user._id as string,
+                email: user.email,
                 numer_zamowienia: createOrderNumber(),
                 status: "w_koszyku",
                 produkty: refProducts,
-                sposob_dostawy: deliveryMethod[0]._id as unknown as string,
+                kursy: refCourses,
+                sposob_dostawy: null,
                 suma: koszyk.items.reduce((sum, item) => sum + item.price * item.quantity, 0),
             }
-            const cart = await addAndUpdateOrderToUser(userId, order);
+            const cart = await addAndUpdateOrderToUser(user._id as string, order);
             if (!cart) {
                 return NextResponse.json({ error: "Nie udało się utworzyć koszyka" }, { status: 400 });
             }
-            return NextResponse.json({ status: 0, koszyk: { id: order.numer_zamowienia, items: updatedCart }, changedEntries: changedEntries ?? '' });
+            const res = NextResponse.json({ status: 0, koszyk: { id: order.numer_zamowienia, items: updatedCart }, changedEntries: changedEntries ?? '' });
+            cartPostCache.set(cacheKey, { response: res.clone(), at: now });
+            return res;
         }
-    }}
+        const updatedOrder = await Orders.findOneAndUpdate({ _id: existingOrders._id }, { $set: { produkty: refProducts, kursy: refCourses, sposob_dostawy: null, suma: koszyk.items.reduce((sum, item) => sum + item.price * item.quantity, 0) } }, { new: true });
+        if (!updatedOrder) {
+            return NextResponse.json({ error: "Nie udało się zaktualizować koszyka" }, { status: 400 });
+        }
+        const resUser = NextResponse.json({ status: 0, koszyk: { id: updatedOrder.numer_zamowienia, items: updatedCart }, changedEntries: changedEntries ?? '' });
+        cartPostCache.set(cacheKey, { response: resUser.clone(), at: now });
+        return resUser;
+    }
+    if (!email) {
+        return NextResponse.json({ error: "Wystąpił nieokreślony błąd." }, { status: 500 });
+    }
+    const existingOrders = await retriveUserCartOrdersByEmail(email);
+    if (!existingOrders) {
+        const order: OrderList = {
+            user: null,
+            email: email,
+            numer_zamowienia: createOrderNumber(),
+            status: "w_koszyku",
+            produkty: refProducts,
+            kursy: refCourses,
+            sposob_dostawy: null,
+            suma: koszyk.items.reduce((sum, item) => sum + item.price * item.quantity, 0),
+        }
+        const cart = await addAndUpdateOrderToUser(email, order);
+        if (!cart) {
+            return NextResponse.json({ error: "Nie udało się utworzyć koszyka" }, { status: 400 });
+        }
+        const resEmail = NextResponse.json({ status: 0, koszyk: { id: order.numer_zamowienia, items: updatedCart }, changedEntries: changedEntries ?? '' });
+        cartPostCache.set(cacheKey, { response: resEmail.clone(), at: now });
+        return resEmail;
+    }
+    const updatedOrder = await Orders.findOneAndUpdate({ _id: existingOrders._id }, { $set: { produkty: refProducts, kursy: refCourses, sposob_dostawy: null, suma: koszyk.items.reduce((sum, item) => sum + item.price * item.quantity, 0) } }, { new: true }).populate("produkty").populate("kursy").populate("sposob_dostawy");
+    if (!updatedOrder) {
+        return NextResponse.json({ error: "Nie udało się zaktualizować koszyka" }, { status: 400 });
+    }
+    const resFinal = NextResponse.json({ status: 0, koszyk: { id: updatedOrder.numer_zamowienia, items: updatedCart }, changedEntries: changedEntries ?? '' });
+    cartPostCache.set(cacheKey, { response: resFinal.clone(), at: now });
+    return resFinal;
+}

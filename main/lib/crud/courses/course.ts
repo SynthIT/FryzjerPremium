@@ -1,7 +1,7 @@
 import { db } from "@/lib/db/init";
 import { Course } from "@/lib/models/Courses";
 import { zodCourses, Courses } from "@/lib/types/coursesTypes";
-import { Categories } from "@/lib/types/shared";
+import { Categories, Opinie } from "@/lib/types/shared";
 import { Types } from "mongoose";
 import { LogService } from "@/lib/log_service";
 
@@ -45,6 +45,15 @@ export async function updateCourse(courseData: Courses) {
         {
             new: true,
         },
+    );
+    return cours;
+}
+
+export async function updateCourseOpinie(slug: string, opinia: Opinie) {
+    await db();
+    const cours = await Course.findOneAndUpdate(
+        { slug: slug },
+        { $push: { opinie: opinia } },
     );
     return cours;
 }

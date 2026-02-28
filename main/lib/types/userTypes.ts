@@ -15,8 +15,8 @@ export const roleSchema = zod.object({
     nazwa: zod.string(),
     admin: adminPermission.optional(),
     uzytkownik: userPermission.optional(),
-    createdAt: zod.date().optional(),
-    updatedAt: zod.date().optional(),
+    createdAt: zod.union([zod.date(), zod.string()]).optional(),
+    updatedAt: zod.union([zod.date(), zod.string()]).optional(),
     __v: zod.number().optional(),
 });
 
@@ -38,14 +38,14 @@ export const userSchema = zod.object({
     faktura: zod.boolean().optional(),
     role: zod.array(zod.union([roleSchema, zod.string()])).optional(),
     stripe_id: zod.string().optional(),
-    createdAt: zod.date().optional(),
-    updatedAt: zod.date().optional(),
+    createdAt: zod.union([zod.date(), zod.string()]).optional(),
+    updatedAt: zod.union([zod.date(), zod.string()]).optional(),
     __v: zod.number().optional(),
 });
 
 export const orderListSchema = zod.object({
     _id: zod.string().optional(),
-    user: zod.union([zod.string(), userSchema]),
+    user: zod.union([zod.string(), userSchema, zod.null()]),
     email: zod.string(),
     status: zod
         .enum(["w_koszyku", "nowe", "w_realizacji", "wyslane", "zrealizowane", "anulowane"])
@@ -54,8 +54,10 @@ export const orderListSchema = zod.object({
     sposob_dostawy: zod.union([
         zod.lazy(() => zodDeliveryMethods),
         zod.string(),
+        zod.null(),
     ]),
     produkty: zod.array(zod.union([zod.string(), zodCartItem])),
+    kursy: zod.array(zod.union([zod.string(), zodCartItem])),
     suma: zod.number(),
     data_zamowienia: zod.date().optional(),
     data_wyslania: zod.date().optional(),

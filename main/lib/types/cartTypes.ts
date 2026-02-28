@@ -1,15 +1,18 @@
 import z from "zod";
-import { zodMedia } from "./shared";
+import { zodMedia, zodPromocje } from "./shared";
 import { zodWarianty } from "./productTypes";
 
 export const zodCartItem = z.object({
     id: z.string(),
-    product: z.object({
+    type: z.enum(["produkt", "kursy"]),
+    object: z.object({
+        vat: z.number(),
+        promocje: zodPromocje.optional(),
         nazwa: z.string(),
         slug: z.string(),
         cena: z.number(),
         media: z.array(zodMedia),
-        sku: z.string(),
+        sku: z.string().optional(),
     }),
     quantity: z.number(),
     price: z.number(),

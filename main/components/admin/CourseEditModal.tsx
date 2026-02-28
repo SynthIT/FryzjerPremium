@@ -420,6 +420,25 @@ export default function CourseEditModal({
                                     className="w-full px-3 py-2 border rounded-md"
                                 />
                             </div>
+                            <div>
+                                <label className="block text-sm font-medium mb-1">
+                                    Maks. uczestników (maks. zakupów)
+                                </label>
+                                <input
+                                    type="number"
+                                    min="1"
+                                    value={editedCourse.max_uczestnicy === undefined || editedCourse.max_uczestnicy === null ? "" : editedCourse.max_uczestnicy}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        updateField(
+                                            "max_uczestnicy",
+                                            val === "" ? undefined : Math.max(1, parseInt(val, 10) || 1),
+                                        );
+                                    }}
+                                    className="w-full px-3 py-2 border rounded-md"
+                                    placeholder="Bez limitu"
+                                />
+                            </div>
                             <div className="flex items-center gap-2">
                                 <input
                                     type="checkbox"

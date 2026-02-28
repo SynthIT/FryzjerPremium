@@ -36,6 +36,7 @@ export const zodLekcja = z.object({
 export type Lekcja = z.infer<typeof zodLekcja>;
 
 export const zodCourses = z.object({
+    _id: z.string().optional(),
     slug: z.string(),
     nazwa: z.string(),
     cena: z.number(),
@@ -72,6 +73,7 @@ export const zodCourses = z.object({
     jezyk: z.string().optional(),
     certyfikat: z.boolean().optional(),
     krotkiOpis: z.string().optional(),
+    max_uczestnicy: z.number().int().min(1).optional(),
 });
 
 export type Courses = z.infer<typeof zodCourses>;

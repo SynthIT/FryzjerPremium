@@ -7,8 +7,8 @@ import { finalPrice, getCourses, renderStars } from "@/lib/utils";
 import { useCart } from "@/contexts/CartContext";
 import { Courses, Firmy } from "@/lib/types/coursesTypes";
 import { Promos, Opinie } from "@/lib/types/shared";
-import ReviewTabs from "./productComponents/ReviewTabs";
-import { Clock, Users, Award, Globe, CheckCircle, PlayCircle } from "lucide-react";
+import ReviewTabs from "./coursesComponents/ReviewTabs";
+import { Clock, Users, Award, Globe, CheckCircle, PlayCircle, ShoppingCart, Info } from "lucide-react";
 
 interface CoursePageProps {
     courseSlug?: string;
@@ -18,7 +18,7 @@ export default function CoursePage({ courseSlug }: CoursePageProps) {
     const [course, setCourse] = useState<Courses | null>(null);
     const [selectedPrice, setSelectedPrice] = useState("");
     const [quantity, setQuantity] = useState(1);
-    const [activeTab, setActiveTab] = useState<"overview" | "curriculum" | "reviews">("overview");
+    const [activeTab, setActiveTab] = useState<"overview" | "curriculum" | "reviews" | "faqs">("overview");
     const [showReviewModal, setShowReviewModal] = useState(false);
     const [reviewForm, setReviewForm] = useState<Opinie>({
         ocena: 0,
@@ -57,8 +57,9 @@ export default function CoursePage({ courseSlug }: CoursePageProps) {
     }, [courseSlug, fetchCourse]);
 
     const handleQuantityChange = useCallback((delta: number) => {
-        setQuantity((prev) => Math.max(1, prev + delta));
-    }, []);
+        const max = course?.max_uczestnicy;
+        setQuantity((prev) => Math.max(1, max != null ? Math.min(max, prev + delta) : prev + delta));
+    }, [course?.max_uczestnicy]);
 
     const { addToCart } = useCart();
 
@@ -69,6 +70,16 @@ export default function CoursePage({ courseSlug }: CoursePageProps) {
             // addToCart(course, quantity, selectedPrice);
         }
     }, [course]);
+    const [amount, setAmount] = useState(1);
+
+    const maxUczestnicy = course?.max_uczestnicy;
+    const effectiveMax = maxUczestnicy != null && maxUczestnicy >= 1 ? maxUczestnicy : undefined;
+
+    const handleAmountChange = useCallback((value: number) => {
+        const v = Math.max(1, Math.floor(value));
+        setAmount(effectiveMax != null ? Math.min(effectiveMax, v) : v);
+    }, [effectiveMax]);
+
 
     if (!course && !error) {
         return (
@@ -333,7 +344,6 @@ export default function CoursePage({ courseSlug }: CoursePageProps) {
                                         </>
                                     )}
                                 </div>
-
                                 <div className="mt-6">
                                     <h4 className="font-bold text-gray-900 mb-2">Ten kurs zawiera:</h4>
                                     <ul className="space-y-2 text-sm text-gray-700">
@@ -356,6 +366,24 @@ export default function CoursePage({ courseSlug }: CoursePageProps) {
                                             <li key={i}><CheckCircle className="h-4 w-4" /> {item}</li>
                                         ))}
                                     </ul>
+                                </div>
+                                <div className="rounded-xl border border-[rgba(212,196,176,0.3)] bg-white/60 p-6">
+                                    <div className="flex items-center gap-2">
+                                        <h3 className="text-lg font-bold text-gray-900 mb-2" title="">Zakup kursu</h3>
+                                        <sup title="Jeżeli kupujesz wstęp na kurs dla siebie, zostaw ilość na 1. Jeżeli kupujesz kurs dla grupy kursantów ustaw ilość uczestników"><Info className="h-5 w-5 text-gray-500"  /></sup>
+                                    </div>
+                                    <div className="flex justify-around items-center mt-3">
+                                        <input type="number" min={1} max={effectiveMax} value={effectiveMax != null ? Math.min(amount, effectiveMax) : amount} onChange={(e) => handleAmountChange(Number(e.target.value) || 1)} className="w-16 text-center border-2 border-gray-900 rounded-md p-1 h-10" />
+                                        <div className="flex gap-5 px-5 justify-center py-2 text-md rounded-lg border border-yellow-600 bg-yellow-500 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 transition-colors">
+                                            <ShoppingCart className="h-5 w-5 shrink-0 text-white" />
+                                            <button
+                                                type="button"
+                                                disabled={course.aktywne !== true}
+                                                onClick={() => addToCart("kursy", course, effectiveMax != null ? Math.min(amount, effectiveMax) : amount, course.cena, undefined)}>
+                                                {course.aktywne !== true ? "Kurs niedostępny" : "Dodaj do koszyka"}
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -385,51 +413,208 @@ export default function CoursePage({ courseSlug }: CoursePageProps) {
                     </div>
 
                     <div className="rounded-xl border border-[rgba(212,196,176,0.3)] bg-white/60 p-6">
-                        {activeTab === "overview" && (
-                            <div className="space-y-4">
-                                <h3 className="text-lg font-bold text-gray-900">O tym szkoleniu</h3>
-                                <p>{course.opis.split("\\n").map((text) => (
-                                    <span key={text}>{text}<br /></span>
-                                ))}</p>
-                                {course.firma && typeof course.firma === "object" && "nazwa" in course.firma && (
-                                    <div className="pt-4 border-t border-gray-200">
-                                        <h4 className="font-bold text-gray-900">Instruktor</h4>
-                                        <p className="text-gray-600">{(course.firma as Firmy).nazwa}</p>
-                                    </div>
-                                )}
-                            </div>
-                        )}
-
-                        {activeTab === "curriculum" && (
-                            <div className="space-y-6">
-                                <h3 className="text-lg font-bold text-gray-900">Program szkolenia</h3>
-                                {(course.lekcje?.length ?? 0) > 0 ? (
-                                    <div className="space-y-4">
-                                        {course.lekcje!.map((lekcja, i) => (
-                                            <div key={i} className="flex items-center justify-between gap-2 py-2 border-b border-gray-100">
-                                                <div className="flex items-center gap-2">
-                                                    <PlayCircle className="h-4 w-4 text-[#D2B79B]" />
-                                                    <span className="text-gray-700">Lekcja {i + 1}: {lekcja.tytul}</span>
-                                                </div>
-                                                <span className="text-sm text-gray-500">{lekcja.dlugosc || "—"}</span><br></br>
-                                                <span className="text-sm text-gray-500">{lekcja.opis || "—"}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <p className="text-gray-500">Brak dodanego programu.</p>
-                                )}
-                            </div>
-                        )}
-
                         <ReviewTabs
                             activeTab={activeTab}
-                            product={course as Courses}
+                            course={course as Courses}
                             setShowReviewModal={setShowReviewModal}
                         />
                     </div>
                 </div>
             </div>
+            {/* Review Modal */}
+            {showReviewModal && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+                    onClick={() => setShowReviewModal(false)}>
+                    <div
+                        className="relative w-full max-w-lg rounded-2xl bg-white shadow-xl max-h-[90vh] overflow-y-auto"
+                        onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                            <h2 className="text-xl font-bold text-gray-900">
+                                Napisz opinię
+                            </h2>
+                            <button
+                                className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
+                                onClick={() => setShowReviewModal(false)}
+                                aria-label="Zamknij">
+                                <svg
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth={2}>
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M6 18L18 6M6 6l12 12"
+                                    />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <form
+                            className="flex flex-col gap-4 p-6"
+                            onSubmit={async (e) => {
+                                e.preventDefault();
+                                try {
+                                    const response = await fetch(
+                                        "/api/v1/courses/review",
+                                        {
+                                            method: "PUT",
+                                            headers: {
+                                                "Content-Type":
+                                                    "application/json",
+                                            },
+                                            body: JSON.stringify({
+                                                courseSlug: course.slug,
+                                                review: reviewForm,
+                                            }),
+                                        },
+                                    );
+
+                                    const data = await response.json();
+
+                                    if (data.status === 201) {
+                                        // Odśwież dane produktu
+                                        const updatedCourse =
+                                            await getCourses(course.slug);
+                                        if (updatedCourse.course) {
+                                            setCourse(updatedCourse.course);
+                                        }
+                                        setShowReviewModal(false);
+                                        setReviewForm({
+                                            ocena: 0,
+                                            uzytkownik: "",
+                                            tresc: "",
+                                        });
+                                        // Można dodać powiadomienie o sukcesie
+                                        alert("Opinia została dodana!");
+                                    } else {
+                                        alert(
+                                            data.error ||
+                                            "Wystąpił błąd podczas dodawania opinii",
+                                        );
+                                    }
+                                } catch (error) {
+                                    console.error(
+                                        "Error submitting review:",
+                                        error,
+                                    );
+                                    alert(
+                                        "Wystąpił błąd podczas dodawania opinii",
+                                    );
+                                }
+                            }}>
+                            <div className="flex flex-col gap-1">
+                                <label className="text-sm font-medium text-gray-700">
+                                    Ocena *
+                                </label>
+                                <div className="flex gap-1">
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                        <button
+                                            key={star}
+                                            type="button"
+                                            className={`p-1 transition-colors ${reviewForm!.ocena >= star
+                                                ? "text-[#D2B79B]"
+                                                : "text-gray-300 hover:text-gray-400"
+                                                }`}
+                                            onClick={() =>
+                                                setReviewForm({
+                                                    ...reviewForm,
+                                                    ocena: star,
+                                                })
+                                            }
+                                            aria-label={`Oceń ${star} gwiazdką`}>
+                                            <svg
+                                                viewBox="0 0 24 24"
+                                                width="32"
+                                                height="32">
+                                                <path
+                                                    d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                                                    fill="currentColor"
+                                                />
+                                            </svg>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col gap-1">
+                                <label
+                                    htmlFor="reviewer-name"
+                                    className="text-sm font-medium text-gray-700">
+                                    Imię *
+                                </label>
+                                <input
+                                    id="reviewer-name"
+                                    type="text"
+                                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-[#D2B79B] focus:border-[#D2B79B] outline-none"
+                                    value={
+                                        reviewForm.uzytkownik != ""
+                                            ? reviewForm.uzytkownik
+                                            : ""
+                                    }
+                                    onChange={(e) =>
+                                        setReviewForm({
+                                            ...reviewForm,
+                                            uzytkownik: e.target.value,
+                                        })
+                                    }
+                                    placeholder="Twoje imię"
+                                    required
+                                />
+                            </div>
+
+                            <div className="flex flex-col gap-1">
+                                <label
+                                    htmlFor="review-text"
+                                    className="text-sm font-medium text-gray-700">
+                                    Opinia *
+                                </label>
+                                <textarea
+                                    id="review-text"
+                                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-[#D2B79B] focus:border-[#D2B79B] outline-none resize-y min-h-[120px]"
+                                    value={reviewForm.tresc}
+                                    onChange={(e) =>
+                                        setReviewForm({
+                                            ...reviewForm,
+                                            tresc: e.target.value,
+                                        })
+                                    }
+                                    placeholder="Podziel się swoją opinią o produkcie..."
+                                    rows={6}
+                                    required
+                                />
+                            </div>
+
+                            <div className="flex flex-wrap gap-3 pt-2">
+                                <button
+                                    type="button"
+                                    className="px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 font-medium hover:bg-gray-50"
+                                    onClick={() => {
+                                        setShowReviewModal(false);
+                                        setReviewForm({
+                                            ocena: 0,
+                                            uzytkownik: "",
+                                            tresc: "",
+                                        });
+                                    }}>
+                                    Anuluj
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="px-4 py-2 rounded-lg bg-[#D2B79B] text-black font-semibold hover:bg-[#b89a7f]"
+                                    disabled={
+                                        reviewForm.ocena === 0 ||
+                                        !reviewForm.uzytkownik ||
+                                        !reviewForm.tresc
+                                    }>
+                                    Opublikuj opinię
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

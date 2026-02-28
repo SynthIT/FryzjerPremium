@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/contexts/CartContext";
-import { loginUser } from "@/lib/utils";
+import { finalPrice, loginUser } from "@/lib/utils";
 import LoggedBadge from "./LoggedBadge";
 import { Search, User } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
@@ -280,8 +280,8 @@ export default function Header({ openLoginModal }: HeaderProps) {
                         </button>
                         {showDropdown && (
                             <div className="absolute top-full left-0 mt-1 py-2 min-w-[180px] bg-white rounded-lg shadow-[0_8px_24px_rgba(0,0,0,0.12)] border border-[rgba(212,196,176,0.2)] z-50">
-                                <Link href="/products" className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#f0e8dd] hover:text-[#D2B79B]" onClick={closeMobileMenu}>Kup Teraz</Link>
-                                <Link href="/courses" className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#f0e8dd] hover:text-[#D2B79B]" onClick={closeMobileMenu}>Kursy</Link>
+                                <Link href="/produkty" className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#f0e8dd] hover:text-[#D2B79B]" onClick={closeMobileMenu}>Kup Teraz</Link>
+                                <Link href="/kursy" className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#f0e8dd] hover:text-[#D2B79B]" onClick={closeMobileMenu}>Kursy</Link>
                             </div>
                         )}
                     </div>
@@ -340,19 +340,19 @@ export default function Header({ openLoginModal }: HeaderProps) {
                                     <span className="font-medium text-gray-800">Produkt dodany do koszyka</span>
                                 </div>
                                 <div className="flex gap-3 py-3">
-                                    {lastAddedItem.product.media && lastAddedItem.product.media.length > 0 && (
+                                    {lastAddedItem.object.media && lastAddedItem.object.media.length > 0 && (
                                         <div className="w-14 h-14 shrink-0 rounded-lg overflow-hidden bg-gray-100">
-                                            <Image src={lastAddedItem.product.media[0]?.path} alt={lastAddedItem.product.media[0]?.alt ?? ""} width={56} height={56} className="w-full h-full object-cover" />
+                                            <Image src={lastAddedItem.object.media[0]?.path} alt={lastAddedItem.object.media[0]?.alt ?? ""} width={56} height={56} className="w-full h-full object-cover" />
                                         </div>
                                     )}
                                     <div className="min-w-0 flex-1">
-                                        <div className="font-medium text-gray-800 truncate">{lastAddedItem.product.nazwa}</div>
+                                        <div className="font-medium text-gray-800 truncate">{lastAddedItem.object.nazwa}</div>
                                         <div className="text-sm text-gray-500">
                                             {lastAddedItem.wariant && <span>{`${lastAddedItem.wariant.typ}: ${lastAddedItem.wariant.nazwa}`}</span>}
                                             <span> · Ilość: {lastAddedItem.quantity}</span>
                                         </div>
                                         <div className="font-semibold text-[#D2B79B]">
-                                            {(lastAddedItem.price * lastAddedItem.quantity).toFixed(2).replace(".", ",")} zł
+                                            {finalPrice(lastAddedItem.price, lastAddedItem.object.vat, lastAddedItem.wariant ?? undefined, lastAddedItem.object.promocje ?? undefined)} zł
                                         </div>
                                     </div>
                                 </div>

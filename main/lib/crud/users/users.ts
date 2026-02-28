@@ -1,7 +1,9 @@
-import { User } from "@/lib/models/Users";
+import { User, Orders } from "@/lib/models/Users";
 import { Users, Roles as Role, OrderList } from "@/lib/types/userTypes";
 import { db } from "@/lib/db/init";
-import { Orders } from "@/lib/models/Users";
+import { Product } from "@/lib/models/Products";
+import { Course } from "@/lib/models/Courses";
+import { Delivery } from "@/lib/models/Delivery";
 
 
 export async function collectUsers() {
@@ -83,10 +85,19 @@ export async function getUserOrders(userId: string) {
 export async function retriveUserCartOrders(userId: string) {
     try {
         await db();
-        const zamowienia = await Orders.find({ user: userId, status: "w_koszyku" });
+        const zamowienia = await Orders.findOne({ user: userId, status: "w_koszyku" }).populate("produkty").populate("kursy").populate("sposob_dostawy");
         return zamowienia;
     } catch (error) {
         console.error(error);
     }
 }
 
+export async function retriveUserCartOrdersByEmail(email: string) {
+    try {
+        await db();
+        const zamowienia = await Orders.findOne({ email: email, status: "w_koszyku" }).populate("produkty").populate("kursy").populate("sposob_dostawy");
+        return zamowienia;
+    } catch (error) {
+        console.error(error);
+    }
+}

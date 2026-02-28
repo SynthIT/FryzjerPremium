@@ -318,7 +318,7 @@ async function main() {
         video: l.video || undefined,
         plik: l.plik || undefined,
       })),
-      firma: firmId,
+      firma: null,
       media: [media("Główne zdjęcie – " + c.nazwa.slice(0, 30)), media("Galeria varied " + (i + 1))],
       promocje: null,
       opis: c.opis,
