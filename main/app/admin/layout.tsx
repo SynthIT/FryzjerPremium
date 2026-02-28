@@ -25,8 +25,10 @@ export default function AdminLayout({
         }).then((res)=> res.json())
         .then((data)=>{
             document.body.classList.remove("admin-panel-active")
+            setLoading(false);
         }).catch(()=>{
             document.body.classList.remove("admin-panel-active")
+            setLoading(false);
         });
     },[])
 
