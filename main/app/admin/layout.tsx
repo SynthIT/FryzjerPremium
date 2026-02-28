@@ -15,6 +15,20 @@ export default function AdminLayout({
 }) {
     const router = useRouter();
     const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+    const [loading, setLoading] = React.useState(true);
+
+    React.useEffect(()=>{
+        document.body.classList.add("admin-panel-");
+        fetch("/admin/api/v1/auth", {
+            method:"POST",
+            credentials: "include"
+        }).then((res)=> res.json())
+        .then((data)=>{
+            document.body.classList.remove("admin-panel-")
+        }).catch(()=>{
+            document.body.classList.remove("admin-panel-")
+        });
+    },[])
 
     return (
         <div className="min-h-dvh admin-panel-wrapper">
