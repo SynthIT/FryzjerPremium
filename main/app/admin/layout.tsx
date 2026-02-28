@@ -18,17 +18,21 @@ export default function AdminLayout({
     const [loading, setLoading] = React.useState(true);
 
     React.useEffect(()=>{
-        document.body.classList.add("admin-panel-");
+        document.body.classList.add("admin-panel-active");
         fetch("/admin/api/v1/auth", {
             method:"POST",
             credentials: "include"
         }).then((res)=> res.json())
         .then((data)=>{
-            document.body.classList.remove("admin-panel-")
+            document.body.classList.remove("admin-panel-active")
         }).catch(()=>{
-            document.body.classList.remove("admin-panel-")
+            document.body.classList.remove("admin-panel-active")
         });
     },[])
+
+    if(loading) {
+        return (<div>Ladowanie</div>)
+    }
 
     return (
         <div className="min-h-dvh admin-panel-wrapper">
