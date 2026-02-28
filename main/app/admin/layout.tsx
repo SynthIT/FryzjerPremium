@@ -17,34 +17,6 @@ export default function AdminLayout({
     const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
     const [loading, setLoading] = React.useState<boolean>(true);
 
-    React.useEffect(() => {
-        // Add class to body to override main site styles
-        document.body.classList.add("admin-panel-active");
-        
-        fetch("/admin/api/v1/auth", {
-            method: "POST",
-            credentials: "include",
-        })
-            .then((res) => res.json())
-            .then((data) => {
-                if (data.status !== 200) {
-                    document.body.classList.remove("admin-panel-active");
-                    router.push("/");
-                } else {
-                    setLoading(false);
-                }
-            })
-            .catch(() => {
-                document.body.classList.remove("admin-panel-active");
-                router.push("/");
-            });
-        
-        // Cleanup on unmount
-        return () => {
-            document.body.classList.remove("admin-panel-active");
-        };
-    }, [router]);
-
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-[400px]">
