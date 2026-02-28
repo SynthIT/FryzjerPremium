@@ -16,7 +16,7 @@ interface CoursePageProps {
 
 export default function CoursePage({ courseSlug }: CoursePageProps) {
     const [course, setCourse] = useState<Courses | null>(null);
-    const [selectedPrice, setSelectedPrice] = useState("");
+    const [selectedPrice, setSelectedPrice] = useState(0);
     const [quantity, setQuantity] = useState(1);
     const [activeTab, setActiveTab] = useState<"overview" | "curriculum" | "reviews" | "faqs">("overview");
     const [showReviewModal, setShowReviewModal] = useState(false);
@@ -42,7 +42,7 @@ export default function CoursePage({ courseSlug }: CoursePageProps) {
                     const json = JSON.parse(data);
                     setCourse(json);
                     console.log(json);
-                    setSelectedPrice(finalPrice(json.cena, json.vat, undefined, json.promocje as Promos));
+                    setSelectedPrice(parseFloat(finalPrice(json.cena, json.vat, undefined, json.promocje as Promos)));
                 } else {
                     setError("Kurs nie został znaleziony");
                 }
@@ -62,18 +62,16 @@ export default function CoursePage({ courseSlug }: CoursePageProps) {
     }, [course?.max_uczestnicy]);
 
     const { addToCart } = useCart();
+    const maxUczestnicy = course?.max_uczestnicy;
+    const effectiveMax = maxUczestnicy != null && maxUczestnicy >= 1 ? maxUczestnicy : undefined;
+    const [amount, setAmount] = useState(1);
 
     const handleAddToCart = useCallback(() => {
         if (course?.aktywne !== false) {
-            console.log("Dodawanie szkolenia do koszyka:", course);
-            // TODO: Implementacja dodawania szkolenia do koszyka
-            // addToCart(course, quantity, selectedPrice);
+            addToCart("kursy", course as Courses, effectiveMax != null ? Math.min(amount, effectiveMax) : amount, course!.cena, undefined)
         }
-    }, [course]);
-    const [amount, setAmount] = useState(1);
+    }, [course, effectiveMax, amount, addToCart]);
 
-    const maxUczestnicy = course?.max_uczestnicy;
-    const effectiveMax = maxUczestnicy != null && maxUczestnicy >= 1 ? maxUczestnicy : undefined;
 
     const handleAmountChange = useCallback((value: number) => {
         const v = Math.max(1, Math.floor(value));
@@ -370,7 +368,7 @@ export default function CoursePage({ courseSlug }: CoursePageProps) {
                                 <div className="rounded-xl border border-[rgba(212,196,176,0.3)] bg-white/60 p-6">
                                     <div className="flex items-center gap-2">
                                         <h3 className="text-lg font-bold text-gray-900 mb-2" title="">Zakup kursu</h3>
-                                        <sup title="Jeżeli kupujesz wstęp na kurs dla siebie, zostaw ilość na 1. Jeżeli kupujesz kurs dla grupy kursantów ustaw ilość uczestników"><Info className="h-5 w-5 text-gray-500"  /></sup>
+                                        <sup title="Jeżeli kupujesz wstęp na kurs dla siebie, zostaw ilość na 1. Jeżeli kupujesz kurs dla grupy kursantów ustaw ilość uczestników"><Info className="h-5 w-5 text-gray-500" /></sup>
                                     </div>
                                     <div className="flex justify-around items-center mt-3">
                                         <input type="number" min={1} max={effectiveMax} value={effectiveMax != null ? Math.min(amount, effectiveMax) : amount} onChange={(e) => handleAmountChange(Number(e.target.value) || 1)} className="w-16 text-center border-2 border-gray-900 rounded-md p-1 h-10" />
@@ -379,7 +377,7 @@ export default function CoursePage({ courseSlug }: CoursePageProps) {
                                             <button
                                                 type="button"
                                                 disabled={course.aktywne !== true}
-                                                onClick={() => addToCart("kursy", course, effectiveMax != null ? Math.min(amount, effectiveMax) : amount, course.cena, undefined)}>
+                                                onClick={() => handleAddToCart()}>
                                                 {course.aktywne !== true ? "Kurs niedostępny" : "Dodaj do koszyka"}
                                             </button>
                                         </div>
