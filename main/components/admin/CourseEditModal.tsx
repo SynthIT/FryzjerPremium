@@ -438,6 +438,7 @@ export default function CourseEditModal({
                             <label className="block text-sm font-medium mb-1">
                                 Opis *
                             </label>
+                            <button className="px-3 py-1 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90 border-3 border-primary/30 mb-2 gap-1" onClick={() => updateField("opis", editedCourse.opis + "\\n")}>Wstaw nowy wiersz</button>
                             <textarea
                                 rows={4}
                                 value={editedCourse.opis || ""}

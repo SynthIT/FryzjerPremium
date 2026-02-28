@@ -51,6 +51,9 @@ export default function CourseElement({ course, index }: CourseElementProps) {
                 {course.firma && typeof course.firma === "object" && "nazwa" in course.firma && (
                     <p className="text-xs text-gray-500 mt-2">Firma: {(course.firma as { nazwa: string }).nazwa}</p>
                 )}
+                {course.instruktor && (
+                    <p className="text-xs text-gray-500 mt-2">Instruktor: {course.instruktor}</p>
+                )}
             </div>
         </Link>
     );

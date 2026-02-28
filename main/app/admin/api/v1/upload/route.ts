@@ -9,6 +9,7 @@ export async function POST(req: NextRequest) {
         const file = await req.arrayBuffer();
         const blob = await put(pathfile, file, {
             access: "public",
+            allowOverwrite: true,
         });
         return NextResponse.json({
             image: {

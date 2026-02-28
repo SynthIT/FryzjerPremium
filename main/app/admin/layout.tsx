@@ -15,45 +15,25 @@ export default function AdminLayout({
 }) {
     const router = useRouter();
     const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
-    const [loading, setLoading] = React.useState<boolean>(true);
+    const [loading, setLoading] = React.useState(true);
 
-    React.useEffect(() => {
-        // Add class to body to override main site styles
+    React.useEffect(()=>{
         document.body.classList.add("admin-panel-active");
-        
         fetch("/admin/api/v1/auth", {
-            method: "POST",
-            credentials: "include",
-        })
-            .then((res) => res.json())
-            .then((data) => {
-                if (data.status !== 200) {
-                    document.body.classList.remove("admin-panel-active");
-                    router.push("/");
-                } else {
-                    setLoading(false);
-                }
-            })
-            .catch(() => {
-                document.body.classList.remove("admin-panel-active");
-                router.push("/");
-            });
-        
-        // Cleanup on unmount
-        return () => {
-            document.body.classList.remove("admin-panel-active");
-        };
-    }, [router]);
+            method:"POST",
+            credentials: "include"
+        }).then((res)=> res.json())
+        .then((data)=>{
+            document.body.classList.remove("admin-panel-active")
+            setLoading(false);
+        }).catch(()=>{
+            document.body.classList.remove("admin-panel-active")
+            setLoading(false);
+        });
+    },[])
 
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center min-h-[400px]">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
-                    <p className="mt-4 text-muted-foreground">Ładowanie...</p>
-                </div>
-            </div>
-        );
+    if(loading) {
+        return (<div>Ladowanie</div>)
     }
 
     return (

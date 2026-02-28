@@ -245,14 +245,8 @@ export default function NewCoursePage() {
                 });
             }
 
-            // Przygotuj firmę (przy "inna" backend nie przyjmuje null – wymagamy firmy z listy)
-            if (!coursePayload.firma || coursePayload.firma === "inna") {
-                alert("Wybierz firmę z listy (opcja «inna» nie jest jeszcze obsługiwana przy zapisie).");
-                setIsSubmitting(false);
-                return;
-            }
             const firmaData = firmy.find((f) => f._id!.toString() === coursePayload.firma);
-            if (!firmaData) {
+            if (!firmaData && coursePayload.firma !== "inna") {
                 alert("Wybierz firmę");
                 setIsSubmitting(false);
                 return;
@@ -306,7 +300,7 @@ export default function NewCoursePage() {
             const courseData = {
                 ...coursePayload,
                 kategoria: selectedSubCategories,
-                firma: firmaData._id ?? coursePayload.firma,
+                firma: firmaData ? firmaData._id : null,
                 instruktor: coursePayload.instruktor || undefined,
                 lekcje: coursePayload.lekcje ?? [],
                 media: mediaData.length > 0 ? mediaData : coursePayload.media,
