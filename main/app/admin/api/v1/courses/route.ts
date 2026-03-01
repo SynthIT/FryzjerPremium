@@ -15,7 +15,6 @@ export async function GET(req: NextRequest) {
         const courses = await collectCourses();
         return NextResponse.json({ status: 0, courses: courses || [] });
     } catch (error) {
-        console.error("Błąd podczas pobierania kursów:", error);
         new LogService({
             path: req.url,
             kind: "error",
@@ -77,7 +76,6 @@ export async function PUT(req: NextRequest) {
         );
     }
     const courseData = await req.json();
-    console.log("Otrzymane dane kursu do aktualizacji:", courseData);
     try {
         const res = await updateCourse(courseData);
         new LogService({
@@ -91,7 +89,6 @@ export async function PUT(req: NextRequest) {
             message: `Kurs (${res?.nazwa}) zaktualizowany`,
         });
     } catch (e) {
-        console.log(e);
         new LogService({
             path: req.url,
             kind: "error",
@@ -116,7 +113,7 @@ export async function POST(req: NextRequest) {
     const courseData = await req.json();
     try {
         const alreadyExists = await checkCourseExists(courseData._id);
-        console.log(alreadyExists);
+
         if (alreadyExists) {
             courseData.slug = courseData.slug + "_" + randomBytes(2 ** 3).toString("hex");
             courseData._id = undefined;
@@ -124,7 +121,6 @@ export async function POST(req: NextRequest) {
             courseData.editedAt = undefined;
             courseData.__v = undefined;
             courseData.aktywne = false;
-            console.log(courseData);
             const res = await createCourse(courseData);
             new LogService({
                 path: req.url,
