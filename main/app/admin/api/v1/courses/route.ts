@@ -134,6 +134,9 @@ export async function POST(req: NextRequest) {
             );
         }
         const res = await createCourse(courseData);
+        console.log(res);
+        console.log("--------------------------------");
+        console.log(courseData);
         new LogService({
             path: req.url,
             kind: "log",

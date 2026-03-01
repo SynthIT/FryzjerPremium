@@ -35,15 +35,14 @@ const DEFAULTS: Record<string, unknown> = {
     instruktor: undefined,
     krotkiOpis: undefined,
     max_uczestnicy: undefined,
-    data_rozpoczecia: undefined,
-    godzina_rozpoczecia: undefined,
-    godzina_zakonczenia: undefined,
-    adres: undefined,
+    data_rozpoczecia: "",
+    godzina_rozpoczecia: "",
+    godzina_zakonczenia: "",
+    adres: "",
 };
 
 async function main() {
-    const uri =
-        process.env.NODE_ENV === "development" ? process.env.MONGO_URI_DEV : process.env.MONGO_URI;
+    const uri = process.env.MONGO_URI;
     if (!uri) {
         console.error("Brak MONGO_URI lub MONGO_URI_DEV w .env.local");
         process.exit(1);

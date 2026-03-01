@@ -4,18 +4,20 @@ import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { Courses, Firmy } from "@/lib/types/coursesTypes";
 import { Categories, Promos } from "@/lib/types/shared";
-import { MoreVertical, Pencil, Copy } from "lucide-react";
+import { MoreVertical, Pencil, Copy, Trash2 } from "lucide-react";
 
 interface AdminCourseCardProps {
     course: Courses;
     onClick: () => void;
     onDuplicate?: (course: Courses) => void;
+    onDelete?: (course: Courses) => void;
 }
 
 export default function AdminCourseCard({
     course,
     onClick,
     onDuplicate,
+    onDelete,
 }: AdminCourseCardProps) {
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
@@ -126,6 +128,21 @@ export default function AdminCourseCard({
                             >
                                 <Copy className="h-4 w-4" />
                                 Duplikuj
+                            </button>
+                        )}
+                        {onDelete && (
+                            <button
+                                type="button"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setMenuOpen(false);
+                                    onDelete(course);
+                                }}
+                                className="w-full px-3 py-2 text-left text-sm flex items-center gap-2 hover:bg-destructive/15 text-destructive rounded-none first:rounded-t-md last:rounded-b-md"
+                            >
+                                <Trash2 className="h-4 w-4" />
+                                Usuń
                             </button>
                         )}
                     </div>

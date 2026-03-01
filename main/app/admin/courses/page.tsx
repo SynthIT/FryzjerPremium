@@ -105,6 +105,25 @@ export default function CoursesPage() {
         }
     };
 
+    const handleDelete = async (course: Courses) => {
+        if (!confirm(`Czy na pewno chcesz usunąć kurs „${course.nazwa || course.slug}"?`)) return;
+        try {
+            const res = await fetch(
+                `/admin/api/v1/courses?slug=${encodeURIComponent(course.slug)}`,
+                { method: "DELETE", credentials: "include" }
+            );
+            const result = await res.json();
+            if (result.status === 0) {
+                await refetchCourses();
+            } else {
+                alert("Błąd podczas usuwania: " + (result.error || "Nieznany błąd"));
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Błąd podczas usuwania kursu.");
+        }
+    };
+
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-[400px]">
@@ -195,6 +214,7 @@ export default function CoursesPage() {
                                 course={course}
                                 onClick={() => handleCourseClick(course)}
                                 onDuplicate={handleDuplicate}
+                                onDelete={handleDelete}
                             />
                         ))}
                     </div>

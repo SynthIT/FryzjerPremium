@@ -7,6 +7,14 @@ export async function POST(req: NextRequest) {
         const parent = decodeURIComponent(req.headers.get("X-File-Parent") || "uploads");
         const pathfile = `${parent}/${filename}`;
         const file = await req.arrayBuffer();
+        if (process.env.NODE_ENV !== "production") {
+            return NextResponse.json({
+                image: {
+                    url: `/uploads/${pathfile}`,
+                    pathname: pathfile,
+                },
+            });
+        }
         const blob = await put(pathfile, file, {
             access: "public",
             allowOverwrite: true,
