@@ -133,6 +133,8 @@ export default function CoursePage({ courseSlug }: CoursePageProps) {
         course.data_rozpoczecia ||
         (course.adres && course.adres.trim() !== "");
 
+    console.log(hasDateOrPlace);
+
     const formatDataRozpoczecia = (): string => {
         if (!course.data_rozpoczecia) return "";
         try {
