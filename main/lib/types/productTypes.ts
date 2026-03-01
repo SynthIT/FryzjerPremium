@@ -58,7 +58,7 @@ export const zodProducts = z.object({
     ]),
     media: z.array(zodMedia),
     promocje: z
-        .union([z.string(), zodPromocje]).optional(),
+        .union([z.string(), zodPromocje, z.null()]).optional(),
     specyfikacja: z.array(zodSpecyfikacja).optional(),
     opis: z.string(),
     ilosc: z.number(),
