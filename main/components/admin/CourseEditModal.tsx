@@ -360,12 +360,12 @@ export default function CourseEditModal({
     };
 
     return (
-        <div className="space-y-6 sm:space-y-8">
+        <div className="space-y-6 text-gray-900 sm:space-y-8 [&_input]:text-gray-900 [&_input]:bg-white [&_select]:text-gray-900 [&_select]:bg-white [&_textarea]:text-gray-900 [&_textarea]:bg-white [&_input::placeholder]:text-gray-500 [&_textarea::placeholder]:text-gray-500">
             <div>
-                <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+                <h1 className="text-2xl font-bold tracking-tight sm:text-3xl text-gray-900">
                     Edytuj szkolenie
                 </h1>
-                <p className="text-sm text-muted-foreground sm:text-base mt-2">
+                <p className="mt-2 text-sm text-gray-600 sm:text-base">
                     Zmień dane szkolenia i zapisz zmiany.
                 </p>
             </div>
@@ -386,7 +386,7 @@ export default function CourseEditModal({
                                     onChange={(e) => updateField("nazwa", e.target.value)}
                                     className="w-full px-3 py-2 border rounded-md"
                                 />
-                                <p className="text-xs text-muted-foreground mt-1">Slug: {editedCourse.slug || "(auto)"}</p>
+                                <p className="text-xs text-gray-600 mt-1">Slug: {editedCourse.slug || "(auto)"}</p>
                             </div>
                             <div className="sm:col-span-2">
                                 <label className="block text-sm font-medium mb-1">Krótki opis (subtitle)</label>
@@ -398,7 +398,7 @@ export default function CourseEditModal({
                                     className="w-full px-3 py-2 border rounded-md"
                                     placeholder="Max 120 znaków"
                                 />
-                                <p className="text-xs text-muted-foreground mt-1">{editedCourse.krotkiOpis?.length ?? 0}/120</p>
+                                <p className="text-xs text-gray-600 mt-1">{editedCourse.krotkiOpis?.length ?? 0}/120</p>
                             </div>
                             <div>
                                 <label className="block text-sm font-medium mb-1">Cena (bez VAT) *</label>
@@ -413,7 +413,7 @@ export default function CourseEditModal({
                                     className="w-full px-3 py-2 border rounded-md"
                                     placeholder="0.00"
                                 />
-                                <p className="text-xs text-muted-foreground mt-1">Cena z VAT: {finalPrice(editedCourse.cena || 0, editedCourse.vat ?? 23, undefined, undefined)} zł</p>
+                                <p className="text-xs text-gray-600 mt-1">Cena z VAT: {finalPrice(editedCourse.cena || 0, editedCourse.vat ?? 23, undefined, undefined)} zł</p>
                             </div>
                             <div>
                                 <label className="block text-sm font-medium mb-1">VAT (%)</label>
@@ -749,7 +749,7 @@ export default function CourseEditModal({
                                 </select>
                                 {selectedMainCategory && categories[selectedMainCategory] && (
                                     <div className="space-y-1 mt-2">
-                                        <label className="text-xs text-muted-foreground">Podkategorie:</label>
+                                        <label className="text-xs text-gray-600">Podkategorie:</label>
                                         {categories[selectedMainCategory].map((cat) => (
                                             <label key={cat._id || cat.nazwa} className="flex items-center gap-2 p-2 border rounded-md cursor-pointer hover:bg-accent">
                                                 <input

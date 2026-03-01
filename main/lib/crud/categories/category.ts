@@ -50,11 +50,12 @@ export async function deleteCatBySlug(slug: string) {
 export async function updateCategory(newCat: Categories) {
     zodCategories.parse(newCat);
     await db();
+    const filter = newCat._id ? { _id: newCat._id } : { slug: newCat.slug };
+    const { _id, ...updateFields } = newCat as Categories & { _id?: string };
     const category = await Category.findOneAndUpdate(
-        {
-            slug: newCat.slug,
-        },
-        { $set: newCat },
+        filter,
+        { $set: updateFields },
+        { new: true },
     ).orFail();
     return category;
 }

@@ -50,10 +50,10 @@ export default function AdminCourseEditPage() {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-[400px]">
+            <div className="flex min-h-[400px] items-center justify-center text-gray-900">
                 <div className="text-center">
-                    <Loader2 className="h-12 w-12 animate-spin mx-auto text-muted-foreground" />
-                    <p className="mt-4 text-muted-foreground">Ładowanie kursu...</p>
+                    <Loader2 className="mx-auto h-12 w-12 animate-spin text-gray-600" />
+                    <p className="mt-4 text-gray-600">Ładowanie kursu...</p>
                 </div>
             </div>
         );
@@ -61,16 +61,16 @@ export default function AdminCourseEditPage() {
 
     if (error || !course) {
         return (
-            <div className="space-y-4">
+            <div className="space-y-4 text-gray-900">
                 <Link
                     href="/admin/courses"
-                    className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+                    className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
                 >
                     <ArrowLeft className="h-4 w-4" />
                     Powrót do listy
                 </Link>
-                <div className="rounded-lg border p-6 text-center">
-                    <p className="text-destructive">{error || "Kurs nie znaleziony"}</p>
+                <div className="rounded-lg border border-gray-200 bg-white p-6 text-center">
+                    <p className="text-red-700">{error || "Kurs nie znaleziony"}</p>
                 </div>
             </div>
         );
@@ -78,10 +78,10 @@ export default function AdminCourseEditPage() {
 
     return (
         <>
-            <div className="mb-4">
+            <div className="mb-4 text-gray-900">
                 <Link
                     href="/admin/courses"
-                    className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+                    className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
                 >
                     <ArrowLeft className="h-4 w-4" />
                     Lista szkoleń
