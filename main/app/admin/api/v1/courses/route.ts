@@ -1,4 +1,5 @@
 import {
+    checkCourseExists,
     collectCourses,
     createCourse,
     deleteCourseBySlug,
@@ -7,6 +8,7 @@ import {
 import { NextRequest, NextResponse } from "next/server";
 import { checkRequestAuth } from "@/lib/admin_utils";
 import { LogService } from "@/lib/log_service";
+import { randomBytes } from "crypto";
 
 export async function GET(req: NextRequest) {
     try {
@@ -110,9 +112,8 @@ export async function POST(req: NextRequest) {
     }
     const courseData = await req.json();
     try {
-<<<<<<< Updated upstream
-=======
         const alreadyExists = await checkCourseExists(courseData._id);
+
         if (alreadyExists) {
             courseData.slug = courseData.slug + "_" + randomBytes(2 ** 3).toString("hex");
             courseData._id = undefined;
@@ -132,7 +133,6 @@ export async function POST(req: NextRequest) {
                 { status: 201 }
             );
         }
->>>>>>> Stashed changes
         const res = await createCourse(courseData);
         new LogService({
             path: req.url,
@@ -145,6 +145,7 @@ export async function POST(req: NextRequest) {
             { status: 201 }
         );
     } catch (e) {
+        console.log(e);
         new LogService({
             path: req.url,
             kind: "error",

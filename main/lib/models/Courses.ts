@@ -71,6 +71,7 @@ const courseSchema = new Schema<Courses>(
         jezyk: { type: String, default: "polski" },
         certyfikat: { type: Boolean, default: false },
         krotkiOpis: { type: String }, // Krótki opis/subtitle
+        max_uczestnicy: { type: Number }, // Maks. liczba uczestników (maks. zakupów)
     },
     { autoIndex: false },
 );

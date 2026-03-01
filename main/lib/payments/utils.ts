@@ -63,6 +63,16 @@ const getPaymentIntent = async (koszyk_id: string) => {
     }
 };
 
+const getPaymentIntentByPaymentIntentId = async (payment_intent_id: string) => {
+    try {
+        const paymentIntent = await stripe.paymentIntents.retrieve(payment_intent_id);
+        return paymentIntent;
+    } catch (error) {
+        console.error("Error retrieving Payment Intent:", error);
+        throw new Error("Could not retrieve Payment Intent");
+    }
+};
+
 const updatePaymentIntent = async (
     payment: Stripe.PaymentIntent,
     new_amount: number,
@@ -98,4 +108,5 @@ export {
     createPaymentIntent,
     updatePaymentIntent,
     getPaymentIntent,
+    getPaymentIntentByPaymentIntentId,
 };

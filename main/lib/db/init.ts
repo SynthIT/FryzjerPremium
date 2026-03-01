@@ -1,4 +1,9 @@
 import mongoose from "mongoose";
+import "@/lib/models/Products";
+import "@/lib/models/Courses";
+import "@/lib/models/Delivery";
+import "@/lib/models/Users";
+import "@/lib/models/shared";
 
 export async function db() {
     if (mongoose.connection.readyState === 0) {

@@ -13,7 +13,7 @@ export default function ProductElement({ product, index }: ProductElementProps) 
     return (
         <Link
             key={index}
-            href={`/product/${product.slug}`}
+            href={`/produkt/${product.slug}`}
             className="group block rounded-xl overflow-hidden border border-[rgba(212,196,176,0.3)] bg-white/60 hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] hover:border-[#D2B79B]/40 transition-all duration-300"
         >
             <div className="relative aspect-square overflow-hidden bg-gray-100">

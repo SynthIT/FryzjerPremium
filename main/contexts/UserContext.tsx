@@ -66,17 +66,16 @@ export function UserProvider({ children }: { children: ReactNode }) {
                 });
         }
         try {
+            if (userData) return;
             u(user ?? undefined);
         } catch (err) {
             console.log("Błąd podczas ładowania użytkownika: ", err);
         }
     }, [user, userData]);
 
+
+
     const addUser = useCallback((user: Users, orders?: OrderList[]) => {
-        if (!user.createdAt) return;
-        if (!user.updatedAt) return;
-        user.createdAt = new Date(user.createdAt);
-        user.updatedAt = new Date(user.updatedAt);
         const ok = userSchema.safeParse(user);
         if (!ok.success) return;
         user = ok.data;

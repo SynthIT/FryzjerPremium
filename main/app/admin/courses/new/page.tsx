@@ -63,6 +63,7 @@ export default function NewCoursePage() {
         dozywotniDostep: true,
         materialyDoPobrania: true,
         zawartoscKursu: [],
+        max_uczestnicy: undefined,
     });
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -490,6 +491,21 @@ export default function NewCoursePage() {
                                 }
                                 className="w-full rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
                                 placeholder="0"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium mb-2">
+                                Maks. uczestników (maks. zakupów)
+                            </label>
+                            <input
+                                type="number"
+                                min="1"
+                                value={coursePayload.max_uczestnicy ?? ""}
+                                onChange={(e) =>
+                                    handleCoursePayloadChange("max_uczestnicy", e.target.value === "" ? undefined : Math.max(1, parseInt(e.target.value, 10) || 1))
+                                }
+                                className="w-full rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
+                                placeholder="Bez limitu"
                             />
                         </div>
                         <div>

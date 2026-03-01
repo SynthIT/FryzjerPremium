@@ -18,13 +18,15 @@ export async function createOrder(order: OrderList) {
 }
 
 export async function updateOrder(order: OrderList) {
-    const ok = orderListSchema.safeParse(order);
-    if (!ok.success) {
-        return { error: ok.error.message };
-    }
     await db();
-    const res = await Orders.findOneAndUpdate({ _id: order._id }, { $set: order }, { new: true });
-    return res;
+    console.log(order)
+    try {
+        const res = await Orders.findOneAndUpdate({ _id: order._id }, { $set: order }, { new: true });
+        console.log(res)
+        return res;
+    } catch (error) {
+        console.error(error);
+    }
 }
 
 export async function deleteOrder(id: string) {
@@ -36,6 +38,12 @@ export async function deleteOrder(id: string) {
 export async function getOrderById(id: string) {
     await db();
     const res = await Orders.findOne({ _id: id });
+    return res;
+}
+
+export async function getOrderByNumerZamowienia(numerZamowienia: string) {
+    await db();
+    const res = await Orders.findOne({ numer_zamowienia: numerZamowienia }).lean();
     return res;
 }
 

@@ -2,6 +2,7 @@ import { Model, model, models, Schema, Types } from "mongoose";
 import { Users, Roles, OrderList } from "../types/userTypes";
 
 
+
 export const schemaOrderList = new Schema<OrderList>(
     {
         user: { type: Types.ObjectId, ref: "Users" },
@@ -12,8 +13,9 @@ export const schemaOrderList = new Schema<OrderList>(
             unique: true,
         },
         status: { type: String, default: "w_koszyku" },
-        sposob_dostawy: { type: Types.ObjectId, ref: "delivery" },
-        produkty: { type: [Types.ObjectId], ref: "products", default: [] },
+        sposob_dostawy: { type: Types.ObjectId, ref: "Deliveries" },
+        produkty: { type: [Types.ObjectId], ref: "Products", default: [] },
+        kursy: { type: [Types.ObjectId], ref: "Courses", default: [] },
         suma: { type: Number },
         data_zamowienia: { type: Date },
         data_wyslania: { type: Date },

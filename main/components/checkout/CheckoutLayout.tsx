@@ -9,7 +9,6 @@ import { DeliveryMethods } from "@/lib/types/deliveryTypes";
 import DeliveryMethod from "@/components/checkout/DeliveryMethods";
 import { EmptyCart } from "@/components/cart/EmptyCard";
 import { Stripe } from "@stripe/stripe-js";
-import { createPortal } from "react-dom";
 import { useUser } from "@/contexts/UserContext";
 
 interface Props {
@@ -303,14 +302,14 @@ export function Checkout({ stripePromise }: Props) {
                                             key={item.id}
                                             className="flex gap-3 p-3 rounded-lg bg-gray-50">
                                             <div className="w-14 h-14 shrink-0 rounded-lg overflow-hidden bg-gray-200">
-                                                {item.product.media && item.product.media.length > 0 ? (
+                                                {item.object.media && item.object.media.length > 0 ? (
                                                     <Image
                                                         src={
-                                                            item.product
+                                                            item.object
                                                                 .media[0]?.path
                                                         }
                                                         alt={
-                                                            item.product
+                                                            item.object
                                                                 .media[0]?.alt
                                                         }
                                                         width={60}
@@ -321,7 +320,7 @@ export function Checkout({ stripePromise }: Props) {
                                             </div>
                                             <div className="min-w-0 flex-1">
                                                 <div className="font-medium text-gray-900 truncate text-sm">
-                                                    {item.product.nazwa}
+                                                    {item.object.nazwa}
                                                 </div>
                                                 <div className="text-xs text-gray-500">
                                                     {item.quantity}x{" "}
@@ -370,15 +369,19 @@ export function Checkout({ stripePromise }: Props) {
                 </div>
             </div>
             {handlePayment && (
-                <div className="mt-8 rounded-xl border border-[rgba(212,196,176,0.3)] bg-white/60 p-6">
-                    <Elements
-                        stripe={stripePromise}
-                        options={{
-                            clientSecret: cs || "",
-                            appearance: { theme: "flat" },
-                        }}>
-                        <CheckoutForm></CheckoutForm>
-                    </Elements>
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                    <div className="relative w-full max-w-lg rounded-2xl bg-white shadow-xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-center p-6 border-b border-gray-200">
+                            <Elements
+                                stripe={stripePromise}
+                                options={{
+                                    clientSecret: cs || "",
+                                    appearance: { theme: "flat" },
+                                }}>
+                                <CheckoutForm></CheckoutForm>
+                            </Elements>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>

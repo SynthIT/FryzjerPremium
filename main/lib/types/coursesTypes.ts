@@ -36,6 +36,7 @@ export const zodLekcja = z.object({
 export type Lekcja = z.infer<typeof zodLekcja>;
 
 export const zodCourses = z.object({
+    _id: z.string().optional(),
     slug: z.string(),
     nazwa: z.string(),
     cena: z.number(),
@@ -51,10 +52,13 @@ export const zodCourses = z.object({
     promocje: z
         .union([z.string(), zodPromocje])
         .nullable(),
+    godzina_rozpoczecia: z.string().optional(),
+    godzina_zakonczenia: z.string().optional(),
+    data_rozpoczecia: z.date().optional(),
+    adres: z.string().optional(),
     opis: z.string(),
     ocena: z.number().optional().default(0),
     opinie: z.array(zodOpinie).nullable(),
-    createdAt: z.date().optional(),
     vat: z.number().default(23),
     sku: z.string().nullable(),
     liczbaZapisanych: z.number().optional(),
@@ -72,6 +76,10 @@ export const zodCourses = z.object({
     jezyk: z.string().optional(),
     certyfikat: z.boolean().optional(),
     krotkiOpis: z.string().optional(),
+    max_uczestnicy: z.number().int().min(1).optional(),
+    createdAt: z.date().optional(),
+    editedAt: z.date().optional(),
+    __v: z.number().optional(),
 });
 
 export type Courses = z.infer<typeof zodCourses>;

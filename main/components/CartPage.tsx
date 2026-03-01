@@ -18,7 +18,6 @@ export default function CartPage() {
     } = useCart();
     const { user } = useUser();
     const [items, setItems] = useState<CartItem[]>([]);
-    const [done, setDone] = useState<boolean>(false);
     useEffect(() => {
         async function validate() {
             await fetch("/api/v1/users/cart", {
@@ -43,11 +42,9 @@ export default function CartPage() {
                 })
                 .catch(() => setItems(getCart().items));
         }
-        if(!done) {
-            validate();
-            setDone(true);
-        };
-    }, [user, getCart, refreshCart, done,setDone]);
+        validate();
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- run only on mount
+    }, []);
     const handleQuantityChange = useCallback(
         (itemId: string, delta: number) => {
             const item = items.find((item) => item.id === itemId);
@@ -132,15 +129,15 @@ export default function CartPage() {
                                     <div key={item.id} className="flex flex-wrap items-center gap-4 p-4 rounded-xl border border-[rgba(212,196,176,0.3)] bg-white/60">
                                         <div className="w-24 h-24 shrink-0 rounded-lg overflow-hidden bg-gray-100">
                                             <Link
-                                                href={`/product/${item.product.slug}`}>
-                                                {item.product.media && item.product.media.length > 0 ? (
+                                                href={`/${item.type}/${item.object.slug}`}>
+                                                {item.object.media && item.object.media.length > 0 ? (
                                                     <Image
                                                         src={
-                                                            item.product
+                                                            item.object
                                                                 .media[0]?.path
                                                         }
                                                         alt={
-                                                            item.product
+                                                            item.object
                                                                 .media[0]?.alt
                                                         }
                                                         width={124}
@@ -150,7 +147,7 @@ export default function CartPage() {
                                                 ) : (
                                                     <div className="w-full h-full flex items-center justify-center text-xs text-gray-500 p-2">
                                                         <span>
-                                                            {item.product.nazwa}
+                                                            {item.object.nazwa}
                                                         </span>
                                                     </div>
                                                 )}
@@ -159,9 +156,9 @@ export default function CartPage() {
 
                                         <div className="flex-1 min-w-0">
                                             <Link
-                                                href={`/product/${item.product.slug}`}
+                                                href={`/${item.type}/${item.object.slug}`}
                                                 className="font-medium text-gray-900 hover:text-[#D2B79B] line-clamp-2">
-                                                {item.product.nazwa}
+                                                {item.object.nazwa}
                                             </Link>
                                             {item.wariant && (
                                                 <p className="text-sm text-gray-500">{item.wariant.typ}: {item.wariant.nazwa}</p>
