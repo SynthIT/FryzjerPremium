@@ -58,7 +58,11 @@ export const zodProducts = z.object({
     ]),
     media: z.array(zodMedia),
     promocje: z
+<<<<<<< Updated upstream
         .union([z.string(), zodPromocje]).optional(),
+=======
+        .union([z.string(), zodPromocje, z.null()]),
+>>>>>>> Stashed changes
     specyfikacja: z.array(zodSpecyfikacja).optional(),
     opis: z.string(),
     ilosc: z.number(),
