@@ -95,6 +95,7 @@ export default function CoursesPage() {
             });
             const result = await res.json();
             if (result.status === 0 || res.ok) {
+                alert("Kurs został skopiowany");
                 await refetchCourses();
             } else {
                 alert("Błąd podczas duplikowania: " + (result.error || "Nieznany błąd"));
@@ -114,6 +115,7 @@ export default function CoursesPage() {
             );
             const result = await res.json();
             if (result.status === 0) {
+                alert("Kurs został usunięty");
                 await refetchCourses();
             } else {
                 alert("Błąd podczas usuwania: " + (result.error || "Nieznany błąd"));

@@ -77,7 +77,7 @@ const courseSchema = new Schema<Courses>(
         godzina_zakonczenia: { type: String },
         adres: { type: String },
     },
-    { autoIndex: false },
+    { autoIndex: false, timestamps: true },
 );
 
 export const Course: Model<Courses> =

@@ -39,6 +39,9 @@ const DEFAULTS: Record<string, unknown> = {
     godzina_rozpoczecia: "",
     godzina_zakonczenia: "",
     adres: "",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    __v: 0,
 };
 
 async function main() {

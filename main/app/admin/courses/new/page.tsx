@@ -397,7 +397,7 @@ export default function NewCoursePage() {
                             </label>
                             <input
                                 type="text"
-                                value={coursePayload.krotkiOpis}
+                                value={coursePayload.krotkiOpis ?? ""}
                                 onChange={(e) => handleCoursePayloadChange("krotkiOpis", e.target.value)}
                                 required
                                 maxLength={120}
@@ -405,7 +405,7 @@ export default function NewCoursePage() {
                                 placeholder="Krótkie podsumowanie szkolenia (max 120 znaków)"
                             />
                             <p className="text-xs text-muted-foreground mt-1">
-                                {coursePayload.krotkiOpis?.length}/120 znaków
+                                {coursePayload.krotkiOpis?.length ?? 0}/120 znaków
                             </p>
                         </div>
 
