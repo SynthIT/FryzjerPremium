@@ -153,7 +153,7 @@ export async function POST(req: NextRequest) {
             http: req.method,
         }).error(`${e}`);
         return NextResponse.json(
-            { status: 1, error: "Błąd podczas dodawania kursu" },
+            { status: 1, error: "Błąd podczas dodawania kursu", details: e },
             { status: 500 }
         );
     }

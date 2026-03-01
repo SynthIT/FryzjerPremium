@@ -68,6 +68,43 @@ export default function CoursesPage() {
         router.push(`/admin/courses/${encodeURIComponent(course.slug)}`);
     };
 
+    const refetchCourses = async () => {
+        try {
+            const res = await fetch("/admin/api/v1/courses", { credentials: "include" });
+            if (!res.ok) return;
+            const data = await res.json();
+            const raw = data.courses;
+            setCourses(typeof raw === "string" ? JSON.parse(raw) : Array.isArray(raw) ? raw : []);
+        } catch {
+            // ignore
+        }
+    };
+
+    const handleDuplicate = async (course: Courses) => {
+        const randomSuffix = Math.random().toString(36).slice(2, 10);
+        const duplicateCourse = {
+            ...course,
+            slug: `${course.slug}_${randomSuffix}`,
+        };
+        try {
+            const res = await fetch("/admin/api/v1/courses", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify(duplicateCourse),
+            });
+            const result = await res.json();
+            if (result.status === 0 || res.ok) {
+                await refetchCourses();
+            } else {
+                alert("Błąd podczas duplikowania: " + (result.error || "Nieznany błąd"));
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Błąd podczas duplikowania kursu.");
+        }
+    };
+
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-[400px]">
@@ -157,6 +194,7 @@ export default function CoursesPage() {
                                 key={course.slug}
                                 course={course}
                                 onClick={() => handleCourseClick(course)}
+                                onDuplicate={handleDuplicate}
                             />
                         ))}
                     </div>
