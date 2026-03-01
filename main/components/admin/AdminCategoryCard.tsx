@@ -35,7 +35,7 @@ export default function AdminCategoryCard({
                 {/* Środek: dane */}
                 <div className="flex flex-1 flex-col justify-between gap-3 p-4">
                     <div>
-                        <h3 className="font-semibold text-[var(--text-dark)] line-clamp-2">
+                        <h3 className="font-semibold text-gray-900 line-clamp-2">
                             {category.nazwa || "Brak nazwy"}
                         </h3>
                         <p className="mt-0.5 text-sm text-muted-foreground">
