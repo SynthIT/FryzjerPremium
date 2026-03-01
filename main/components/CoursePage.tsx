@@ -8,7 +8,7 @@ import { useCart } from "@/contexts/CartContext";
 import { Courses, Firmy } from "@/lib/types/coursesTypes";
 import { Promos, Opinie } from "@/lib/types/shared";
 import ReviewTabs from "./coursesComponents/ReviewTabs";
-import { Clock, Users, Award, Globe, CheckCircle, PlayCircle, ShoppingCart, Info } from "lucide-react";
+import { Clock, Users, Award, Globe, CheckCircle, PlayCircle, ShoppingCart, Info, MapPin, Calendar, CalendarClock } from "lucide-react";
 
 interface CoursePageProps {
     courseSlug?: string;
@@ -127,6 +127,30 @@ export default function CoursePage({ courseSlug }: CoursePageProps) {
     const hasPromo = course.promocje && typeof course.promocje === "object" && "procent" in course.promocje;
     const promoPercent = hasPromo ? (course.promocje as Promos).procent : 0;
 
+    const hasDateOrPlace =
+        (course.godzina_rozpoczecia && course.godzina_rozpoczecia.trim() !== "") ||
+        (course.godzina_zakonczenia && course.godzina_zakonczenia.trim() !== "") ||
+        course.data_rozpoczecia ||
+        (course.adres && course.adres.trim() !== "");
+
+    const formatDataRozpoczecia = (): string => {
+        if (!course.data_rozpoczecia) return "";
+        try {
+            const d = typeof course.data_rozpoczecia === "string"
+                ? new Date(course.data_rozpoczecia)
+                : course.data_rozpoczecia;
+            if (isNaN(d.getTime())) return "";
+            return d.toLocaleDateString("pl-PL", {
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+            });
+        } catch {
+            return "";
+        }
+    };
+
     return (
         <div className="min-h-screen bg-[#f8f6f3] pt-[140px]">
             <div className="mx-auto max-w-7xl px-4 py-8">
@@ -219,6 +243,49 @@ export default function CoursePage({ courseSlug }: CoursePageProps) {
                                 </div>
                             </div>
                         </div>
+
+                        {/* Data i miejsce – godziny, data, adres */}
+                        {hasDateOrPlace && (
+                            <div className="rounded-xl border border-[rgba(212,196,176,0.3)] bg-white/60 p-4">
+                                <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                                    <CalendarClock className="h-4 w-4 text-[#D2B79B]" />
+                                    Data i miejsce
+                                </h3>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    {course.data_rozpoczecia && formatDataRozpoczecia() && (
+                                        <div className="flex gap-3 p-3 rounded-lg bg-white/80 border border-[rgba(212,196,176,0.2)]">
+                                            <Calendar className="h-5 w-5 shrink-0 text-[#D2B79B]" />
+                                            <div>
+                                                <div className="text-xs text-gray-500">Data rozpoczęcia</div>
+                                                <div className="font-medium text-gray-900">{formatDataRozpoczecia()}</div>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {(course.godzina_rozpoczecia || course.godzina_zakonczenia) && (
+                                        <div className="flex gap-3 p-3 rounded-lg bg-white/80 border border-[rgba(212,196,176,0.2)]">
+                                            <Clock className="h-5 w-5 shrink-0 text-[#D2B79B]" />
+                                            <div>
+                                                <div className="text-xs text-gray-500">Godziny</div>
+                                                <div className="font-medium text-gray-900">
+                                                    {course.godzina_rozpoczecia && course.godzina_zakonczenia
+                                                        ? `${course.godzina_rozpoczecia} – ${course.godzina_zakonczenia}`
+                                                        : course.godzina_rozpoczecia || course.godzina_zakonczenia || "—"}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {course.adres && course.adres.trim() !== "" && (
+                                        <div className="flex gap-3 p-3 rounded-lg bg-white/80 border border-[rgba(212,196,176,0.2)] sm:col-span-2">
+                                            <MapPin className="h-5 w-5 shrink-0 text-[#D2B79B]" />
+                                            <div>
+                                                <div className="text-xs text-gray-500">Miejsce / adres</div>
+                                                <div className="font-medium text-gray-900">{course.adres}</div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
 
                         {/* What You'll Learn */}
                         {(course.czegoSieNauczysz?.length ?? 0) > 0 && (
