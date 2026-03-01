@@ -54,7 +54,7 @@ export const zodCourses = z.object({
         .nullable(),
     godzina_rozpoczecia: z.string().optional(),
     godzina_zakonczenia: z.string().optional(),
-    data_rozpoczecia: z.date().optional(),
+    data_rozpoczecia: z.union([z.date(), z.string()]).optional(),
     adres: z.string().optional(),
     opis: z.string(),
     ocena: z.number().optional().default(0),
@@ -77,8 +77,8 @@ export const zodCourses = z.object({
     certyfikat: z.boolean().optional(),
     krotkiOpis: z.string().optional(),
     max_uczestnicy: z.number().int().min(1).optional(),
-    createdAt: z.date().optional(),
-    editedAt: z.date().optional(),
+    createdAt: z.union([z.date(), z.string()]).optional(),
+    editedAt: z.union([z.date(), z.string()]).optional(),
     __v: z.number().optional(),
 });
 

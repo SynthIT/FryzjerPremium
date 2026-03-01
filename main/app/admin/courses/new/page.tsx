@@ -361,7 +361,7 @@ export default function NewCoursePage() {
                     <div className="text-center">
                         <div className="text-6xl">❌</div>
                         <h2 className="text-2xl font-bold mb-2">Błąd</h2>
-                        <p className="text-muted-foreground mb-4 text-red-500">{error}</p>
+                        <p className="text-muted-foreground mb-4 text-red-500">{error.toString()}</p>
                     </div>
                 </div>
             }
