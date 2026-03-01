@@ -15,6 +15,12 @@ export async function collectCourses() {
     return JSON.stringify(cours || []);
 }
 
+export async function checkCourseExists(id: string) {
+    await db();
+    const course = await Course.findOne({ _id: id });
+    return course ? true : false;
+}
+
 export async function createCourse(course: Courses) {
     zodCourses.parse(course);
     await db();

@@ -67,8 +67,9 @@ export default function CoursePage({ courseSlug }: CoursePageProps) {
     const [amount, setAmount] = useState(1);
 
     const handleAddToCart = useCallback(() => {
+        return ""
         if (course?.aktywne !== false) {
-            addToCart("kursy", course as Courses, effectiveMax != null ? Math.min(amount, effectiveMax) : amount, course!.cena, undefined)
+            addToCart("kursy", course as Courses, effectiveMax != null ? Math.min(amount, effectiveMax!) : amount, course!.cena, undefined)
         }
     }, [course, effectiveMax, amount, addToCart]);
 

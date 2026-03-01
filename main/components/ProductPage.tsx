@@ -119,10 +119,8 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
 
     const handleAddToCart = useCallback(() => {
         if (product?.aktywne && product.ilosc > 0) {
-            console.log(product);
-            console.log(selectedPrice);
-            console.log(selectedWariant);
-            addToCart(product, quantity, selectedPrice, selectedWariant);
+
+            addToCart("produkt", product, quantity, selectedPrice, selectedWariant);
             // Można dodać powiadomienie o dodaniu do koszyka
         }
     }, [product, quantity, selectedPrice, selectedWariant, addToCart]);

@@ -1,4 +1,5 @@
 import {
+    checkCourseExists,
     collectCourses,
     createCourse,
     deleteCourseBySlug,
@@ -7,6 +8,7 @@ import {
 import { NextRequest, NextResponse } from "next/server";
 import { checkRequestAuth } from "@/lib/admin_utils";
 import { LogService } from "@/lib/log_service";
+import { randomBytes } from "crypto";
 
 export async function GET(req: NextRequest) {
     try {
@@ -113,6 +115,28 @@ export async function POST(req: NextRequest) {
     }
     const courseData = await req.json();
     try {
+        const alreadyExists = await checkCourseExists(courseData._id);
+        console.log(alreadyExists);
+        if (alreadyExists) {
+            courseData.slug = courseData.slug + "_" + randomBytes(2 ** 3).toString("hex");
+            courseData._id = undefined;
+            courseData.createdAt = undefined;
+            courseData.editedAt = undefined;
+            courseData.__v = undefined;
+            courseData.aktywne = false;
+            console.log(courseData);
+            const res = await createCourse(courseData);
+            new LogService({
+                path: req.url,
+                kind: "log",
+                position: "admin",
+                http: req.method,
+            }).log(`Kurs: ${res?._id} został dodany`);
+            return NextResponse.json(
+                { status: 201, message: "Kurs został dodany", slug: courseData.slug },
+                { status: 201 }
+            );
+        }
         const res = await createCourse(courseData);
         new LogService({
             path: req.url,
@@ -125,6 +149,7 @@ export async function POST(req: NextRequest) {
             { status: 201 }
         );
     } catch (e) {
+        console.log(e);
         new LogService({
             path: req.url,
             kind: "error",

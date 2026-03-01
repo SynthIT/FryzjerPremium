@@ -3,8 +3,10 @@
 import { useState, useEffect } from "react";
 import { Courses, Firmy } from "@/lib/types/coursesTypes";
 import { Categories, Media } from "@/lib/types/shared";
-import { X, Save, Trash2, Plus, Minus } from "lucide-react";
+import { X, Save, Trash2, Plus, Minus, Copy } from "lucide-react";
 import { makeSlugKeys, parseSlugName } from "@/lib/utils_admin";
+import { randomBytes } from "crypto";
+import { useRouter } from "next/navigation";
 
 // Helper do generowania slug
 function generateSlug(text: string): string {
@@ -31,6 +33,7 @@ export default function CourseEditModal({
     onUpdate,
     onDelete,
 }: CourseEditModalProps) {
+    const router = useRouter();
     const [editedCourse, setEditedCourse] = useState<Courses>(course);
     const [isSaving, setIsSaving] = useState(false);
 
@@ -236,6 +239,30 @@ export default function CourseEditModal({
         setSelectedSubCategories([]);
         if (categories[mainSlug]) {
             updateField("kategoria", categories[mainSlug]);
+        }
+    };
+
+    const handleDuplicate = async () => {
+        const duplicateCourse = {
+            ...editedCourse,
+            slug: generateSlug(editedCourse.nazwa + "_" + randomBytes(2 ** 3).toString("hex")),
+        };
+        const response = await fetch("/admin/api/v1/courses", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            credentials: "include",
+            body: JSON.stringify(duplicateCourse),
+        });
+        const result = await response.json();
+        if (result.status === 0 || response.ok) {
+            router.push("/admin/courses");
+        } else {
+            alert(
+                "Błąd podczas duplikowania kursu: " +
+                (result.error || "Nieznany błąd"),
+            );
         }
     };
 
@@ -606,6 +633,13 @@ export default function CourseEditModal({
                             Anuluj
                         </button>
                         <button
+                            onClick={() => { handleDuplicate(); setIsSaving(true); }}
+                            disabled={isSaving}
+                            className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors flex items-center gap-2 disabled:opacity-50">
+                            <Copy className="h-4 w-4" />
+                            {isSaving ? "Duplikowanie..." : "Duplikuj"}
+                        </button>
+                        <button
                             onClick={handleSave}
                             disabled={isSaving}
                             className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors flex items-center gap-2 disabled:opacity-50">
@@ -615,6 +649,6 @@ export default function CourseEditModal({
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
