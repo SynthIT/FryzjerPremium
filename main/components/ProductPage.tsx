@@ -118,6 +118,7 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
     const { addToCart } = useCart();
 
     const handleAddToCart = useCallback(() => {
+        return "";
         if (product?.aktywne && product.ilosc > 0) {
 
             addToCart("produkt", product, quantity, selectedPrice, selectedWariant);
@@ -334,8 +335,10 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                         {/* Add to Cart Button */}
                         <button
                             className="w-full py-3 rounded-xl bg-[#D2B79B] text-black font-semibold hover:bg-[#b89a7f] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            disabled={product.ilosc == 0}
-                            onClick={handleAddToCart}>
+                            disabled={true}
+                            onClick={handleAddToCart}
+                            title="Funkcja aktualnie niedostępna"
+                        >
                             {product.ilosc != 0
                                 ? "Dodaj do koszyka"
                                 : product.aktywne

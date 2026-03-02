@@ -33,7 +33,7 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
         async function getProduct() {
             try {
                 const data = await getProducts();
-                setAllProduct(data.products || []);
+                setAllProduct(JSON.parse(data.products) || []);
             } catch (error) {
                 console.error("Błąd podczas ładowania produktów:", error);
                 setAllProduct([]);
