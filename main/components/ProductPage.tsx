@@ -119,11 +119,11 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
 
     const handleAddToCart = useCallback(() => {
         return "";
-        if (product?.aktywne && product.ilosc > 0) {
+        // if (product?.aktywne && product.ilosc > 0) {
 
-            addToCart("produkt", product, quantity, selectedPrice, selectedWariant);
-            // Można dodać powiadomienie o dodaniu do koszyka
-        }
+        //     addToCart("produkt", product, quantity, selectedPrice, selectedWariant);
+        //     // Można dodać powiadomienie o dodaniu do koszyka
+        // }
     }, [product, quantity, selectedPrice, selectedWariant, addToCart]);
 
     const handleWariantChange = (w: Warianty) => {
