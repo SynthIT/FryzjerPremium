@@ -72,10 +72,10 @@ export const updateProduct = async (product: Products) => {
     return data;
 };
 
-export const deleteProduct = async (slug: string) => {
-    const bd = new URL("/admin/api/v1/products");
+export const deleteProduct = async (domain: string, id: string) => {
+    const bd = new URL(`${domain}/admin/api/v1/products`);
 
-    bd.searchParams.append("slug", slug);
+    bd.searchParams.append("id", id);
     const response = await fetch(bd, {
         method: "DELETE",
     });

@@ -23,7 +23,7 @@ export type Firmy = z.infer<typeof zodFirmy>;
 export const zodLekcja = z.object({
     _id: z.string().optional(),
     tytul: z.string(),
-    opis: z.string(),
+    opis: z.string().optional(),
     dlugosc: z.string(),
     rozdzial: z.string().optional(),
     video: z.string().optional(),

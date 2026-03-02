@@ -1,7 +1,7 @@
 import {
     collectProducts,
     createProduct,
-    deleteProductBySlug,
+    deleteProductById,
     updateProduct,
 } from "@/lib/crud/products/product";
 import { NextRequest, NextResponse } from "next/server";
@@ -29,15 +29,15 @@ export async function DELETE(req: NextRequest) {
         );
     }
     const { searchParams } = new URL(req.url);
-    const slug = searchParams.get("slug");
-    if (!slug) {
+    const id = searchParams.get("id");
+    if (!id) {
         return NextResponse.json(
-            { status: 1, error: "Brak slug produktu do usunięcia" },
+            { status: 1, error: "Brak id produktu do usunięcia" },
             { status: 500 }
         );
     }
     try {
-        const doc = await deleteProductBySlug(slug);
+        const doc = await deleteProductById(id);
         if (typeof doc === "object" && "error" in doc) {
             return NextResponse.json(
                 { status: 1, error: doc.error },

@@ -41,18 +41,9 @@ export async function createProduct(productData: Products): Promise<Products | {
     }
 }
 
-export async function deleteProductBySlug(slug: string): Promise<Products | { error: string }> {
+export async function deleteProductById(id: string): Promise<Products | { error: string }> {
     await db();
-    const filePath = path.join(process.cwd(), "data", "produkty.json");
-    const file = readFileSync(filePath, "utf8");
-    const products: Products[] = JSON.parse(file);
-    const index = products.findIndex((p) => p.slug === slug);
-    if (index === -1) {
-        return { error: "Produkt nie znaleziony" };
-    }
-    products.splice(index, 1);
-    writeFileSync(filePath, JSON.stringify(products, null, 2), "utf8");
-    const prod = await Product.findOneAndDelete({ slug: slug }).orFail();
+    const prod = await Product.findOneAndDelete({ _id: id }).orFail();
     return prod;
 }
 

@@ -22,7 +22,7 @@ interface ProductEditModalProps {
     isOpen: boolean;
     onClose: () => void;
     onUpdate: (product: Products) => void;
-    onDelete: (productSlug: string) => void;
+    onDelete: (productId: string) => void;
 }
 
 export default function ProductEditModal({
@@ -186,9 +186,9 @@ export default function ProductEditModal({
         }
         try {
             const { deleteProduct } = await import("@/lib/utils");
-            const result = await deleteProduct(product.slug);
+            const result = await deleteProduct(window.location.origin, product._id!);
             if (result.status === 0) {
-                onDelete(product.slug);
+                onDelete(product._id!);
             } else {
                 alert(
                     "Błąd podczas usuwania produktu: " +
