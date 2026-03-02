@@ -26,7 +26,7 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
 
     const getproduct =
         useCallback(async (slug: string) => {
-            const data = await getProducts(slug);
+            const data = await getProducts(window.location.origin, slug);
             return data;
         }, []);
 
@@ -72,7 +72,7 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
 
     useEffect(() => {
         async function getAllProducts() {
-            const data = await getProducts();
+            const data = await getProducts(window.location.origin);
             setAllProduct(Array.isArray(data.products) ? data.products : []);
         }
         getAllProducts();
@@ -473,7 +473,7 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                                     if (data.status === 201) {
                                         // Odśwież dane produktu
                                         const updatedProduct =
-                                            await getProducts(product.slug);
+                                            await getProducts(window.location.origin, product.slug);
                                         if (updatedProduct.product) {
                                             setProduct(updatedProduct.product);
                                         }
