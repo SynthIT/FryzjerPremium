@@ -56,13 +56,14 @@ export const getCourses = async (slug?: string) => {
     }
 };
 
-export const updateProduct = async (product: Products) => {
-    const bd = new URL("/admin/api/v1/products");
+export const updateProduct = async (domain: string, product: Products) => {
+    const bd = new URL(`${domain}/admin/api/v1/products`);
     const response = await fetch(bd, {
         method: "PUT",
         headers: {
             "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify(product),
     });
     const data = await response.json();

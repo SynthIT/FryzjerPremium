@@ -118,12 +118,11 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
     const { addToCart } = useCart();
 
     const handleAddToCart = useCallback(() => {
-        return "";
-        // if (product?.aktywne && product.ilosc > 0) {
-
-        //     addToCart("produkt", product, quantity, selectedPrice, selectedWariant);
-        //     // Można dodać powiadomienie o dodaniu do koszyka
-        // }
+        if (process.env.NODE_ENV !== "development") return;
+        if (product?.aktywne && product.ilosc > 0) {
+            addToCart("produkt", product, quantity, selectedPrice, selectedWariant);
+            // Można dodać powiadomienie o dodaniu do koszyka
+        }
     }, [product, quantity, selectedPrice, selectedWariant, addToCart]);
 
     const handleWariantChange = (w: Warianty) => {
@@ -335,7 +334,7 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                         {/* Add to Cart Button */}
                         <button
                             className="w-full py-3 rounded-xl bg-[#D2B79B] text-black font-semibold hover:bg-[#b89a7f] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            disabled={true}
+                            disabled={product.ilosc == 0}
                             onClick={handleAddToCart}
                             title="Funkcja aktualnie niedostępna"
                         >

@@ -72,8 +72,8 @@ export const zodProducts = z.object({
     kod_ean: z.string().nullable(),
     aktywne: z.boolean().nullable(),
     __v: z.number().optional(),
-    createdAt: z.date().optional(),
-    updatedAt: z.date().optional(),
+    createdAt: z.union([z.date(), z.string()]).optional(),
+    updatedAt: z.union([z.date(), z.string()]).optional(),
 });
 
 export type Products = z.infer<typeof zodProducts>;
