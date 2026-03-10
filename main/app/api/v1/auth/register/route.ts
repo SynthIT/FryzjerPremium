@@ -7,7 +7,6 @@ export async function POST(req: NextRequest) {
     try {
         const reqBody = await req.json();
         const ok = userSchema.safeParse(reqBody);
-        console.log(ok);
         if (!ok.success) {
             return NextResponse.json(
                 { status: 400, error: "Błąd walidacji" },

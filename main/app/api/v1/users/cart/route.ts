@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
                 produkty: refProducts,
                 kursy: refCourses,
                 sposob_dostawy: null,
-                suma: koszyk.items.reduce((sum, item) => sum + item.price * item.quantity, 0),
+                suma: koszyk.items.reduce((sum, item) => sum + item.object.cena * (1 + item.object.vat / 100) * item.quantity, 0),
             }
             const cart = await addAndUpdateOrderToUser(user._id as string, order);
             if (!cart) {

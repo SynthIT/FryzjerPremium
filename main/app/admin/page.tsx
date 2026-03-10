@@ -32,7 +32,6 @@ export default function AdminPage() {
             setOrders(JSON.parse(data.orders));
             setAnalists(JSON.parse(data.analists));
             setLoading(false);
-            console.log(data);
         }
         fetchData();
     }, []);

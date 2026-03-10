@@ -77,7 +77,6 @@ export default function NewProductPage() {
                         (acc[cat.kategoria] ??= []).push(cat);
                         return acc;
                     }, {}));
-                    console.log(data.categories);
                     setCategoriesSlug(catData.reduce((acc: string[], cat: Categories) => {
                         if (!acc.includes(cat.kategoria)) {
                             acc.push(cat.kategoria);

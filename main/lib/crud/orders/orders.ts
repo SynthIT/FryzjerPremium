@@ -4,7 +4,7 @@ import { OrderList, orderListSchema } from "@/lib/types/userTypes";
 
 export async function collectOrders() {
     await db();
-    const orders = await Orders.find().populate("user").populate("produkty").populate("sposob_dostawy").lean();
+    const orders = await Orders.find().populate("user").populate("produkty").populate("sposob_dostawy").populate("kursy").lean();
     return JSON.stringify(orders);
 }
 export async function createOrder(order: OrderList) {
@@ -19,10 +19,8 @@ export async function createOrder(order: OrderList) {
 
 export async function updateOrder(order: OrderList) {
     await db();
-    console.log(order)
     try {
         const res = await Orders.findOneAndUpdate({ _id: order._id }, { $set: order }, { new: true });
-        console.log(res)
         return res;
     } catch (error) {
         console.error(error);

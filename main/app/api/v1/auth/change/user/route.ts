@@ -4,7 +4,6 @@ import { NextRequest, NextResponse } from "next/server";
 export async function PUT(req: NextRequest) {
     const body = await req.json();
     const { mess, user } = await editUser(req, body.user);
-    console.log(mess);
     if (!user)
         return NextResponse.json(
             { status: 400, message: mess },

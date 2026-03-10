@@ -218,12 +218,6 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
                     (selectedNazwa) => {
                         const selectedProducent =
                             produentsToMap.get(selectedNazwa);
-                        console.log(
-                            "selectedNazwa:",
-                            selectedNazwa,
-                            "mapped to:",
-                            selectedProducent,
-                        );
                         return productProducent.nazwa == selectedProducent;
                     },
                 );

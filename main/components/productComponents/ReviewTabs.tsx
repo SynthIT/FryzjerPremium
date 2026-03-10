@@ -22,7 +22,6 @@ export default function ReviewTabs({
 
     // Sortowanie recenzji
     const sortedReviews = () => {
-        console.log(product);
         if (!product.opinie) return [];
         return [...(product?.opinie as Opinie[])].sort((a, b) => {
             switch (sortOrder) {

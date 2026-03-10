@@ -36,7 +36,6 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                 await getproduct(
                     p,
                 );
-            console.log(data);
             if (data.product) {
                 setProduct(data.product);
                 // Oblicz nową cenę, jeśli produkt ma promocję

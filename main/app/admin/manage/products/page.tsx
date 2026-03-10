@@ -52,7 +52,6 @@ export default function ProductPage() {
         if (!searchQuery) return products;
         const query = searchQuery.toLowerCase();
         if (stockLt > 0) {
-            console.log("dzialam chyba")
             return products.filter((product) => {
                 if (product.ilosc < stockLt) {
                     return true;

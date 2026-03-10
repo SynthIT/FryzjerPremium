@@ -2,6 +2,8 @@ import zod from "zod";
 import { adminPermission, userPermission } from "../auth/permissions";
 import { zodDeliveryMethods } from "./deliveryTypes";
 import { zodCartItem } from "./cartTypes";
+import { zodProducts } from "./productTypes";
+import { zodCourses } from "./coursesTypes";
 
 
 export const zodLogin = zod.object({
@@ -56,8 +58,8 @@ export const orderListSchema = zod.object({
         zod.string(),
         zod.null(),
     ]),
-    produkty: zod.array(zod.union([zod.string(), zodCartItem])),
-    kursy: zod.array(zod.union([zod.string(), zodCartItem])),
+    produkty: zod.array(zod.union([zod.string(), zodCartItem, zodProducts])),
+    kursy: zod.array(zod.union([zod.string(), zodCartItem, zodCourses])),
     suma: zod.number(),
     data_zamowienia: zod.date().optional(),
     data_wyslania: zod.date().optional(),

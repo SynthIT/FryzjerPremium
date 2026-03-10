@@ -131,11 +131,9 @@ export const finalPrice = (
             basePrice = basePrice * ((100 - promocje.procent) / 100);
         }
         if (promocje.special?.obniza_cene && promocje.special?.obnizka) {
-            console.log("dziala obnizka");
             basePrice = basePrice - (basePrice * promocje.special.obnizka!) / 100;
         }
         if (promocje.special?.zmienia_cene && promocje.special?.nowa_cena) {
-            console.log("dziala zmienia cene");
             basePrice = promocje.special.nowa_cena;
         }
     }

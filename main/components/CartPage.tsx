@@ -45,23 +45,28 @@ export default function CartPage() {
         validate();
         // eslint-disable-next-line react-hooks/exhaustive-deps -- run only on mount
     }, []);
-    const handleQuantityChange = useCallback(
-        (itemId: string, delta: number) => {
-            const item = items.find((item) => item.id === itemId);
-            if (item) {
-                const newQuantity = Math.max(1, item.quantity + delta);
-                updateQuantity(itemId, newQuantity);
-            }
-        },
-        [items, updateQuantity],
-    );
 
     const handleRemove = useCallback(
         (itemId: string) => {
             removeFromCart(itemId);
+            setItems((prev) => prev.filter((item) => item.id !== itemId));
         },
         [removeFromCart],
     );
+
+    const handleQuantityChange = useCallback(
+        (itemId: string, delta: number) => {
+            if (delta < 1) return handleRemove(itemId);
+            const item = items.find((item) => item.id === itemId);
+            if (item) {
+                const newQuantity = Math.max(1, delta);
+                updateQuantity(itemId, newQuantity);
+                setItems((prev) => prev.map((item) => item.id === itemId ? { ...item, quantity: newQuantity } : item));
+            }
+        },
+        [items, updateQuantity, handleRemove],
+    );
+
 
     const subtotal = getTotalPrice();
 
@@ -120,7 +125,7 @@ export default function CartPage() {
                         <h1 className="text-2xl font-bold text-gray-900 mb-6">Twój koszyk</h1>
                         <div className="space-y-4">
                             {items.map((item) => {
-                                const productPrice = item.price;
+                                const productPrice = item.object.cena * (1 + item.object.vat / 100);
                                 const itemTotal = (productPrice * item.quantity)
                                     .toFixed(2)
                                     .replace(".", ",");
@@ -196,22 +201,20 @@ export default function CartPage() {
                                                     onClick={() =>
                                                         handleQuantityChange(
                                                             item.id,
-                                                            -1,
+                                                            item.quantity - 1,
                                                         )
                                                     }
                                                     aria-label="Zmniejsz ilość">
                                                     −
                                                 </button>
-                                                <span className="min-w-[2rem] text-center font-medium">
-                                                    {item.quantity}
-                                                </span>
+                                                <input className="border-1 border-gray-300 rounded-lg p-1 max-w-[48px] text-center font-medium" type="number" max="100" min="1" value={item.quantity} onChange={(e) => handleQuantityChange(item.id, parseInt(e.target.value) || 1)} />
                                                 <button
                                                     type="button"
                                                     className="w-8 h-8 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-gray-100"
                                                     onClick={() =>
                                                         handleQuantityChange(
                                                             item.id,
-                                                            1,
+                                                            item.quantity + 1,
                                                         )
                                                     }
                                                     aria-label="Zwiększ ilość">
@@ -259,6 +262,6 @@ export default function CartPage() {
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }

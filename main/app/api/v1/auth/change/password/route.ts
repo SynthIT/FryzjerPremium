@@ -9,8 +9,6 @@ export async function POST(req: NextRequest) {
         body.oldPassword
     );
     if (!user) {
-        console.log(body);
-        console.log(mess);
         return NextResponse.json(
             { status: 400, message: mess },
             { status: 400 }

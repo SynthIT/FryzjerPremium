@@ -29,8 +29,6 @@ export default function CoursesPage() {
                     return;
                 }
                 const data = await res.json();
-                console.log("Otrzymane dane z API:", data);
-                
                 setCourses(JSON.parse(data.courses));
             } catch (error) {
                 console.error("Błąd podczas ładowania kursów:", error);

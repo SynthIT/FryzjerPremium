@@ -49,13 +49,11 @@ export function UserProvider({ children }: { children: ReactNode }) {
                 credentials: "include",
             })
                 .then((res) => {
-                    console.log(res);
                     if (res.status != 200) return false;
                     return res.json();
                 })
                 .then((data) => {
                     if (!data) return;
-                    console.log(data);
                     setUser(data.user._id);
                     if (!userData) {
                         setUserData(data.user);
@@ -69,7 +67,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
             if (userData) return;
             u(user ?? undefined);
         } catch (err) {
-            console.log("Błąd podczas ładowania użytkownika: ", err);
+            console.error("Błąd podczas ładowania użytkownika: ", err);
         }
     }, [user, userData]);
 
@@ -183,15 +181,12 @@ export function UserProvider({ children }: { children: ReactNode }) {
     );
 
     const isAdmin = useCallback(() => {
-        console.log(userData)
         if (!userData) {
             if (!userData!.role) return false;
-            console.log(hasAnyAdminPermission(userData!.role as Roles[]));
             return hasAnyAdminPermission(userData!.role as Roles[]);
 
         } else {
             if (!userData.role) return false;
-            console.log(hasAnyAdminPermission(userData.role as Roles[]));
             return hasAnyAdminPermission(userData.role as Roles[]);
         }
     }, [userData]);

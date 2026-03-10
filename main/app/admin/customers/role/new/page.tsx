@@ -43,7 +43,6 @@ export default function NewProductPage() {
         const adminPermissionsNumber = permissionToAdminNumber(adminPermissions as Array<keyof typeof PermissionTable>);
         const userPermissionsNumber = permissionToUserNumber(userPermissions as Array<keyof typeof DiscountsTable>);
 
-        console.log(adminPermissionsNumber, userPermissionsNumber);
         setRoleData({ ...roleData, admin: adminPermissionsNumber, uzytkownik: userPermissionsNumber });
         const response = await fetch("/admin/api/v1/roles", {
             method: "POST",

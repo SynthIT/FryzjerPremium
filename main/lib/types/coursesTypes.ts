@@ -6,7 +6,7 @@ export const zodFirmy = z.object({
     _id: z.string().optional(),
     nazwa: z.string(),
     logo: zodMedia,
-    instruktorzy: z.array(z.union([z.string(), userSchema])),
+    instruktorzy: z.array(z.union([z.string(), z.lazy(() => userSchema)])),
     prowizja: z.number().optional(),
     prowizja_typ: z.enum(["procent", "kwota"]).optional(),
     prowizja_vat: z.enum(["brutto", "netto"]).optional(),

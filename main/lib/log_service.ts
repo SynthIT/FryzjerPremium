@@ -108,9 +108,7 @@ export class LogService implements IFLogService {
 
     async log(message: string) {
         await mkdir(pathing.join(process.cwd(), "logs"), { recursive: true });
-        console.log("ok");
         this.changeExistingLog();
-        console.log("ok");
 
         access(this.file, (err) => {
             if (err) {

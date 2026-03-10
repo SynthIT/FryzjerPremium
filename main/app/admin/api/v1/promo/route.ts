@@ -64,7 +64,6 @@ export async function PUT(req: NextRequest) {
         "admin:promo",
     ]);
     if (!val) {
-        console.log(mess);
         return NextResponse.json(
             { status: 1, error: "Brak autoryzacji", details: mess },
             { status: 401 }
@@ -84,7 +83,6 @@ export async function PUT(req: NextRequest) {
             message: `Promocja (${res?.nazwa}) zaktualizowana`,
         });
     } catch (e) {
-        console.log(e);
         new LogService({
             path: req.url,
 
@@ -105,7 +103,6 @@ export async function POST(req: NextRequest) {
         "admin:promo",
     ]);
     if (!val) {
-        console.log(mess);
         return NextResponse.json(
             { status: 1, error: "Brak autoryzacji", details: mess },
             { status: 401 }

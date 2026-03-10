@@ -74,7 +74,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             function a(c: Cart) {
                 setCart(c);
             }
-            console.log(cartId);
             a({ id: cartId, items: [] });
         }
     }, []);
@@ -103,7 +102,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                     // Zwiększ ilość istniejącego produktu
                     const updated = [...prev.items];
                     updated[existingItemIndex].quantity += quantity;
-                    updated[existingItemIndex].price += price;
                     newItem = updated[existingItemIndex];
                     return { ...prev, items: updated };
                 } else {
@@ -140,7 +138,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                     sku: object.sku ?? "",
                 },
                 quantity,
-                price,
+                price: (price * (1 + object.vat / 100)),
                 wariant,
             });
         },
@@ -205,7 +203,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }, []);
 
     const refreshCart = useCallback(async (entry: Cart) => {
-        console.log(entry);
         setCart(entry);
     }, []);
 
