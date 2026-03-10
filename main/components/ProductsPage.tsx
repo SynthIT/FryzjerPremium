@@ -32,7 +32,7 @@ export default function ProductsPage({ categoryName }: ProductsPageProps) {
     useEffect(() => {
         async function getProduct() {
             try {
-                const data = await getProducts();
+                const data = await getProducts(window.location.origin);
                 setAllProduct(data.products || []);
             } catch (error) {
                 console.error("Błąd podczas ładowania produktów:", error);

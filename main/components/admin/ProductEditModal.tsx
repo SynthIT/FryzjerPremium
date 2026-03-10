@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Categories, Promos, Media } from "@/lib/types/shared";
+import { Categories, Media } from "@/lib/types/shared";
 import { Products, Producents, Warianty } from "@/lib/types/productTypes";
 import Image from "next/image";
 import { X, Save, Trash2, Plus, Minus } from "lucide-react";
-import { makeSlugKeys, parseSlugName } from "@/lib/utils_admin";
+import { parseSlugName } from "@/lib/utils_admin";
 
 // Helper do generowania slug
 function generateSlug(text: string): string {
@@ -22,7 +22,7 @@ interface ProductEditModalProps {
     isOpen: boolean;
     onClose: () => void;
     onUpdate: (product: Products) => void;
-    onDelete: (productSlug: string) => void;
+    onDelete: (productId: string) => void;
 }
 
 export default function ProductEditModal({
@@ -71,7 +71,7 @@ export default function ProductEditModal({
                 slug: generateSlug(prev.nazwa),
             }));
         }
-    }, [editedProduct.nazwa]);
+    }, [editedProduct.nazwa, editedProduct.slug]);
 
     // Pobierz kategorie
     useEffect(() => {
@@ -83,20 +83,28 @@ export default function ProductEditModal({
                 });
                 const data = await response.json();
                 if (data.status === 0 && data.categories) {
-                    setCategories(data.categories);
-                    setCategoriesSlug(makeSlugKeys(data.categories));
+                    const raw = data.categories;
+                    const catList: Categories[] = typeof raw === "string" ? JSON.parse(raw) : Array.isArray(raw) ? raw : [];
+                    // Grupuj po głównej kategorii (pole "kategoria"); podkategoria to "nazwa"
+                    const byKategoria = catList.reduce<Record<string, Categories[]>>((acc, c) => {
+                        const k = c.kategoria ?? "";
+                        (acc[k] ??= []).push(c);
+                        return acc;
+                    }, {});
+                    setCategories(byKategoria);
+                    setCategoriesSlug(Object.keys(byKategoria));
 
-                    // Ustaw wybrane kategorie na podstawie produktu
-                    const productCategories = getCategories();
-                    if (productCategories.length > 0) {
-                        const firstCat = productCategories[0];
-                        const mainSlug = firstCat.slug;
-                        setSelectedMainCategory(mainSlug);
-                        setSelectedSubCategories(
-                            productCategories
-                                .map((cat) => cat._id || "")
-                                .filter((id) => id),
-                        );
+                    // Ustaw wybrane kategorie na podstawie produktu (kategoria = tablica _id lub populated)
+                    const k = product.kategoria;
+                    if (Array.isArray(k) && k.length > 0) {
+                        const ids = k.map((c) => (typeof c === "string" ? c : (c as Categories)._id ?? "")).filter(Boolean);
+                        let main = "";
+                        if (typeof k[0] === "object" && k[0] !== null && "kategoria" in k[0])
+                            main = (k[0] as Categories).kategoria ?? "";
+                        else if (ids[0] && catList.length)
+                            main = catList.find((c) => (c._id ?? "") === ids[0])?.kategoria ?? "";
+                        if (main) setSelectedMainCategory(main);
+                        if (ids.length) setSelectedSubCategories(ids);
                     }
                 }
             } catch (error) {
@@ -104,9 +112,7 @@ export default function ProductEditModal({
             }
         }
         fetchCategories();
-    }, []);
-
-    // Pobierz producentów
+    }, [product.kategoria]);
     useEffect(() => {
         async function fetchProducents() {
             try {
@@ -118,10 +124,13 @@ export default function ProductEditModal({
                 if (data.status === 0 && data.producents) {
                     setProducents(data.producents);
 
-                    // Ustaw wybranego producenta
-                    const producent = getProducent();
-                    if (producent && producent.slug) {
-                        setSelectedProducent(producent.slug);
+                    // Ustaw wybranego producenta (_id)
+                    const prod = product.producent;
+                    if (prod != null) {
+                        const id = typeof prod === "object" && prod !== null && "_id" in prod
+                            ? (prod as Producents)._id
+                            : String(prod);
+                        if (id) setSelectedProducent(id);
                     }
                 }
             } catch (error) {
@@ -129,41 +138,35 @@ export default function ProductEditModal({
             }
         }
         fetchProducents();
-    }, []);
+    }, [product.producent]);
 
     if (!isOpen) return null;
-
-    // Helper functions
-    const getCategories = (): Categories[] => {
-        if (!editedProduct.kategoria) return [];
-        if (Array.isArray(editedProduct.kategoria)) {
-            return editedProduct.kategoria.filter(
-                (cat): cat is Categories =>
-                    typeof cat === "object" &&
-                    cat !== null &&
-                    "nazwa" in cat &&
-                    "slug" in cat,
-            ) as Categories[];
-        }
-        return [];
-    };
-
-    const getProducent = (): Producents | null => {
-        if (!editedProduct.producent) return null;
-        return editedProduct.producent as Producents;
-    };
 
     const handleSave = async () => {
         setIsSaving(true);
         try {
-            // Upewnij się, że slug jest wygenerowany
-            const productToSave = {
+            // Zapisujemy tylko _id (referencje do kolekcji)
+            const kategoriaIds = selectedSubCategories.filter(Boolean);
+            const producentId = selectedProducent || (editedProduct.producent != null && typeof editedProduct.producent === "object" && editedProduct.producent !== null && "_id" in editedProduct.producent
+                ? (editedProduct.producent as Producents)._id
+                : typeof editedProduct.producent === "string"
+                    ? editedProduct.producent
+                    : "");
+            const promocjeId = editedProduct.promocje == null
+                ? null
+                : typeof editedProduct.promocje === "object" && editedProduct.promocje !== null && "_id" in editedProduct.promocje
+                    ? (editedProduct.promocje as { _id: string })._id
+                    : (editedProduct.promocje as string);
+
+            const productToSave: Products = {
                 ...editedProduct,
                 slug: editedProduct.slug || generateSlug(editedProduct.nazwa),
+                kategoria: kategoriaIds as unknown as Products["kategoria"],
+                producent: producentId as unknown as Products["producent"],
+                promocje: promocjeId as unknown as Products["promocje"],
             };
-
             const { updateProduct } = await import("@/lib/utils");
-            const result = await updateProduct(productToSave);
+            const result = await updateProduct(window.location.origin, productToSave);
             if (result.status === 0) {
                 onUpdate(productToSave);
             } else {
@@ -186,9 +189,9 @@ export default function ProductEditModal({
         }
         try {
             const { deleteProduct } = await import("@/lib/utils");
-            const result = await deleteProduct(product.slug);
+            const result = await deleteProduct(window.location.origin, product._id!);
             if (result.status === 0) {
-                onDelete(product.slug);
+                onDelete(product._id!);
             } else {
                 alert(
                     "Błąd podczas usuwania produktu: " +
@@ -208,42 +211,26 @@ export default function ProductEditModal({
         setEditedProduct((prev) => ({ ...prev, [field]: value }));
     };
 
-    // Obsługa wyboru głównej kategorii
-    const handleMainCategoryChange = (mainSlug: string) => {
-        setSelectedMainCategory(mainSlug);
+    // Obsługa wyboru głównej kategorii (pole "kategoria" = główna, "nazwa" = podkategoria)
+    const handleMainCategoryChange = (mainName: string) => {
+        setSelectedMainCategory(mainName);
         setSelectedSubCategories([]);
-        // Zaktualizuj kategorie produktu
-        if (categories[mainSlug]) {
-            updateField("kategoria", categories[mainSlug]);
-        }
     };
 
-    // Obsługa wyboru podkategorii
+    // Obsługa wyboru podkategorii (zapisujemy tylko _id)
     const handleSubCategoryToggle = (subCategoryId: string) => {
         setSelectedSubCategories((prev) => {
             const newSelected = prev.includes(subCategoryId)
                 ? prev.filter((id) => id !== subCategoryId)
                 : [...prev, subCategoryId];
-
-            // Zaktualizuj kategorie produktu
-            if (selectedMainCategory && categories[selectedMainCategory]) {
-                const selectedCats = categories[selectedMainCategory].filter(
-                    (cat) => newSelected.includes(cat._id || ""),
-                );
-                updateField("kategoria", selectedCats);
-            }
-
             return newSelected;
         });
     };
 
-    // Obsługa zmiany producenta
+    // Obsługa zmiany producenta (zapisujemy _id)
     const handleProducentChange = (producentId: string) => {
         setSelectedProducent(producentId);
-        const producentData = producents.find((p) => p.slug === producentId);
-        if (producentData) {
-            updateField("producent", producentData.slug || producentData);
-        }
+        updateField("producent", producentId as unknown as Producents);
     };
 
     const addMedia = () => {
@@ -662,7 +649,7 @@ export default function ProductEditModal({
                             className="w-full px-3 py-2 border rounded-md">
                             <option value="">Wybierz producenta</option>
                             {producents.map((prod) => (
-                                <option key={prod.nazwa} value={prod.slug}>
+                                <option key={prod.nazwa} value={prod._id}>
                                     {prod.nazwa}
                                 </option>
                             ))}

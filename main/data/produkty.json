@@ -1,1 +1,30 @@
-[]
+[
+  {
+    "_id": "69a61597930b2df0ae4a65aa",
+    "slug": "l-l",
+    "nazwa": "l,l,",
+    "cena_skupu": 0,
+    "cena": 2137,
+    "dostepnosc": "duza",
+    "kategoria": [
+      "69a489e094b7b3523bf63825"
+    ],
+    "producent": "69a48a0294b7b3523bf63839",
+    "media": [],
+    "promocje": null,
+    "opis": "v",
+    "ilosc": 2300,
+    "czas_wysylki": 1,
+    "kod_produkcyjny": "popl",
+    "ocena": 0,
+    "opinie": null,
+    "vat": 23,
+    "sku": "koko",
+    "wariant": [],
+    "kod_ean": null,
+    "aktywne": true,
+    "__v": 0,
+    "createdAt": "2026-03-02T22:56:23.122Z",
+    "updatedAt": "2026-03-02T22:56:23.122Z"
+  }
+]

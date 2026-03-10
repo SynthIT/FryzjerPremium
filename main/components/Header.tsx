@@ -447,8 +447,8 @@ export default function Header({ openLoginModal }: HeaderProps) {
                                 </button>
                                 {showDropdown && (
                                     <>
-                                        <Link href="/products" className="block py-2 pl-6 text-sm font-medium text-gray-800 hover:text-[#D2B79B]" onClick={closeMobileMenu}>Kup Teraz</Link>
-                                        <Link href="/courses" className="block py-2 pl-6 text-sm font-medium text-gray-800 hover:text-[#D2B79B]" onClick={closeMobileMenu}>Kursy</Link>
+                                        <Link href="/produkty" className="block py-2 pl-6 text-sm font-medium text-gray-800 hover:text-[#D2B79B]" onClick={closeMobileMenu}>Kup Teraz</Link>
+                                        <Link href="/kursy" className="block py-2 pl-6 text-sm font-medium text-gray-800 hover:text-[#D2B79B]" onClick={closeMobileMenu}>Kursy</Link>
                                     </>
                                 )}
                             </div>

@@ -134,6 +134,9 @@ export async function POST(req: NextRequest) {
             );
         }
         const res = await createCourse(courseData);
+        console.log(res);
+        console.log("--------------------------------");
+        console.log(courseData);
         new LogService({
             path: req.url,
             kind: "log",
@@ -152,7 +155,7 @@ export async function POST(req: NextRequest) {
             http: req.method,
         }).error(`${e}`);
         return NextResponse.json(
-            { status: 1, error: "Błąd podczas dodawania kursu" },
+            { status: 1, error: "Błąd podczas dodawania kursu", details: e },
             { status: 500 }
         );
     }

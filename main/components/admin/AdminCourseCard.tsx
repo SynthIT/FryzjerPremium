@@ -1,18 +1,38 @@
 "use client";
 
+import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { Courses, Firmy } from "@/lib/types/coursesTypes";
-import { Categories } from "@/lib/types/shared";
+import { Categories, Promos } from "@/lib/types/shared";
+import { MoreVertical, Pencil, Copy, Trash2 } from "lucide-react";
 
 interface AdminCourseCardProps {
     course: Courses;
     onClick: () => void;
+    onDuplicate?: (course: Courses) => void;
+    onDelete?: (course: Courses) => void;
 }
 
 export default function AdminCourseCard({
     course,
     onClick,
+    onDuplicate,
+    onDelete,
 }: AdminCourseCardProps) {
+    const [menuOpen, setMenuOpen] = useState(false);
+    const menuRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (!menuOpen) return;
+        const handleClickOutside = (e: MouseEvent) => {
+            if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+                setMenuOpen(false);
+            }
+        };
+        document.addEventListener("click", handleClickOutside);
+        return () => document.removeEventListener("click", handleClickOutside);
+    }, [menuOpen]);
+
     // Obsługa kategorii - może być arrayem
     const getCategories = (): Categories[] => {
         if (!course.kategoria) return [];
@@ -65,44 +85,111 @@ export default function AdminCourseCard({
             : course.opis || "Brak opisu";
 
     return (
-        <div
-            onClick={onClick}
-            className="border rounded-lg p-4 hover:shadow-lg transition-all cursor-pointer bg-card hover:bg-accent/50 group">
-            {/* Image */}
-            <div className="relative w-full h-48 mb-4 bg-muted rounded-lg overflow-hidden">
-                {imageSrc ? (
-                    <Image
-                        src={imageSrc}
-                        alt={imageAlt}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform"
-                    />
-                ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground">
-                        <span className="text-4xl">📚</span>
-                    </div>
-                )}
-                {/* Status badge */}
-                {course.aktywne === false && (
-                    <div className="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded">
-                        Nieaktywny
+        <div className="border rounded-lg p-4 bg-card hover:shadow-lg transition-all relative">
+            {/* Menu 3 kropki - prawy górny róg */}
+            <div className="absolute top-3 right-3 z-10" ref={menuRef}>
+                <button
+                    type="button"
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setMenuOpen((v) => !v);
+                    }}
+                    className="p-1.5 rounded-md hover:bg-accent/80 bg-background/90 shadow border transition-colors"
+                    aria-label="Menu"
+                >
+                    <MoreVertical className="h-5 w-5 text-muted-foreground" />
+                </button>
+                {menuOpen && (
+                    <div className="absolute right-0 top-full mt-1 py-1 min-w-[140px] rounded-md border bg-popover shadow-lg z-20">
+                        <button
+                            type="button"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setMenuOpen(false);
+                                onClick();
+                            }}
+                            className="w-full px-3 py-2 text-left text-sm flex items-center gap-2 hover:bg-accent rounded-none first:rounded-t-md last:rounded-b-md"
+                        >
+                            <Pencil className="h-4 w-4" />
+                            Edytuj
+                        </button>
+                        {onDuplicate && (
+                            <button
+                                type="button"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setMenuOpen(false);
+                                    onDuplicate(course);
+                                }}
+                                className="w-full px-3 py-2 text-left text-sm flex items-center gap-2 hover:bg-accent rounded-none first:rounded-t-md last:rounded-b-md"
+                            >
+                                <Copy className="h-4 w-4" />
+                                Duplikuj
+                            </button>
+                        )}
+                        {onDelete && (
+                            <button
+                                type="button"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setMenuOpen(false);
+                                    onDelete(course);
+                                }}
+                                className="w-full px-3 py-2 text-left text-sm flex items-center gap-2 hover:bg-destructive/15 text-destructive rounded-none first:rounded-t-md last:rounded-b-md"
+                            >
+                                <Trash2 className="h-4 w-4" />
+                                Usuń
+                            </button>
+                        )}
                     </div>
                 )}
             </div>
 
-            {/* Content */}
-            <div className="space-y-2">
-                {/* Title */}
-                <h3 className="font-semibold text-lg line-clamp-2 group-hover:text-primary transition-colors">
-                    {course.nazwa || "Brak nazwy"}
-                </h3>
+            {/* Klikalna strefa: zdjęcie + nazwa + opis */}
+            <button
+                type="button"
+                onClick={onClick}
+                className="w-full text-left rounded-lg overflow-hidden hover:bg-accent/30 transition-colors group focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-card"
+            >
+                {/* Image */}
+                <div className="relative w-full h-48 mb-4 bg-muted rounded-lg overflow-hidden">
+                    {imageSrc ? (
+                        <Image
+                            src={imageSrc}
+                            alt={imageAlt}
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform"
+                        />
+                    ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground">
+                            <span className="text-4xl">📚</span>
+                        </div>
+                    )}
+                    {/* Status badge */}
+                    {course.aktywne === false && (
+                        <div className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded">
+                            Nieaktywny
+                        </div>
+                    )}
+                </div>
 
-                {/* Description */}
-                <p className="text-sm text-muted-foreground line-clamp-2">
-                    {shortDescription}
-                </p>
+                {/* Title + Description */}
+                <div className="space-y-2 px-0 -mt-2">
+                    <h3 className="font-semibold text-lg line-clamp-2 group-hover:text-primary transition-colors">
+                        {course.nazwa || "Brak nazwy"}
+                    </h3>
+                    <p className="text-sm text-muted-foreground line-clamp-2">
+                        {shortDescription}
+                    </p>
+                </div>
+            </button>
 
-                {/* Price */}
+            {/* Reszta karty – bez onClick */}
+            <div className="space-y-2 pt-0">
                 <div className="flex items-center justify-between pt-2 border-t">
                     <div>
                         <div className="font-bold text-lg">
@@ -115,7 +202,7 @@ export default function AdminCourseCard({
                             "procent" in course.promocje && (
                                 <div className="text-xs text-green-600">
                                     Promocja: -
-                                    {(course.promocje as any).procent}%
+                                    {(course.promocje as Promos).procent}%
                                 </div>
                             )}
                     </div>

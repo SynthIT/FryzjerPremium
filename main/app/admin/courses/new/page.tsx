@@ -31,6 +31,7 @@ function calculateProwizja(cena: number, prowizja: number, prowizja_typ: string,
 
 export default function NewCoursePage() {
     const router = useRouter();
+    const [error, setError] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [coursePayload, setCoursePayload] = useState<Courses>({
         slug: "",
@@ -44,6 +45,10 @@ export default function NewCoursePage() {
         lekcje: [],
         media: [],
         promocje: null,
+        godzina_rozpoczecia: undefined,
+        godzina_zakonczenia: undefined,
+        data_rozpoczecia: undefined,
+        adres: undefined,
         opis: "",
         ocena: 0,
         opinie: [],
@@ -82,7 +87,6 @@ export default function NewCoursePage() {
                 ...prev,
                 [key]: value,
             }));
-            console.log(coursePayload);
         }
     };
 
@@ -135,7 +139,7 @@ export default function NewCoursePage() {
             return { ...prev, lekcje: next };
         });
     }, [coursePayload.liczbaLekcji]);
-    
+
     useEffect(() => {
         if (coursePayload.nazwa) {
             setCoursePayload((prev) => ({
@@ -328,6 +332,7 @@ export default function NewCoursePage() {
                 alert("Szkolenie zostało dodane pomyślnie!");
                 router.push("/admin/courses");
             } else {
+                setError(result.details || "Nieznany błąd");
                 alert(
                     "Błąd podczas dodawania szkolenia: " +
                     (result.error || "Nieznany błąd"),
@@ -351,7 +356,15 @@ export default function NewCoursePage() {
                     Wypełnij formularz, aby dodać nowe szkolenie do oferty.
                 </p>
             </div>
-
+            {error &&
+                <div className="rounded-lg border p-6 space-y-6 bg-red-50">
+                    <div className="text-center">
+                        <div className="text-6xl">❌</div>
+                        <h2 className="text-2xl font-bold mb-2">Błąd</h2>
+                        <p className="text-muted-foreground mb-4 text-red-500">{error.toString()}</p>
+                    </div>
+                </div>
+            }
             <form onSubmit={handleSubmit} className="space-y-8">
                 {/* Sekcja 1: Podstawowe informacje */}
                 <div className="rounded-lg border p-6 space-y-6">
@@ -384,7 +397,7 @@ export default function NewCoursePage() {
                             </label>
                             <input
                                 type="text"
-                                value={coursePayload.krotkiOpis}
+                                value={coursePayload.krotkiOpis ?? ""}
                                 onChange={(e) => handleCoursePayloadChange("krotkiOpis", e.target.value)}
                                 required
                                 maxLength={120}
@@ -392,7 +405,7 @@ export default function NewCoursePage() {
                                 placeholder="Krótkie podsumowanie szkolenia (max 120 znaków)"
                             />
                             <p className="text-xs text-muted-foreground mt-1">
-                                {coursePayload.krotkiOpis?.length}/120 znaków
+                                {coursePayload.krotkiOpis?.length ?? 0}/120 znaków
                             </p>
                         </div>
 
@@ -427,6 +440,39 @@ export default function NewCoursePage() {
                                     handleCoursePayloadChange("vat", parseFloat(e.target.value) || 23)
                                 }
                                 className="w-full rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium mb-2">
+                                SKU
+                            </label>
+                            <input
+                                type="text"
+                                value={coursePayload.sku ?? ""}
+                                onChange={(e) =>
+                                    handleCoursePayloadChange("sku", e.target.value || null)
+                                }
+                                className="w-full rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
+                                placeholder="Np. KURS-001"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium mb-2">
+                                Ocena (0–5)
+                            </label>
+                            <input
+                                type="number"
+                                step="0.1"
+                                min="0"
+                                max="5"
+                                value={coursePayload.ocena ?? ""}
+                                onChange={(e) =>
+                                    handleCoursePayloadChange("ocena", parseFloat(e.target.value) || 0)
+                                }
+                                className="w-full rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
+                                placeholder="0"
                             />
                         </div>
                     </div>
@@ -732,6 +778,55 @@ export default function NewCoursePage() {
                         >
                             + Dodaj pozycję zawartości
                         </button>
+                    </div>
+                </div>
+
+                {/* Daty i miejsce */}
+                <div className="rounded-lg border p-6 space-y-6">
+                    <h2 className="text-xl font-semibold">Daty i miejsce</h2>
+                    <p className="text-sm text-muted-foreground">Opcjonalnie dla szkoleń stacjonarnych / z ustalonym terminem.</p>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                        <div>
+                            <label className="block text-sm font-medium mb-2">Godzina rozpoczęcia</label>
+                            <input
+                                type="text"
+                                value={coursePayload.godzina_rozpoczecia ?? ""}
+                                onChange={(e) => handleCoursePayloadChange("godzina_rozpoczecia", e.target.value || undefined)}
+                                className="w-full rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
+                                placeholder="np. 09:00"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium mb-2">Godzina zakończenia</label>
+                            <input
+                                type="text"
+                                value={coursePayload.godzina_zakonczenia ?? ""}
+                                onChange={(e) => handleCoursePayloadChange("godzina_zakonczenia", e.target.value || undefined)}
+                                className="w-full rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
+                                placeholder="np. 17:00"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium mb-2">Data rozpoczęcia</label>
+                            <input
+                                type="datetime-local"
+                                value={coursePayload.data_rozpoczecia ? new Date(coursePayload.data_rozpoczecia).toISOString().slice(0, 16) : ""}
+                                onChange={(e) =>
+                                    handleCoursePayloadChange("data_rozpoczecia", e.target.value ? new Date(e.target.value) : undefined)
+                                }
+                                className="w-full rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
+                            />
+                        </div>
+                        <div className="sm:col-span-2">
+                            <label className="block text-sm font-medium mb-2">Adres</label>
+                            <input
+                                type="text"
+                                value={coursePayload.adres ?? ""}
+                                onChange={(e) => handleCoursePayloadChange("adres", e.target.value || undefined)}
+                                className="w-full rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
+                                placeholder="Adres szkolenia"
+                            />
+                        </div>
                     </div>
                 </div>
 

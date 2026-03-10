@@ -2,8 +2,8 @@ import React from "react";
 import { Products, Warianty } from "./types/productTypes";
 import { Promos } from "./types/shared";
 
-export const getProducts = async (slug?: string) => {
-    const url = new URL("http://localhost:3000/api/v1/products");
+export const getProducts = async (domain: string, slug?: string) => {
+    const url = new URL(`${domain}/api/v1/products`);
     if (slug) {
         url.searchParams.append("slug", slug);
     }
@@ -56,13 +56,14 @@ export const getCourses = async (slug?: string) => {
     }
 };
 
-export const updateProduct = async (product: Products) => {
-    const bd = new URL("/admin/api/v1/products");
+export const updateProduct = async (domain: string, product: Products) => {
+    const bd = new URL(`${domain}/admin/api/v1/products`);
     const response = await fetch(bd, {
         method: "PUT",
         headers: {
             "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify(product),
     });
     const data = await response.json();
@@ -72,10 +73,10 @@ export const updateProduct = async (product: Products) => {
     return data;
 };
 
-export const deleteProduct = async (slug: string) => {
-    const bd = new URL("/admin/api/v1/products");
+export const deleteProduct = async (domain: string, id: string) => {
+    const bd = new URL(`${domain}/admin/api/v1/products`);
 
-    bd.searchParams.append("slug", slug);
+    bd.searchParams.append("id", id);
     const response = await fetch(bd, {
         method: "DELETE",
     });

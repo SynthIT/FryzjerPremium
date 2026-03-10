@@ -58,7 +58,7 @@ export const zodProducts = z.object({
     ]),
     media: z.array(zodMedia),
     promocje: z
-        .union([z.string(), zodPromocje]).optional(),
+        .union([z.string(), zodPromocje, z.null()]).optional(),
     specyfikacja: z.array(zodSpecyfikacja).optional(),
     opis: z.string(),
     ilosc: z.number(),
@@ -72,8 +72,8 @@ export const zodProducts = z.object({
     kod_ean: z.string().nullable(),
     aktywne: z.boolean().nullable(),
     __v: z.number().optional(),
-    createdAt: z.date().optional(),
-    updatedAt: z.date().optional(),
+    createdAt: z.union([z.date(), z.string()]).optional(),
+    updatedAt: z.union([z.date(), z.string()]).optional(),
 });
 
 export type Products = z.infer<typeof zodProducts>;

@@ -26,7 +26,7 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
 
     const getproduct =
         useCallback(async (slug: string) => {
-            const data = await getProducts(slug);
+            const data = await getProducts(window.location.origin, slug);
             return data;
         }, []);
 
@@ -71,7 +71,7 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
 
     useEffect(() => {
         async function getAllProducts() {
-            const data = await getProducts();
+            const data = await getProducts(window.location.origin);
             setAllProduct(Array.isArray(data.products) ? data.products : []);
         }
         getAllProducts();
@@ -117,8 +117,8 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
     const { addToCart } = useCart();
 
     const handleAddToCart = useCallback(() => {
+        if (process.env.NODE_ENV !== "development") return;
         if (product?.aktywne && product.ilosc > 0) {
-
             addToCart("produkt", product, quantity, selectedPrice, selectedWariant);
             // Można dodać powiadomienie o dodaniu do koszyka
         }
@@ -334,7 +334,9 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                         <button
                             className="w-full py-3 rounded-xl bg-[#D2B79B] text-black font-semibold hover:bg-[#b89a7f] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             disabled={product.ilosc == 0}
-                            onClick={handleAddToCart}>
+                            onClick={handleAddToCart}
+                            title="Funkcja aktualnie niedostępna"
+                        >
                             {product.ilosc != 0
                                 ? "Dodaj do koszyka"
                                 : product.aktywne
@@ -469,7 +471,7 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                                     if (data.status === 201) {
                                         // Odśwież dane produktu
                                         const updatedProduct =
-                                            await getProducts(product.slug);
+                                            await getProducts(window.location.origin, product.slug);
                                         if (updatedProduct.product) {
                                             setProduct(updatedProduct.product);
                                         }

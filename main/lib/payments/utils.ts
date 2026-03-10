@@ -37,7 +37,7 @@ const createPaymentIntent = async (
             amount: amount,
             currency: currency,
             customer: customerId ?? undefined,
-            payment_method_types: ["card", "blik"],
+            payment_method_types: ["card", "blik", "p24", "klarna"],
             metadata: {
                 "koszyk_id": `${koszyk}`,
             },

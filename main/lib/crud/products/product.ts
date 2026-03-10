@@ -17,7 +17,24 @@ export async function collectProducts() {
 }
 
 export async function createProduct(productData: Products): Promise<Products | { error: string }> {
-    const ok = zodProducts.safeParse(productData);
+    const raw = { ...productData };
+    if (Array.isArray(raw.kategoria)) {
+        raw.kategoria = raw.kategoria.map((k) =>
+            typeof k === "string" ? k : (k as Categories)._id ?? ""
+        ).filter(Boolean) as unknown as Products["kategoria"];
+    }
+    if (raw.producent !== undefined && raw.producent !== null) {
+        raw.producent = (typeof raw.producent === "object" && raw.producent !== null && "_id" in raw.producent
+            ? (raw.producent as { _id: string })._id
+            : raw.producent) as unknown as Products["producent"];
+    }
+    if (raw.promocje !== undefined && raw.promocje !== null) {
+        const p = raw.promocje;
+        raw.promocje = (typeof p === "object" && p !== null && "_id" in p
+            ? (p as { _id: string })._id
+            : p) as unknown as Products["promocje"];
+    }
+    const ok = zodProducts.safeParse(raw);
     if (!ok.success) {
         return { error: ok.error.message };
     }
@@ -29,7 +46,13 @@ export async function createProduct(productData: Products): Promise<Products | {
                 writeFileSync(filePath, "[]", "utf8");
             }
         });
-        const prod = await Product.create(ok.data);
+        const createPayload = { ...ok.data };
+        (createPayload as Record<string, unknown>).kategoria = (ok.data.kategoria as string[]).map((id) => new Types.ObjectId(id));
+        (createPayload as Record<string, unknown>).producent = new Types.ObjectId(ok.data.producent as string);
+        if (ok.data.promocje) {
+            (createPayload as Record<string, unknown>).promocje = new Types.ObjectId(ok.data.promocje as string);
+        }
+        const prod = await Product.create(createPayload);
         const product = await Product.findOne({ _id: prod._id }).populate("kategoria").populate("producent").populate("promocje").lean();
         const file = readFileSync(filePath, "utf8");
         const products: Products[] = JSON.parse(file);
@@ -41,32 +64,42 @@ export async function createProduct(productData: Products): Promise<Products | {
     }
 }
 
-export async function deleteProductBySlug(slug: string): Promise<Products | { error: string }> {
+export async function deleteProductById(id: string): Promise<Products | { error: string }> {
     await db();
-    const filePath = path.join(process.cwd(), "data", "produkty.json");
-    const file = readFileSync(filePath, "utf8");
-    const products: Products[] = JSON.parse(file);
-    const index = products.findIndex((p) => p.slug === slug);
-    if (index === -1) {
-        return { error: "Produkt nie znaleziony" };
-    }
-    products.splice(index, 1);
-    writeFileSync(filePath, JSON.stringify(products, null, 2), "utf8");
-    const prod = await Product.findOneAndDelete({ slug: slug }).orFail();
+    const prod = await Product.findOneAndDelete({ _id: id }).orFail();
     return prod;
 }
 
 export async function updateProduct(productData: Products): Promise<Products | { error: string }> {
-    const produkt = zodProducts.safeParse(productData);
-    if (produkt.error) return { error: produkt.error.message };
-    const kategorie = produkt.data.kategoria;
-    produkt.data.kategoria = [];
-    for (const kategoria of kategorie) {
-        produkt.data.kategoria.push(
-            new Types.ObjectId((kategoria as Categories)._id) as unknown as string,
-        );
+    const raw = { ...productData };
+    // Normalizuj referencje do _id (backend przyjmuje string lub obiekt)
+    if (Array.isArray(raw.kategoria)) {
+        raw.kategoria = raw.kategoria.map((k) =>
+            typeof k === "string" ? k : (k as Categories)._id ?? ""
+        ).filter(Boolean) as unknown as Products["kategoria"];
     }
+    if (raw.producent !== undefined && raw.producent !== null) {
+        raw.producent = (typeof raw.producent === "object" && raw.producent !== null && "_id" in raw.producent
+            ? (raw.producent as { _id: string })._id
+            : raw.producent) as unknown as Products["producent"];
+    }
+    if (raw.promocje !== undefined && raw.promocje !== null) {
+        const p = raw.promocje;
+        raw.promocje = (typeof p === "object" && p !== null && "_id" in p
+            ? (p as { _id: string })._id
+            : p) as unknown as Products["promocje"];
+    }
+    const produkt = zodProducts.safeParse(raw);
+    if (produkt.error) return { error: produkt.error.message };
     await db();
+    const updatePayload: Record<string, unknown> = { ...produkt.data };
+    updatePayload.kategoria = (produkt.data.kategoria as string[]).map((id) => new Types.ObjectId(id));
+    updatePayload.producent = new Types.ObjectId(produkt.data.producent as string);
+    if (produkt.data.promocje) {
+        updatePayload.promocje = new Types.ObjectId(produkt.data.promocje as string);
+    } else {
+        updatePayload.promocje = null;
+    }
     const filePath = path.join(process.cwd(), "data", "produkty.json");
     const file = readFileSync(filePath, "utf8");
     const products: Products[] = JSON.parse(file);
@@ -74,14 +107,12 @@ export async function updateProduct(productData: Products): Promise<Products | {
     if (index === -1) {
         return { error: "Produkt nie znaleziony w pliku JSON" };
     }
-    products[index] = produkt.data;
+    products[index] = { ...produkt.data, kategoria: updatePayload.kategoria as Products["kategoria"], producent: updatePayload.producent as Products["producent"], promocje: updatePayload.promocje as Products["promocje"] };
     writeFileSync(filePath, JSON.stringify(products, null, 2), "utf8");
     const prod = await Product.findOneAndUpdate(
         { slug: produkt.data.slug },
-        { $set: produkt.data },
-        {
-            new: true,
-        },
+        { $set: updatePayload },
+        { new: true },
     );
     if (!prod) {
         return { error: "Produkt nie znaleziony w bazie danych" };

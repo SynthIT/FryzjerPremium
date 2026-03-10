@@ -389,6 +389,7 @@ export function Checkout({ stripePromise }: Props) {
                                 options={{
                                     clientSecret: cs || "",
                                     appearance: { theme: "flat" },
+                                    
                                 }}>
                                 <CheckoutForm></CheckoutForm>
                             </Elements>

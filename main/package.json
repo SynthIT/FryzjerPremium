@@ -9,6 +9,7 @@
     "lint": "eslint",
     "create-example-course": "tsx scripts/create-example-course.ts",
     "check-courses": "tsx scripts/check-courses.ts",
+    "migrate-courses": "npx tsx scripts/migrate-courses-add-defaults.ts",
     "seed-courses-instructors": "node scripts/seed-courses-instructors.mjs",
     "seed-courses-varied": "node scripts/seed-courses-varied.mjs"
   },
@@ -49,6 +50,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "baseline-browser-mapping": "^2.9.5",
+    "dotenv": "^17.3.1",
     "eslint": "^9",
     "eslint-config-next": "16.0.1",
     "tailwindcss": "^4",
