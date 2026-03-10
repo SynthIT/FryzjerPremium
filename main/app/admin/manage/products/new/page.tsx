@@ -280,7 +280,7 @@ export default function NewProductPage() {
                 ocena,
                 opinie: null,
                 vat,
-                promocje: null,
+                promocje: undefined,
                 wariant: warianty.length > 0 ? warianty as Warianty[] : undefined,
                 kod_ean: kod_ean || null,
                 sku: sku,
