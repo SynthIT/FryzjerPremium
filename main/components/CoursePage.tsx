@@ -482,7 +482,7 @@ export default function CoursePage({ courseSlug }: CoursePageProps) {
                                         ))}
                                     </ul>
                                 </div>
-                                {/* <div className="rounded-xl border border-[rgba(212,196,176,0.3)] bg-white/60 p-6">
+                                <div className="rounded-xl border border-[rgba(212,196,176,0.3)] bg-white/60 p-6">
                                     <div className="flex items-center gap-2">
                                         <h3 className="text-lg font-bold text-gray-900 mb-2" title="">Zakup kursu</h3>
                                         <sup title="Jeżeli kupujesz wstęp na kurs dla siebie, zostaw ilość na 1. Jeżeli kupujesz kurs dla grupy kursantów ustaw ilość uczestników"><Info className="h-5 w-5 text-gray-500" /></sup>
@@ -499,7 +499,7 @@ export default function CoursePage({ courseSlug }: CoursePageProps) {
                                             </button>
                                         </div>
                                     </div>
-                                </div> */}
+                                </div>
                             </div>
                         </div>
                     </div>
