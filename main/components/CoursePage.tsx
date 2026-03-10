@@ -131,6 +131,30 @@ export default function CoursePage({ courseSlug }: CoursePageProps) {
     const hasPromo = course.promocje && typeof course.promocje === "object" && "procent" in course.promocje;
     const promoPercent = hasPromo ? (course.promocje as Promos).procent : 0;
 
+    const hasDateOrPlace =
+        (course.godzina_rozpoczecia && course.godzina_rozpoczecia.trim() !== "") ||
+        (course.godzina_zakonczenia && course.godzina_zakonczenia.trim() !== "") ||
+        course.data_rozpoczecia ||
+        (course.adres && course.adres.trim() !== "");
+
+    const formatDataRozpoczecia = (): string => {
+        if (!course.data_rozpoczecia) return "";
+        try {
+            const d = typeof course.data_rozpoczecia === "string"
+                ? new Date(course.data_rozpoczecia)
+                : course.data_rozpoczecia;
+            if (isNaN(d.getTime())) return "";
+            return d.toLocaleDateString("pl-PL", {
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+            });
+        } catch {
+            return "";
+        }
+    };
+
     return (
         <div className="min-h-screen bg-[#f8f6f3] pt-[140px]">
             <div className="mx-auto max-w-7xl px-4 py-8">
