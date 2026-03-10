@@ -59,7 +59,7 @@ export const orderListSchema = zod.object({
         zod.null(),
     ]),
     produkty: zod.array(zod.union([zod.string(), zodCartItem, zodProducts])),
-    kursy: zod.array(zod.union([zod.string(), zodCartItem, zodCourses])),
+    kursy: zod.array(zod.union([zod.string(), zodCartItem, zod.lazy(() => zodCourses)])),
     suma: zod.number(),
     data_zamowienia: zod.date().optional(),
     data_wyslania: zod.date().optional(),

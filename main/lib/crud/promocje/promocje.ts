@@ -26,7 +26,7 @@ export async function deletePromoBySlug(slug: string) {
         promocje: promo._id.toString(),
     }).orFail();
     for (const doc of productsWithPromo) {
-        doc.promocje = null;
+        doc.promocje = undefined;
         doc.save();
     }
     await promo.deleteOne();
