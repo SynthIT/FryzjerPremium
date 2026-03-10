@@ -79,7 +79,6 @@ export async function PUT(req: NextRequest) {
             message: `Rola (${res?.nazwa}) zaktualizowana`,
         });
     } catch (e) {
-        console.log(e);
         new LogService({
             path: req.url,
             kind: "error",

@@ -77,7 +77,6 @@ export default function NewProductPage() {
                         (acc[cat.kategoria] ??= []).push(cat);
                         return acc;
                     }, {}));
-                    console.log(data.categories);
                     setCategoriesSlug(catData.reduce((acc: string[], cat: Categories) => {
                         if (!acc.includes(cat.kategoria)) {
                             acc.push(cat.kategoria);
@@ -281,7 +280,7 @@ export default function NewProductPage() {
                 ocena,
                 opinie: null,
                 vat,
-                promocje: null,
+                promocje: undefined,
                 wariant: warianty.length > 0 ? warianty as Warianty[] : undefined,
                 kod_ean: kod_ean || null,
                 sku: sku,

@@ -93,7 +93,6 @@ export async function PUT(req: NextRequest) {
         );
     }
     const catData = await req.json();
-    console.log("Otrzymane dane produktu do aktualizacji:", catData);
     try {
         const res = await updateCategory(catData);
         new LogService({
@@ -126,8 +125,6 @@ export async function POST(req: NextRequest) {
         "admin:categories",
     ]);
     if (!val) {
-        console.log(mess);
-        console.log(val);
         new LogService({
             path: req.url,
             kind: "error",
@@ -148,7 +145,6 @@ export async function POST(req: NextRequest) {
                 { status: 500 },
             );
         }
-        console.log(res);
         new LogService({
             path: req.url,
             kind: "log",
@@ -160,7 +156,6 @@ export async function POST(req: NextRequest) {
             message: `Kategoria (${res?.nazwa}) została dodana`,
         });
     } catch (e) {
-        console.log(e);
         new LogService({
             path: req.url,
             kind: "error",

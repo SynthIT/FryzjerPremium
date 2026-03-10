@@ -78,7 +78,7 @@ export async function checkExistingUser(email: string, haslo: string): Promise<{
         const orders = await Orders.find({ user: existingUser._id });
         return { error: null, user: existingUser, orders: orders };
     } catch (e) {
-        console.log(e);
+        console.error(e);
         return { error: "Użytkownik nie istnieje", user: null, orders: null };
     }
 }
@@ -184,9 +184,7 @@ export async function returnAvailableWariant(
     const filteredProduct = { ...product };
     filteredProduct.wariant = (product.wariant as Warianty[]).filter((w) => {
         if (!w.permisje) return true;
-        console.log(w);
         return user.role!.some((role) => {
-            console.log(role);
             const rol = role as Roles;
             if (!rol.uzytkownik) return false;
 

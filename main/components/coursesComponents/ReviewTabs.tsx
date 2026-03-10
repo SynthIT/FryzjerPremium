@@ -23,7 +23,6 @@ export default function ReviewTabs({
 
     // Sortowanie recenzji
     const sortedReviews = () => {
-        console.log(course);
         if (!course.opinie) return [];
         return [...(course?.opinie as Opinie[])].sort((a, b) => {
             switch (sortOrder) {

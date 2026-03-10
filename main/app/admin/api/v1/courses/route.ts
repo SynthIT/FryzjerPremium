@@ -148,7 +148,6 @@ export async function POST(req: NextRequest) {
             { status: 201 }
         );
     } catch (e) {
-        console.log(e);
         new LogService({
             path: req.url,
             kind: "error",

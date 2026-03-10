@@ -130,7 +130,6 @@ export async function PUT(req: NextRequest) {
     }
 
     const prodData = await req.json();
-    console.log("Otrzymane dane produktu do aktualizacji:", prodData);
     try {
         const res = await updateProducent(prodData);
         new LogService({

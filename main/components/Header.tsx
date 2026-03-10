@@ -112,20 +112,9 @@ export default function Header({ openLoginModal }: HeaderProps) {
     const handleSearch = useCallback(
         (e: React.FormEvent) => {
             e.preventDefault();
-            console.log("Szukaj:", searchQuery);
         },
         [searchQuery],
     );
-
-    useEffect(() => {
-        const callback = () => {
-            if (searchQuery.length > 0) {
-                console.log("Query:", searchQuery);
-            }
-        }
-        const scheduler = setInterval(callback, 5000);
-        return () => clearInterval(scheduler);
-    }, [searchQuery]);
 
     const closeMobileMenu = useCallback(() => {
         setIsMobileMenuOpen(false);
@@ -352,7 +341,7 @@ export default function Header({ openLoginModal }: HeaderProps) {
                                             <span> · Ilość: {lastAddedItem.quantity}</span>
                                         </div>
                                         <div className="font-semibold text-[#D2B79B]">
-                                            {finalPrice(lastAddedItem.price, lastAddedItem.object.vat, lastAddedItem.wariant ?? undefined, lastAddedItem.object.promocje ?? undefined)} zł
+                                            {finalPrice(lastAddedItem.object.cena, lastAddedItem.object.vat, lastAddedItem.wariant ?? undefined, lastAddedItem.object.promocje ?? undefined)} zł
                                         </div>
                                     </div>
                                 </div>

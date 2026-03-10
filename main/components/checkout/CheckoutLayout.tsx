@@ -60,18 +60,30 @@ export function Checkout({ stripePromise }: Props) {
 
 
     useEffect(() => {
+        let cancelled = false;
+        const ac = new AbortController();
         async function getClientSecret() {
-            const response = await fetch("/api/v1/payments", {
-                method: "POST",
-                body: JSON.stringify({ koszyk: id, produkty: items }),
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            });
-            const data = await response.json();
-            setCs(data.client_secret);
+            try {
+                const response = await fetch("/api/v1/payments", {
+                    method: "POST",
+                    body: JSON.stringify({ koszyk: id, produkty: items }),
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    signal: ac.signal,
+                });
+                const data = await response.json();
+                if (!cancelled) setCs(data.client_secret);
+            } catch (err) {
+                if (err instanceof Error && err.name === "AbortError") return;
+                throw err;
+            }
         }
         getClientSecret();
+        return () => {
+            cancelled = true;
+            ac.abort();
+        };
     }, [id, items]);
 
     useEffect(() => {
