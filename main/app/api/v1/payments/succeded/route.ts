@@ -35,9 +35,11 @@ export async function GET(req: NextRequest) {
     if (process.env.NODE_ENV !== "development") {
         pathfile = `faktury/FV-${order.numer_zamowienia}/invoice.pdf`;
         ticket = `bilety/${order.numer_zamowienia}/ticket.pdf`;
-        await put(pathfile, faktura, { access: "public" });
+        const fakturaBlob = await put(pathfile, faktura, { access: "public" });
+        pathfile = fakturaBlob.url;
         if (bilet) {
-            await put(ticket, bilet, { access: "public" });
+            const ticketBlob = await put(ticket, bilet, { access: "public" });
+            ticket = ticketBlob.url;
         }
     } else {
         pathfile = `./data/faktury/FV-${order.numer_zamowienia}`
