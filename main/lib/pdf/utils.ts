@@ -4,6 +4,7 @@ import { OrderList } from "../types/userTypes";
 import { Products } from "../types/productTypes";
 import { Courses } from "../types/coursesTypes";
 import { NextRequest } from "next/server";
+import path from "path";
 
 
 async function generateQRCode(data: string) {
@@ -117,8 +118,8 @@ export async function generatePDF(order: OrderList) {
             resolve(Buffer.concat(chunks));
         });
     });
-    doc.registerFont("Roboto-Regular", "./public/fonts/Roboto-Regular.ttf");
-    doc.registerFont("Roboto-Bold", "./public/fonts/Roboto-Bold.ttf");
+    doc.registerFont("Roboto-Regular", path.join(process.cwd(), "public", "fonts", "Roboto-Regular.ttf"));
+    doc.registerFont("Roboto-Bold", path.join(process.cwd(), "public", "fonts", "Roboto-Bold.ttf"));
     doc.font("Roboto-Bold").fontSize(20).text("Faktura", ml, mt);
     doc.fontSize(10);
     doc.font("Roboto-Regular");
@@ -223,8 +224,8 @@ export async function generateTicket(req: NextRequest, order: OrderList) {
             resolve(Buffer.concat(chunks));
         });
     });
-    doc.registerFont("Roboto-Regular", "./public/fonts/Roboto-Regular.ttf");
-    doc.registerFont("Roboto-Bold", "./public/fonts/Roboto-Bold.ttf");
+    doc.registerFont("Roboto-Regular", path.join(process.cwd(), "public", "fonts", "Roboto-Regular.ttf"));
+    doc.registerFont("Roboto-Bold", path.join(process.cwd(), "public", "fonts", "Roboto-Bold.ttf"));
     doc.font("Roboto-Bold").fontSize(20).text("Bilety wstępu", ml, mt);
     doc.font("Roboto-Regular");
     drawText("Bilety kupione na klienta: " + order.dane?.imie + " " + order.dane?.nazwisko, ml, moveToNextLine(1));
