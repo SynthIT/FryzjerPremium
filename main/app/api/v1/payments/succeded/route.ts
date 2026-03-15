@@ -48,21 +48,20 @@ export async function GET(req: NextRequest) {
         if (bilet) {
             appendFile(ticket + "/ticket.pdf", bilet, (err) => console.error(err))
         }
-
-        const updatedOrder = await updateOrder({
-            ...order,
-            status: "w_realizacji",
-            nr_faktury: `FV/${order.numer_zamowienia}`,
-            pliki: [
-                { typ: "faktura", nazwa: "invoice.pdf", url: pathfile },
-                { typ: "bilet", nazwa: "ticket.pdf", url: ticket }
-            ], code: code
-        });
-        if (!updatedOrder) {
-            return NextResponse.json({ error: "Order not updated" }, { status: 400 });
-        }
-        const response = NextResponse.json({ status: 200, message: "Order updated successfully" }, { status: 302 });
-        response.headers.set("Location", `${protocol}//${host}/zamowienie/${updatedOrder.numer_zamowienia}`);
-        return response;
     }
+    const updatedOrder = await updateOrder({
+        ...order,
+        status: "w_realizacji",
+        nr_faktury: `FV/${order.numer_zamowienia}`,
+        pliki: [
+            { typ: "faktura", nazwa: "invoice.pdf", url: pathfile },
+            { typ: "bilet", nazwa: "ticket.pdf", url: ticket }
+        ], code: code
+    });
+    if (!updatedOrder) {
+        return NextResponse.json({ error: "Order not updated" }, { status: 400 });
+    }
+    const response = NextResponse.json({ status: 200, message: "Order updated successfully" }, { status: 302 });
+    response.headers.set("Location", `${protocol}//${host}/zamowienie/${updatedOrder.numer_zamowienia}`);
+    return response;
 }
