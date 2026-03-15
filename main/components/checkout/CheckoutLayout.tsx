@@ -10,6 +10,7 @@ import DeliveryMethod from "@/components/checkout/DeliveryMethods";
 import { EmptyCart } from "@/components/cart/EmptyCard";
 import { Stripe } from "@stripe/stripe-js";
 import { useUser } from "@/contexts/UserContext";
+import { Users } from "@/lib/types/userTypes";
 
 interface Props {
     stripePromise: Promise<Stripe | null>;
@@ -21,6 +22,7 @@ export function Checkout({ stripePromise }: Props) {
         getCart(),
     );
     const [handlePayment, setHandlePayment] = useState<boolean>(false);
+    const [overlay, setOverlay] = useState<boolean>(false);
     const [cs, setCs] = useState<string | null>(null);
     const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethods[]>();
     const [selectedDeliveryMethod, setSelectDeliveryMethod] =
@@ -28,18 +30,20 @@ export function Checkout({ stripePromise }: Props) {
     const [total, setTotal] = useState<number>(0);
     const [subtotal, setSubtotal] = useState<number>(0);
     const [deliverFee, setDeliverFee] = useState<number>(0);
-    const [formData, setFormData] = useState({
-        firstName: "",
-        lastName: "",
+    const [formData, setFormData] = useState<Partial<Users>>({
+        imie: "",
+        nazwisko: "",
         email: "",
-        phone: "",
-        street: "",
-        city: "",
-        postalCode: "",
-        country: "Polska",
+        telefon: "",
+        ulica: "",
+        miasto: "",
+        kod_pocztowy: "",
+        kraj: "Polska",
     });
 
-    const { userData } = useUser();
+    const { userData, user } = useUser();
+
+
     useEffect(() => {
         async function as() {
             const response = await fetch("/api/v1/products/delivery", {
@@ -100,17 +104,29 @@ export function Checkout({ stripePromise }: Props) {
 
     const handleInputChange = useCallback(
         (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-            const { name, value } = e.target;
-            setFormData((prev) => ({ ...prev, [name]: value }));
+            const { id, value } = e.target;
+            setFormData((prev) => ({ ...prev, [id]: value }));
         },
         [],
     );
 
     const handleSubmit = useCallback((e: React.FormEvent) => {
+        async function completeOrder() {
+            await fetch("/api/v1/users/cart", {
+                method: "POST",
+                body: JSON.stringify({ userId: user, koszyk: getCart(), dane: formData }),
+                credentials: "include"
+            }).then(res => res.json())
+                .then((data) => {
+                    console.log(data);
+                    setOverlay(false)
+                });
+        }
         e.preventDefault();
-        // Tutaj można dodać logikę wysłania zamówienia
-        alert("Zamówienie zostało złożone!");
-    }, []);
+        setOverlay(true);
+        completeOrder();
+        setHandlePayment(true);
+    }, [formData, getCart, user]);
 
     const formattedTotal = total.toFixed(2).replace(".", ",");
     const inputClass = "w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-[#D2B79B] focus:ring-2 focus:ring-[#D2B79B]/20 outline-none";
@@ -149,9 +165,9 @@ export function Checkout({ stripePromise }: Props) {
                                         </label>
                                         <input
                                             type="text"
-                                            id="firstName"
+                                            id="imie"
                                             name="firstName"
-                                            value={formData.firstName}
+                                            value={formData.imie}
                                             onChange={handleInputChange}
                                             className={inputClass}
                                             required
@@ -163,9 +179,9 @@ export function Checkout({ stripePromise }: Props) {
                                         </label>
                                         <input
                                             type="text"
-                                            id="lastName"
+                                            id="nazwisko"
                                             name="lastName"
-                                            value={formData.lastName}
+                                            value={formData.nazwisko}
                                             onChange={handleInputChange}
                                             className={inputClass}
                                             required
@@ -191,9 +207,9 @@ export function Checkout({ stripePromise }: Props) {
                                         <label htmlFor="phone" className={labelClass}>Telefon *</label>
                                         <input
                                             type="tel"
-                                            id="phone"
+                                            id="telefon"
                                             name="phone"
-                                            value={formData.phone}
+                                            value={formData.telefon}
                                             onChange={handleInputChange}
                                             className={inputClass}
                                             required
@@ -213,9 +229,9 @@ export function Checkout({ stripePromise }: Props) {
                                     </label>
                                     <input
                                         type="text"
-                                        id="street"
+                                        id="ulica"
                                         name="street"
-                                        value={formData.street}
+                                        value={formData.ulica}
                                         onChange={handleInputChange}
                                         className={inputClass}
                                         required
@@ -228,9 +244,9 @@ export function Checkout({ stripePromise }: Props) {
                                         </label>
                                         <input
                                             type="text"
-                                            id="postalCode"
+                                            id="kod_pocztowy"
                                             name="postalCode"
-                                            value={formData.postalCode}
+                                            value={formData.kod_pocztowy}
                                             onChange={handleInputChange}
                                             className={inputClass}
                                             pattern="[0-9]{2}-[0-9]{3}"
@@ -242,9 +258,9 @@ export function Checkout({ stripePromise }: Props) {
                                         <label htmlFor="city" className={labelClass}>Miasto *</label>
                                         <input
                                             type="text"
-                                            id="city"
+                                            id="miasto"
                                             name="city"
-                                            value={formData.city}
+                                            value={formData.miasto}
                                             onChange={handleInputChange}
                                             className={inputClass}
                                             required
@@ -254,9 +270,9 @@ export function Checkout({ stripePromise }: Props) {
                                 <div className="flex flex-col gap-1">
                                     <label htmlFor="country" className={labelClass}>Kraj *</label>
                                     <select
-                                        id="country"
+                                        id="kraj"
                                         name="country"
-                                        value={formData.country}
+                                        value={formData.kraj}
                                         onChange={handleInputChange}
                                         className={inputClass}
                                         required>
@@ -367,7 +383,7 @@ export function Checkout({ stripePromise }: Props) {
                             </div>
 
                             <button
-                                onClick={() => setHandlePayment(true)}
+                                onClick={handleSubmit}
                                 type="submit"
                                 className="w-full py-3 rounded-xl font-semibold bg-[#D2B79B] text-black hover:bg-[#b89a7f] transition-colors disabled:opacity-50">
                                 Złóż zamówienie
@@ -380,6 +396,11 @@ export function Checkout({ stripePromise }: Props) {
                     </aside>
                 </div>
             </div>
+            {overlay && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                    <p>Proszę chwilę poczekać, trwa uzupełnianie zamówienia.</p>
+                </div>
+            )}
             {handlePayment && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
                     <div className="relative w-full max-w-lg rounded-2xl bg-white shadow-xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
@@ -389,7 +410,7 @@ export function Checkout({ stripePromise }: Props) {
                                 options={{
                                     clientSecret: cs || "",
                                     appearance: { theme: "flat" },
-                                    
+
                                 }}>
                                 <CheckoutForm></CheckoutForm>
                             </Elements>

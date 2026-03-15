@@ -16,6 +16,7 @@ interface UserContextType {
     userData: Users | undefined;
     orders: OrderList[] | undefined;
     addUser: (user: Users, orders: OrderList[]) => void;
+    setUserAsEmail: (email: string) => void;
     changePassword: (
         newPassword: string,
         oldPassword: string,
@@ -79,6 +80,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
         user = ok.data;
         setUser(user._id);
         setOrders(orders ?? []);
+    }, []);
+
+    const setUserAsEmail = useCallback((email: string) => {
+        setUser(email);
     }, []);
 
     const changePassword = useCallback(
@@ -197,6 +202,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
                 user,
                 userData,
                 orders,
+                setUserAsEmail,
                 addUser,
                 changePassword,
                 changeUserData,

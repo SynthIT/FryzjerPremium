@@ -41,7 +41,7 @@ export async function getOrderById(id: string) {
 
 export async function getOrderByNumerZamowienia(numerZamowienia: string) {
     await db();
-    const res = await Orders.findOne({ numer_zamowienia: numerZamowienia }).lean();
+    const res = await Orders.findOne({ numer_zamowienia: numerZamowienia }).populate("user").populate({ path: "produkty.pozycja", model: "Products" }).populate("sposob_dostawy").populate({ path: "kursy.pozycja", model: "Courses" }).lean();
     return res;
 }
 

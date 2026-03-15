@@ -9,6 +9,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
     try {
+        console.log(req.body)
         const body: { koszyk: string; produkty: CartItem[] } = await req.json();
         const { koszyk, produkty } = body;
         const totalAmount = produkty.reduce((sum, item) => sum + item.price * item.quantity, 0);

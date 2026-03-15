@@ -1,29 +1,18 @@
 import { Model, model, models, Schema, Types } from "mongoose";
-import { Users, Roles, OrderList } from "../types/userTypes";
+import { Users, Roles, OrderList, DetailedOrderEntry } from "../types/userTypes";
+import { FileOrderEntry } from "../types/orderTypes";
+
+export const detailedCourseOrderEntrySchema = new Schema<DetailedOrderEntry>({
+    ilosc: { type: Number, required: true },
+    pozycja: { type: Types.ObjectId, ref: "Courses" },
+}, { _id: false, optimisticConcurrency: true, timestamps: false, autoIndex: false });
+
+export const detailedProductOrderEntrySchema = new Schema<DetailedOrderEntry>({
+    ilosc: { type: Number, required: true },
+    pozycja: { type: Types.ObjectId, ref: "Products" },
+}, { _id: false, optimisticConcurrency: true, timestamps: false, autoIndex: false });
 
 
-
-export const schemaOrderList = new Schema<OrderList>(
-    {
-        user: { type: Types.ObjectId, ref: "Users" },
-        email: { type: String, required: true },
-        numer_zamowienia: {
-            type: String,
-            required: true,
-            unique: true,
-        },
-        status: { type: String, default: "w_koszyku" },
-        sposob_dostawy: { type: Types.ObjectId, ref: "Deliveries" },
-        produkty: { type: [Types.ObjectId], ref: "Products", default: [] },
-        kursy: { type: [Types.ObjectId], ref: "Courses", default: [] },
-        suma: { type: Number },
-        data_zamowienia: { type: Date },
-        data_wyslania: { type: Date },
-        data_zrealizowania: { type: Date },
-        data_anulowania: { type: Date },
-    },
-    { timestamps: true, autoIndex: false },
-);
 
 const roleSchemat = new Schema<Roles>(
     {
@@ -38,6 +27,7 @@ const roleSchemat = new Schema<Roles>(
 
 const userSchemat = new Schema<Users>(
     {
+
         imie: { type: String, required: true },
         nazwisko: { type: String, required: true },
         email: { type: String, required: true },
@@ -59,6 +49,58 @@ const userSchemat = new Schema<Users>(
         autoIndex: false,
         timestamps: true,
     },
+);
+
+const fileOrderEntrySchema = new Schema<FileOrderEntry>({
+    typ: { type: String, required: true },
+    nazwa: { type: String, required: true },
+    url: { type: String, required: true },
+}, { _id: false, optimisticConcurrency: true, timestamps: false, autoIndex: false });
+/** Dane do faktury w zamówieniu – wszystkie pola opcjonalne (partial), żeby można było podać inne niż z konta */
+const orderDaneSchema = new Schema(
+    {
+        imie: String,
+        nazwisko: String,
+        email: String,
+        nr_domu: String,
+        nr_lokalu: String,
+        ulica: String,
+        miasto: String,
+        kraj: String,
+        kod_pocztowy: String,
+        telefon: String,
+        nip: String,
+        faktura: { type: Boolean, default: false },
+        osoba_prywatna: { type: Boolean, default: true },
+    },
+    { _id: false, strict: true },
+);
+
+export const schemaOrderList = new Schema<OrderList>(
+    {
+        user: { type: Types.ObjectId, ref: "Users" },
+        email: { type: String, required: true },
+        dane: { type: orderDaneSchema },
+        numer_zamowienia: {
+            type: String,
+            required: true,
+            unique: true,
+        },
+        nr_faktury: { type: String },
+        nr_faktury_kor: { type: [String] },
+        pliki: { type: [fileOrderEntrySchema], default: [] },
+        status: { type: String, default: "w_koszyku" },
+        sposob_dostawy: { type: Types.ObjectId, ref: "Deliveries" },
+        produkty: { type: [detailedProductOrderEntrySchema], default: [] },
+        kursy: { type: [detailedCourseOrderEntrySchema], default: [] },
+        code: { type: Number },
+        suma: { type: Number },
+        data_zamowienia: { type: Date },
+        data_wyslania: { type: Date },
+        data_zrealizowania: { type: Date },
+        data_anulowania: { type: Date },
+    },
+    { timestamps: true, autoIndex: false },
 );
 
 export const Role: Model<Roles> =

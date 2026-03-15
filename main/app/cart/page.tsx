@@ -6,6 +6,7 @@ import CartPage from "@/components/CartPage";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
+import { useUser } from "@/contexts/UserContext";
 
 type AuthStatus = "loading" | "logged_in" | "need_email";
 
@@ -17,6 +18,7 @@ export default function Cart() {
     const [authStatus, setAuthStatus] = useState<AuthStatus>("loading");
     const [userExists, setUserExists] = useState(false);
     const [email, setEmail] = useState("");
+    const { setUserAsEmail } = useUser();
 
     const checkAuth = useCallback(async () => {
         try {
@@ -56,6 +58,7 @@ export default function Cart() {
             setUserExists(true);
             return;
         }
+        setUserAsEmail(email);
         setAuthStatus("logged_in");
     };
 

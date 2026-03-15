@@ -10,12 +10,14 @@ import LoggedBadge from "./LoggedBadge";
 import { Search, User } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
 import { useNotification } from "@/contexts/NotificationContext";
+import { useRouter } from "next/navigation";
 
 interface HeaderProps {
     openLoginModal?: boolean;
+    redirectTo?: string;
 }
 
-export default function Header({ openLoginModal }: HeaderProps) {
+export default function Header({ openLoginModal, redirectTo }: HeaderProps) {
     const [searchQuery, setSearchQuery] = useState("");
     const [showDropdown, setShowDropdown] = useState(false);
     const [showCartDropdown, setShowCartDropdown] = useState(false);
@@ -33,6 +35,7 @@ export default function Header({ openLoginModal }: HeaderProps) {
     const searchInputRef = useRef<HTMLInputElement>(null);
     const userMenuRef = useRef<HTMLDivElement>(null);
     const [showModalMenu, setShowModalMenu] = useState<boolean>(false);
+    const router = useRouter();
 
     const { getTotalItems, lastAddedItem, clearLastAddedItem } = useCart();
     const { addUser, userData, isAdmin, logout } = useUser();
@@ -231,6 +234,10 @@ export default function Header({ openLoginModal }: HeaderProps) {
             notify("Zostałeś zalogowany", "log");
             setShowLoginModal(false);
             setLoginForm({ email: "", password: "", refreshToken: false });
+            if (redirectTo) {
+                alert("Zostałęś zalogowany, przekierowuję do strony: " + redirectTo);
+                router.push(redirectTo);
+            }
         } else {
             setLoginForm((prev) => ({ ...prev, password: "" }));
             notify(response.error ?? "Błąd", "error");

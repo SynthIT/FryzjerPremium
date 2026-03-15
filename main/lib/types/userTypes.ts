@@ -1,10 +1,5 @@
 import zod from "zod";
 import { adminPermission, userPermission } from "../auth/permissions";
-import { zodDeliveryMethods } from "./deliveryTypes";
-import { zodCartItem } from "./cartTypes";
-import { zodProducts } from "./productTypes";
-import { zodCourses } from "./coursesTypes";
-
 
 export const zodLogin = zod.object({
     email: zod.email(),
@@ -45,31 +40,12 @@ export const userSchema = zod.object({
     __v: zod.number().optional(),
 });
 
-export const orderListSchema = zod.object({
-    _id: zod.string().optional(),
-    user: zod.union([zod.string(), userSchema, zod.null()]),
-    email: zod.string(),
-    status: zod
-        .enum(["w_koszyku", "nowe", "w_realizacji", "wyslane", "zrealizowane", "anulowane"])
-        .default("w_koszyku"),
-    numer_zamowienia: zod.string(),
-    sposob_dostawy: zod.union([
-        zod.lazy(() => zodDeliveryMethods),
-        zod.string(),
-        zod.null(),
-    ]),
-    produkty: zod.array(zod.union([zod.string(), zodCartItem, zodProducts])),
-    kursy: zod.array(zod.union([zod.string(), zodCartItem, zod.lazy(() => zodCourses)])),
-    suma: zod.number(),
-    data_zamowienia: zod.date().optional(),
-    data_wyslania: zod.date().optional(),
-    data_zrealizowania: zod.date().optional(),
-    data_anulowania: zod.date().optional(),
-    createdAt: zod.date().optional(),
-    updatedAt: zod.date().optional(),
-    __v: zod.number().optional(),
-});
-
 export type Users = zod.infer<typeof userSchema>;
 export type Roles = zod.infer<typeof roleSchema>;
-export type OrderList = zod.infer<typeof orderListSchema>;
+
+export {
+    detailedOrderEntry,
+    orderListSchema,
+    type OrderList,
+    type DetailedOrderEntry,
+} from "./orderTypes";

@@ -91,12 +91,13 @@ export function proxy(req: NextRequest) {
         }
 
         const authCookie = req.cookies.get("Authorization");
+        const redirectTo = req.url;
         if (!authCookie?.value) {
-            return NextResponse.redirect(new URL("/logowanie", req.url));
+            return NextResponse.redirect(new URL("/logowanie?redirectTo=" + redirectTo, req.url));
         }
         const [scheme, token] = authCookie.value.split(" ");
         if (scheme !== "Bearer" || !token?.length) {
-            return NextResponse.redirect(new URL("/logowanie", req.url));
+            return NextResponse.redirect(new URL("/logowanie?redirectTo=" + redirectTo, req.url));
         }
     }
 

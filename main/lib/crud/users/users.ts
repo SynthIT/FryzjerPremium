@@ -49,20 +49,32 @@ export async function createOrder(order: OrderList) {
 export async function addAndUpdateOrderToUser(userId: string, order: OrderList) {
     try {
         await db();
-        if (!userId) {
-            const res = await Orders.create(order);
-            return res;
-        }
         const zamowienia = await Orders.find({ user: userId, status: "w_koszyku" });
         if (zamowienia && zamowienia.length > 0) {
             const existingOrder = zamowienia.find((o) => o.numer_zamowienia === order.numer_zamowienia);
             if (existingOrder) {
-                const res = await Orders.findOneAndUpdate({ _id: existingOrder._id }, { $set: { ...order } }, { new: false });
+                const res = await Orders.findOneAndUpdate({ _id: existingOrder._id }, { $set: { ...order } }, { new: true });
                 return res;
             } else {
                 const res = await Orders.create(order);
                 return res;
             }
+        } else {
+            const res = await Orders.create(order);
+            return res;
+        }
+    } catch (error) {
+        console.error(new Error(`${error}`));
+    }
+}
+
+export async function addAndUpdateOrderToUserByEmail(email: string, order: OrderList) {
+    try {
+        await db();
+        const zamowienia = await Orders.findOne({ email: email, status: "w_koszyku" });
+        if (zamowienia) {
+            const res = await Orders.findOneAndUpdate({ _id: zamowienia._id }, { $set: { ...order } }, { new: false });
+            return res;
         } else {
             const res = await Orders.create(order);
             return res;

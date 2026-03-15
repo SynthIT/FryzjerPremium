@@ -1,22 +1,45 @@
 import { NextRequest, NextResponse } from "next/server";
-import { addAndUpdateOrderToUser, retriveUserCartOrders, retriveUserCartOrdersByEmail } from "@/lib/crud/users/users";
+import { addAndUpdateOrderToUser, addAndUpdateOrderToUserByEmail, retriveUserCartOrders, retriveUserCartOrdersByEmail } from "@/lib/crud/users/users";
 import { Cart, CartItem } from "@/lib/types/cartTypes";
-import { OrderList } from "@/lib/types/userTypes";
+import { DetailedOrderEntry, OrderList, Users } from "@/lib/types/userTypes";
+import { Types } from "mongoose";
 
 import { createHash, randomBytes } from "crypto";
 import { Product } from "@/lib/models/Products";
 import { Orders } from "@/lib/models/Users";
 import { verifyJWT } from "@/lib/admin_utils";
 import { Course } from "@/lib/models/Courses";
+import { convertSegmentPathToStaticExportFilename } from "next/dist/shared/lib/segment-cache/segment-value-encoding";
+
+/** Pola do faktury w zamówieniu (tylko polskie klucze – zgodne z orderDaneSchema w Mongo). */
+const DANE_KEYS = ["imie", "nazwisko", "email", "nr_domu", "nr_lokalu", "ulica", "miasto", "kraj", "kod_pocztowy", "telefon", "nip", "faktura", "osoba_prywatna"] as const;
+const ENGLISH_TO_POLISH: Record<string, string> = {
+    firstName: "imie", lastName: "nazwisko", phone: "telefon", street: "ulica",
+    city: "miasto", postalCode: "kod_pocztowy", country: "kraj",
+};
+
+/** Normalizuje dane z formularza (PL + EN) do obiektu tylko z polskimi kluczami do zapisu w Mongo. */
+function normalizeDane(raw: Partial<Users> | undefined): Record<string, unknown> | undefined {
+    if (!raw || typeof raw !== "object") return undefined;
+    const out: Record<string, unknown> = {};
+    for (const key of DANE_KEYS) {
+        const v = (raw as Record<string, unknown>)[key];
+        if (v !== undefined && v !== "") out[key] = v;
+    }
+    for (const [en, pl] of Object.entries(ENGLISH_TO_POLISH)) {
+        const v = (raw as Record<string, unknown>)[en];
+        if (v !== undefined && v !== "" && out[pl] === undefined) out[pl] = v;
+    }
+    return Object.keys(out).length ? out : undefined;
+}
 
 /** Cache odpowiedzi POST /cart – deduplikacja przy podwójnym mount (np. Strict Mode). TTL 3s. */
 const cartPostCache = new Map<string, { response: Response; at: number }>();
 const CART_POST_CACHE_TTL_MS = 3000;
 
-function getCartPostCacheKey(userId: string | undefined, email: string | undefined, koszyk: Cart): string {
-    const user = userId ?? email ?? "anon";
+function getCartPostCacheKey(userId: string, koszyk: Cart): string {
     const bodyHash = createHash("sha256").update(JSON.stringify(koszyk)).digest("hex");
-    return `${user}-${bodyHash}`;
+    return `${userId}-${bodyHash}`;
 }
 
 function createOrderNumber() {
@@ -43,12 +66,13 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
     const { val, user } = await verifyJWT(request);
     const body = await request.json();
-    const { userId, email, koszyk }: { userId?: string, email?: string, koszyk: Cart } = body;
+    console.log(body);
+    const { userId, koszyk, dane }: { userId: string, koszyk: Cart, dane?: Partial<Users> } = body;
     if (!koszyk) {
         return NextResponse.json({ error: "Nie podano koszyka" }, { status: 400 });
     }
 
-    const cacheKey = getCartPostCacheKey(userId ?? user?._id, email ?? user?.email, koszyk);
+    const cacheKey = getCartPostCacheKey(userId, koszyk);
     const now = Date.now();
     const cached = cartPostCache.get(cacheKey);
     if (cached && now - cached.at < CART_POST_CACHE_TTL_MS) {
@@ -56,8 +80,8 @@ export async function POST(request: NextRequest) {
     }
 
     const changedEntries: { reason: string, item: CartItem }[] = [];
-    const refProducts = [];
-    const refCourses = [];
+    const refProducts: DetailedOrderEntry[] = [];
+    const refCourses: DetailedOrderEntry[] = [];
     const updatedCart: CartItem[] = [];
     for (const item of koszyk.items) {
         try {
@@ -65,7 +89,7 @@ export async function POST(request: NextRequest) {
                 const product = await Product.findOne({ sku: item.object.sku, aktywne: true }).orFail();
                 if (item.quantity > product.ilosc) {
                     item.quantity = product.ilosc;
-                    refProducts.push(product._id);
+                    refProducts.push({ ilosc: item.quantity, pozycja: product._id });
                     updatedCart.push(item);
                     changedEntries.push({ reason: "Brak dostępnej ilości produktu, nastąpiło automatyczne zmniejszenie ilości produktu z koszyka", item });
                     continue;
@@ -75,7 +99,7 @@ export async function POST(request: NextRequest) {
                     const wariant = product.wariant.find((w) => w.slug === wslug);
                     if (!wariant) {
                         if (wslug === "pdostw") {
-                            refProducts.push(product._id);
+                            refProducts.push({ ilosc: item.quantity, pozycja: product._id });
                             updatedCart.push(item);
                             continue;
                         }
@@ -88,17 +112,17 @@ export async function POST(request: NextRequest) {
                     }
                     if (item.quantity > wariant.ilosc) {
                         item.quantity = wariant.ilosc;
-                        refProducts.push(product._id);
+                        refProducts.push({ ilosc: item.quantity, pozycja: product._id });
                         updatedCart.push(item);
                         changedEntries.push({ reason: `Brak dostępnej ilości produktu, nastąpiło automatyczne zmniejszenie ilości produktu z koszyka`, item });
                         continue;
                     }
                 }
-                refProducts.push(product._id);
+                refProducts.push({ ilosc: item.quantity, pozycja: product._id });
                 updatedCart.push(item);
             } else if (item.type === "kursy") {
                 const course = await Course.findOne({ slug: item.object.slug, aktywne: true }).orFail();
-                refCourses.push(course._id);
+                refCourses.push({ ilosc: item.quantity, pozycja: course._id });
                 updatedCart.push(item);
             }
         } catch (_) {
@@ -115,6 +139,7 @@ export async function POST(request: NextRequest) {
             const order: OrderList = {
                 user: user._id as string,
                 email: user.email,
+                dane: normalizeDane(dane) ?? {},
                 numer_zamowienia: createOrderNumber(),
                 status: "w_koszyku",
                 produkty: refProducts,
@@ -130,7 +155,15 @@ export async function POST(request: NextRequest) {
             cartPostCache.set(cacheKey, { response: res.clone(), at: now });
             return res;
         }
-        const updatedOrder = await Orders.findOneAndUpdate({ _id: existingOrders._id }, { $set: { produkty: refProducts, kursy: refCourses, sposob_dostawy: null, suma: koszyk.items.reduce((sum, item) => sum + item.price * item.quantity, 0) } }, { new: true });
+        const updatePayload: Record<string, unknown> = {
+            produkty: refProducts,
+            kursy: refCourses,
+            sposob_dostawy: null,
+            suma: koszyk.items.reduce((sum, item) => sum + item.price * item.quantity, 0),
+        };
+        const normalizedDane = normalizeDane(dane);
+        if (normalizedDane) updatePayload.dane = normalizedDane;
+        const updatedOrder = await Orders.findOneAndUpdate({ _id: existingOrders._id }, { $set: updatePayload }, { new: true });
         if (!updatedOrder) {
             return NextResponse.json({ error: "Nie udało się zaktualizować koszyka" }, { status: 400 });
         }
@@ -138,14 +171,16 @@ export async function POST(request: NextRequest) {
         cartPostCache.set(cacheKey, { response: resUser.clone(), at: now });
         return resUser;
     }
-    if (!email) {
-        return NextResponse.json({ error: "Wystąpił nieokreślony błąd." }, { status: 500 });
+    if (Types.ObjectId.isValid(userId as string)) {
+        return NextResponse.json({ error: "Wystąpił nieoczekiwany bład podczas tworzenia zamówienia" }, { status: 500 });
     }
-    const existingOrders = await retriveUserCartOrdersByEmail(email);
+
+    const existingOrders = await retriveUserCartOrdersByEmail(userId);
     if (!existingOrders) {
         const order: OrderList = {
             user: null,
-            email: email,
+            email: userId,
+            dane: normalizeDane(dane) ?? {},
             numer_zamowienia: createOrderNumber(),
             status: "w_koszyku",
             produkty: refProducts,
@@ -153,7 +188,7 @@ export async function POST(request: NextRequest) {
             sposob_dostawy: null,
             suma: koszyk.items.reduce((sum, item) => sum + item.price * item.quantity, 0),
         }
-        const cart = await addAndUpdateOrderToUser(email, order);
+        const cart = await addAndUpdateOrderToUserByEmail(userId, order);
         if (!cart) {
             return NextResponse.json({ error: "Nie udało się utworzyć koszyka" }, { status: 400 });
         }
@@ -161,7 +196,15 @@ export async function POST(request: NextRequest) {
         cartPostCache.set(cacheKey, { response: resEmail.clone(), at: now });
         return resEmail;
     }
-    const updatedOrder = await Orders.findOneAndUpdate({ _id: existingOrders._id }, { $set: { produkty: refProducts, kursy: refCourses, sposob_dostawy: null, suma: koszyk.items.reduce((sum, item) => sum + item.price * item.quantity, 0) } }, { new: true }).populate("produkty").populate("kursy").populate("sposob_dostawy");
+    const updatePayloadEmail: Record<string, unknown> = {
+        produkty: refProducts,
+        kursy: refCourses,
+        sposob_dostawy: null,
+        suma: koszyk.items.reduce((sum, item) => sum + item.price * item.quantity, 0),
+    };
+    const normalizedDaneEmail = normalizeDane(dane);
+    if (normalizedDaneEmail) updatePayloadEmail.dane = normalizedDaneEmail;
+    const updatedOrder = await Orders.findOneAndUpdate({ _id: existingOrders._id }, { $set: updatePayloadEmail }, { new: true }).populate("produkty").populate("kursy").populate("sposob_dostawy");
     if (!updatedOrder) {
         return NextResponse.json({ error: "Nie udało się zaktualizować koszyka" }, { status: 400 });
     }

@@ -32,6 +32,7 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+    serverExternalPackages: ["pdfkit"],
     images: {
         remotePatterns: [
             {
