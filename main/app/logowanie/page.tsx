@@ -4,11 +4,11 @@ import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import { User } from "lucide-react";
 import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
-
-export default function LogowaniePage() {
+function LogowanieContent() {
     const searchParams = useSearchParams();
-    const redirectTo = searchParams.get("redirectTo");
+    const redirectTo = searchParams.get("redirectTo") ?? undefined;
     return (
         <>
             <Header redirectTo={redirectTo ?? undefined} />
@@ -24,5 +24,24 @@ export default function LogowaniePage() {
             </main>
             <Footer />
         </>
+    );
+}
+
+export default function LogowaniePage() {
+    return (
+        <Suspense fallback={
+            <>
+                <Header />
+                <main className="max-w-[1200px] mx-auto pt-[180px] pb-20 px-6 min-h-[calc(100vh-200px)] w-full relative">
+                    <div className="max-w-[900px] mx-auto relative z-10 bg-white/60 backdrop-blur-[10px] p-12 rounded-3xl animate-pulse">
+                        <div className="h-14 bg-gray-200/50 rounded mb-10 w-3/4" />
+                        <div className="h-5 bg-gray-200/50 rounded" />
+                    </div>
+                </main>
+                <Footer />
+            </>
+        }>
+            <LogowanieContent />
+        </Suspense>
     );
 }

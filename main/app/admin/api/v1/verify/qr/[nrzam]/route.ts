@@ -1,8 +1,8 @@
 import { getOrderByNumerZamowienia } from "@/lib/crud/orders/orders";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(req: NextRequest, { params }: { params: { nrzam: string } }) {
-    const { nrzam } = params;
+export async function GET(req: NextRequest, { params }: { params: Promise<{ nrzam: string }> }) {
+    const { nrzam } = await params;
     const { protocol, host } = new URL(req.url);
     const order = await getOrderByNumerZamowienia(nrzam);
     if (!order) {
