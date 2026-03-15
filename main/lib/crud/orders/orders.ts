@@ -4,7 +4,11 @@ import { OrderList, orderListSchema } from "@/lib/types/userTypes";
 
 export async function collectOrders() {
     await db();
-    const orders = await Orders.find().populate("user").populate("produkty").populate("sposob_dostawy").populate("kursy").lean();
+    const orders = await Orders.find()
+        .populate("user")
+        .populate("produkty.pozycja")
+        .populate("sposob_dostawy")
+        .populate("kursy.pozycja").lean();
     return JSON.stringify(orders);
 }
 export async function createOrder(order: OrderList) {

@@ -19,7 +19,7 @@ export default async function OrderPage({ params }: { params: Promise<{ nrzam: s
     }
     return (
         <div className="space-y-6">
-            <div>
+            <div className="flex flex-col gap-2">
                 <h1 className="text-2xl font-semibold tracking-tight">Zamówienie {nrzam}</h1>
                 <p className="text-muted-foreground">Przeglądaj i zarządzaj zamówieniem klienta.</p>
                 <div>
