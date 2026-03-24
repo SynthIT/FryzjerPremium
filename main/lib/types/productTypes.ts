@@ -21,8 +21,8 @@ export const zodWarianty = z.object({
     nadpisuje_cene: z.boolean().default(false),
     inna_cena_skupu: z.boolean().default(false),
     cena_skupu: z.number().optional(),
-    permisje: userPermission.optional(),
     nowa_cena: z.number().optional(),
+    permisje: userPermission.optional(),
 });
 export type Warianty = z.infer<typeof zodWarianty>;
 

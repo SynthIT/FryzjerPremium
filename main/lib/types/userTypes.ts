@@ -35,13 +35,22 @@ export const userSchema = zod.object({
     faktura: zod.boolean().optional(),
     role: zod.array(zod.union([roleSchema, zod.string()])).optional(),
     stripe_id: zod.string().optional(),
+    verifiedEmail: zod.boolean().default(false),
     createdAt: zod.union([zod.date(), zod.string()]).optional(),
     updatedAt: zod.union([zod.date(), zod.string()]).optional(),
     __v: zod.number().optional(),
 });
 
+export const verifyEmailSchema = zod.object({
+    email: zod.email(),
+    code: zod.string(),
+    expiresAt: zod.date(),
+});
+
+
 export type Users = zod.infer<typeof userSchema>;
 export type Roles = zod.infer<typeof roleSchema>;
+export type VerifyEmail = zod.infer<typeof verifyEmailSchema>;
 
 export {
     detailedOrderEntry,

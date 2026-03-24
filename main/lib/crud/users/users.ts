@@ -84,10 +84,10 @@ export async function addAndUpdateOrderToUserByEmail(email: string, order: Order
     }
 }
 
-export async function getUserOrders(userId: string) {
+export async function getUserOrders(email: string) {
     try {
         await db();
-        const zamowienia = await Orders.find({ user: userId, status: { $ne: "w_koszyku" } });
+        const zamowienia = await Orders.find({ email: email, status: { $ne: "w_koszyku" } });
         return zamowienia;
     } catch (error) {
         console.error(error);

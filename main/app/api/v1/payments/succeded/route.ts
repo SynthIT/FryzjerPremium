@@ -25,7 +25,8 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: "Order not found" }, { status: 400 });
     }
     const code = Math.floor(Math.random() * 1000000 + 1);
-    const faktura = await generatePDF(order);
+    const data_zamowienia = new Date();
+    const faktura = await generatePDF({...order, data_zamowienia: data_zamowienia});
     let bilet;
     let ticket: string;
     let pathfile: string;
@@ -55,6 +56,7 @@ export async function GET(req: NextRequest) {
         ...order,
         status: "w_realizacji",
         nr_faktury: `FV/${order.numer_zamowienia}`,
+        data_zamowienia: data_zamowienia,
         pliki: [
             { typ: "faktura", nazwa: "invoice.pdf", url: pathfile },
             { typ: "bilet", nazwa: "ticket.pdf", url: ticket }

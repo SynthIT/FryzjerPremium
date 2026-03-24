@@ -5,8 +5,16 @@ import { zodCartItem } from "./cartTypes";
 import { zodProducts } from "./productTypes";
 import { zodCourses } from "./coursesTypes";
 
+
+export const zodCorrectionEntry = zod.object({
+    ilosc: zod.number(),
+    reason: zod.string(),
+});
+
 export const detailedOrderEntry = zod.object({
     ilosc: zod.number(),
+    cena: zod.number(),
+    koretka: zodCorrectionEntry.optional(),
     pozycja: zod.union([zod.string(), zodCartItem, zodProducts, zod.lazy(() => zodCourses)]),
 });
 
@@ -16,7 +24,6 @@ export const fileOrderEntry = zod.object({
     url: zod.string(),
 });
 
-export type FileOrderEntry = zod.infer<typeof fileOrderEntry>;
 
 export const orderListSchema = zod.object({
     _id: zod.string().optional(),
@@ -50,3 +57,5 @@ export const orderListSchema = zod.object({
 
 export type OrderList = zod.infer<typeof orderListSchema>;
 export type DetailedOrderEntry = zod.infer<typeof detailedOrderEntry>;
+export type CorrectionEntry = zod.infer<typeof zodCorrectionEntry>;
+export type FileOrderEntry = zod.infer<typeof fileOrderEntry>;

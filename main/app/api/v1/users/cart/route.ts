@@ -10,6 +10,7 @@ import { Orders } from "@/lib/models/Users";
 import { verifyJWT } from "@/lib/admin_utils";
 import { Course } from "@/lib/models/Courses";
 import { convertSegmentPathToStaticExportFilename } from "next/dist/shared/lib/segment-cache/segment-value-encoding";
+import { Item } from "@radix-ui/react-dropdown-menu";
 
 /** Pola do faktury w zamówieniu (tylko polskie klucze – zgodne z orderDaneSchema w Mongo). */
 const DANE_KEYS = ["imie", "nazwisko", "email", "nr_domu", "nr_lokalu", "ulica", "miasto", "kraj", "kod_pocztowy", "telefon", "nip", "faktura", "osoba_prywatna"] as const;
@@ -89,7 +90,7 @@ export async function POST(request: NextRequest) {
                 const product = await Product.findOne({ sku: item.object.sku, aktywne: true }).orFail();
                 if (item.quantity > product.ilosc) {
                     item.quantity = product.ilosc;
-                    refProducts.push({ ilosc: item.quantity, pozycja: product._id });
+                    refProducts.push({ ilosc: item.quantity, cena: item.price, pozycja: product._id });
                     updatedCart.push(item);
                     changedEntries.push({ reason: "Brak dostępnej ilości produktu, nastąpiło automatyczne zmniejszenie ilości produktu z koszyka", item });
                     continue;
@@ -99,7 +100,7 @@ export async function POST(request: NextRequest) {
                     const wariant = product.wariant.find((w) => w.slug === wslug);
                     if (!wariant) {
                         if (wslug === "pdostw") {
-                            refProducts.push({ ilosc: item.quantity, pozycja: product._id });
+                            refProducts.push({ ilosc: item.quantity, cena: item.price, pozycja: product._id });
                             updatedCart.push(item);
                             continue;
                         }
@@ -112,17 +113,17 @@ export async function POST(request: NextRequest) {
                     }
                     if (item.quantity > wariant.ilosc) {
                         item.quantity = wariant.ilosc;
-                        refProducts.push({ ilosc: item.quantity, pozycja: product._id });
+                        refProducts.push({ ilosc: item.quantity, cena: item.price, pozycja: product._id });
                         updatedCart.push(item);
                         changedEntries.push({ reason: `Brak dostępnej ilości produktu, nastąpiło automatyczne zmniejszenie ilości produktu z koszyka`, item });
                         continue;
                     }
                 }
-                refProducts.push({ ilosc: item.quantity, pozycja: product._id });
+                refProducts.push({ ilosc: item.quantity, cena: item.price, pozycja: product._id });
                 updatedCart.push(item);
             } else if (item.type === "kursy") {
                 const course = await Course.findOne({ slug: item.object.slug, aktywne: true }).orFail();
-                refCourses.push({ ilosc: item.quantity, pozycja: course._id });
+                refCourses.push({ ilosc: item.quantity, cena: item.price, pozycja: course._id });
                 updatedCart.push(item);
             }
         } catch (_) {

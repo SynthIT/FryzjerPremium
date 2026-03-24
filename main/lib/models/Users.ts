@@ -1,18 +1,24 @@
 import { Model, model, models, Schema, Types } from "mongoose";
-import { Users, Roles, OrderList, DetailedOrderEntry } from "../types/userTypes";
-import { FileOrderEntry } from "../types/orderTypes";
+import { Users, Roles, OrderList, DetailedOrderEntry, VerifyEmail } from "../types/userTypes";
+import { CorrectionEntry, FileOrderEntry } from "../types/orderTypes";
+
+export const correctionEntrySchema = new Schema<CorrectionEntry>({
+    ilosc: { type: Number, required: true },
+    reason: { type: String, required: true },
+}, { _id: false, optimisticConcurrency: true, timestamps: false, autoIndex: false });
 
 export const detailedCourseOrderEntrySchema = new Schema<DetailedOrderEntry>({
     ilosc: { type: Number, required: true },
+    cena: { type: Number, required: true },
+    koretka: { type: correctionEntrySchema },
     pozycja: { type: Types.ObjectId, ref: "Courses" },
 }, { _id: false, optimisticConcurrency: true, timestamps: false, autoIndex: false });
 
 export const detailedProductOrderEntrySchema = new Schema<DetailedOrderEntry>({
     ilosc: { type: Number, required: true },
+    cena: { type: Number, required: true },
     pozycja: { type: Types.ObjectId, ref: "Products" },
 }, { _id: false, optimisticConcurrency: true, timestamps: false, autoIndex: false });
-
-
 
 const roleSchemat = new Schema<Roles>(
     {
@@ -20,9 +26,7 @@ const roleSchemat = new Schema<Roles>(
         uzytkownik: { type: Number, default: 0 },
         admin: { type: Number, default: 0 },
     },
-    {
-        timestamps: true,
-    },
+    { timestamps: true, },
 );
 
 const userSchemat = new Schema<Users>(
@@ -44,11 +48,9 @@ const userSchemat = new Schema<Users>(
         osoba_prywatna: { type: Boolean, default: true },
         role: { type: [Types.ObjectId], ref: "Roles", default: [] },
         stripe_id: { type: String },
+        verifiedEmail: { type: Boolean, default: false, required: true },
     },
-    {
-        autoIndex: false,
-        timestamps: true,
-    },
+    { autoIndex: false, timestamps: true, },
 );
 
 const fileOrderEntrySchema = new Schema<FileOrderEntry>({
@@ -56,6 +58,7 @@ const fileOrderEntrySchema = new Schema<FileOrderEntry>({
     nazwa: { type: String, required: true },
     url: { type: String, required: true },
 }, { _id: false, optimisticConcurrency: true, timestamps: false, autoIndex: false });
+
 /** Dane do faktury w zamówieniu – wszystkie pola opcjonalne (partial), żeby można było podać inne niż z konta */
 const orderDaneSchema = new Schema(
     {
@@ -102,6 +105,12 @@ export const schemaOrderList = new Schema<OrderList>(
     },
     { timestamps: true, autoIndex: false },
 );
+
+export const schemaVerifyEmail = new Schema<VerifyEmail>({
+    email: { type: String, required: true },
+    code: { type: String, required: true },
+    expiresAt: { type: Date, required: true },
+}, { timestamps: true, autoIndex: false });
 
 export const Role: Model<Roles> =
     (models.Roles as Model<Roles>) ?? model<Roles>("Roles", roleSchemat);
