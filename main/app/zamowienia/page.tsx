@@ -96,7 +96,7 @@ export default function OrdersPage() {
                                 router.push(`/zamowienie/${order.numer_zamowienia}`);
                             }}>
                                 <h2 className="text-2xl font-bold">{order.numer_zamowienia}</h2>
-                                <p className="text-sm text-gray-500">{order.createdAt}</p>
+                                <p className="text-sm text-gray-500">{`${order.data_zamowienia}`}</p>
                                 <p className="text-sm text-gray-500">{order.status}</p>
                                 <p className="text-sm text-gray-500">{order.suma}</p>
                             </div>

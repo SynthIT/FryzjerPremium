@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { useNotification } from "@/contexts/NotificationContext";
 
 export default function RegisterPage() {
-    const [formData, setFormData] = useState<Users>({
+    const [formData, setFormData] = useState<Partial<Users>>({
         email: "",
         haslo: "",
         imie: "",
@@ -37,12 +37,12 @@ export default function RegisterPage() {
 
     const validatePassword = useCallback(() => {
         const errors: string[] = [];
-        if (formData.haslo.length < 8) {
+        if (formData.haslo!.length < 8) {
             errors.push("Hasło powinno mieć conajmniej 8 znaków");
         }
         if (
             !/^(?=.*[a-zA-Z])(?=.*\d)(?=.*[^a-zA-Z0-9\s])(?!.*[()\[\]{};])[^\s]{8,}$/.test(
-                formData.haslo
+                formData.haslo!
             )
         ) {
             errors.push("Hasło powinno zawierać: przynajmniej 1 cyfrę, literę oraz znak specjalny");

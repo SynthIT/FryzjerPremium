@@ -218,7 +218,7 @@ export async function addNewUser(payload: Users) {
         }
 
         const hashedPassword = await hash(payload.haslo, { type: 2 });
-        const upayload: Users = {
+        const upayload: Partial<Users> = {
             imie: payload.imie,
             nazwisko: payload.nazwisko,
             email: payload.email,

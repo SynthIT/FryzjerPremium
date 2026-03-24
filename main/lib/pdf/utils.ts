@@ -240,120 +240,120 @@ export async function generateTicket(req: NextRequest, order: OrderList) {
     return await finished;
 }
 
-export async function generateCorrectionInvoice(order: OrderList) {
-    const entries: Array<Array<string>> = []
-    function prepareEntry(entry: Partial<Courses | Products>, oldQuantity: number, quanity: number) {
-        const index = entries.length + 1;
-        const cenavat = entry.cena! * (1 + (entry.vat! / 100));
-        const payload = [
-            `${index}`,
-            entry.nazwa!,
-            `${oldQuantity}`,
-            `${quanity}`,
-            "szt.",
-            `-${cenavat}`,
-            `-${entry.cena}`, `${entry.vat}%`,
-            `-${(cenavat - entry.cena!).toFixed(2)}`,
-            `-${(quanity * cenavat).toFixed(2)}`
-        ];
+// export async function generateCorrectionInvoice(order: OrderList) {
+//     const entries: Array<Array<string>> = []
+//     function prepareEntry(entry: Partial<Courses | Products>, oldQuantity: number, quanity: number) {
+//         const index = entries.length + 1;
+//         const cenavat = entry.cena! * (1 + (entry.vat! / 100));
+//         const payload = [
+//             `${index}`,
+//             entry.nazwa!,
+//             `${oldQuantity}`,
+//             `${quanity}`,
+//             "szt.",
+//             `-${cenavat}`,
+//             `-${entry.cena}`, `${entry.vat}%`,
+//             `-${(cenavat - entry.cena!).toFixed(2)}`,
+//             `-${(quanity * cenavat).toFixed(2)}`
+//         ];
 
-        entries.push(payload);
-    }
-    const ml = 40;
-    const pt = 5;
-    const mt = 40;
-    const { dane, kursy, produkty } = order;
-    for (const elem of kursy) {
-        const { ilosc, pozycja } = elem;
-        prepareEntry((pozycja as Courses), ilosc)
-    }
-    for (const elem of produkty) {
-        const { ilosc, pozycja } = elem;
-        prepareEntry((pozycja as Products), ilosc)
-    }
-    function moveToNextLine(lines: number) {
-        return mt + lines * 20 + pt;
-    }
-    function drawLine(x1: number, y1: number, x2: number, y2: number) {
-        doc.moveTo(x1, y1).lineTo(x2, y2).fillAndStroke("#aaa");
-    }
-    function moveToNextColumn(columns: number) {
-        return ml + columns * 200;
-    }
-    function drawText(text: string, x: number, y: number, font = 8) {
-        doc.fontSize(font).text(text, x, y);
-    }
-    function drawTable(entries: Array<Array<string>>, x: number, y: number) {
-        doc.table({
-            position: { x, y },
-            defaultStyle: { align: { y: "center" } },
-            rowStyles: (i) => {
-                return i === 0
-                    ? {
-                        border: [0, 0, 2, 0],
-                        borderColor: "#000000",
-                        textOptions: { align: "right" },
-                    }
-                    : i < entries.length + 1
-                        ? {
-                            border: [0, 0, 1, 0],
-                            borderColor: "#aaa",
-                            minHeight: 16,
-                        }
-                        : {
-                            border: [2, 0, 0, 0],
-                            borderColor: "#000",
-                            minHeight: 32,
-                            backgroundColor: "#aaa",
-                        };
-            },
-            columnStyles: [30, "*", 32, 32, 48, 48, 64, 48, 64],
+//         entries.push(payload);
+//     }
+//     const ml = 40;
+//     const pt = 5;
+//     const mt = 40;
+//     const { dane, kursy, produkty } = order;
+//     for (const elem of kursy) {
+//         const { ilosc, pozycja } = elem;
+//         prepareEntry((pozycja as Courses), ilosc)
+//     }
+//     for (const elem of produkty) {
+//         const { ilosc, pozycja } = elem;
+//         prepareEntry((pozycja as Products), ilosc)
+//     }
+//     function moveToNextLine(lines: number) {
+//         return mt + lines * 20 + pt;
+//     }
+//     function drawLine(x1: number, y1: number, x2: number, y2: number) {
+//         doc.moveTo(x1, y1).lineTo(x2, y2).fillAndStroke("#aaa");
+//     }
+//     function moveToNextColumn(columns: number) {
+//         return ml + columns * 200;
+//     }
+//     function drawText(text: string, x: number, y: number, font = 8) {
+//         doc.fontSize(font).text(text, x, y);
+//     }
+//     function drawTable(entries: Array<Array<string>>, x: number, y: number) {
+//         doc.table({
+//             position: { x, y },
+//             defaultStyle: { align: { y: "center" } },
+//             rowStyles: (i) => {
+//                 return i === 0
+//                     ? {
+//                         border: [0, 0, 2, 0],
+//                         borderColor: "#000000",
+//                         textOptions: { align: "right" },
+//                     }
+//                     : i < entries.length + 1
+//                         ? {
+//                             border: [0, 0, 1, 0],
+//                             borderColor: "#aaa",
+//                             minHeight: 16,
+//                         }
+//                         : {
+//                             border: [2, 0, 0, 0],
+//                             borderColor: "#000",
+//                             minHeight: 32,
+//                             backgroundColor: "#aaa",
+//                         };
+//             },
+//             columnStyles: [30, "*", 32, 32, 48, 48, 64, 48, 64],
 
-            data: [
-                [
-                    "Lp.",
-                    "Towar lub usługa",
-                    "Było",
-                    "Jest",
-                    "Jedn.",
-                    "Cena jedn. brutto",
-                    "Wartość netto",
-                    "Stawka VAT",
-                    "Wartość VAT",
-                    "Wartość brutto w PLN",
-                ],
-                ...entries,
-                [
-                    {
-                        colSpan: 7,
-                        text: "Suma",
-                        align: { x: "right", y: "center" },
-                        padding: { right: 12 },
-                    } as PDFKit.Mixins.CellOptions,
-                    entries.reduce((sum, row) => sum + parseFloat(row[7]), 0).toFixed(2),
-                    entries.reduce((sum, row) => sum + parseFloat(row[8]), 0).toFixed(2),
-                ],
-            ],
-        });
-    }
-    const chunks: Buffer[] = [];
-    const doc = new pdf({
-        size: "A4",
-        margins: { top: 0, bottom: 40, left: 0, right: 40 },
-    });
-    doc.on("data", (data) => {
-        chunks.push(data);
-    });
-    const finished = new Promise<Buffer<ArrayBuffer>>((resolve) => {
-        doc.on("end", () => {
-            resolve(Buffer.concat(chunks));
-        });
-    });
-    doc.registerFont("Roboto-Regular", path.join(process.cwd(), "public", "fonts", "Roboto-Regular.ttf"));
-    doc.registerFont("Roboto-Bold", path.join(process.cwd(), "public", "fonts", "Roboto-Bold.ttf"));
-    doc.font("Roboto-Bold").fontSize(20).text("Faktura", ml, mt);
-    doc.fontSize(10);
-    doc.font("Roboto-Regular");
+//             data: [
+//                 [
+//                     "Lp.",
+//                     "Towar lub usługa",
+//                     "Było",
+//                     "Jest",
+//                     "Jedn.",
+//                     "Cena jedn. brutto",
+//                     "Wartość netto",
+//                     "Stawka VAT",
+//                     "Wartość VAT",
+//                     "Wartość brutto w PLN",
+//                 ],
+//                 ...entries,
+//                 [
+//                     {
+//                         colSpan: 7,
+//                         text: "Suma",
+//                         align: { x: "right", y: "center" },
+//                         padding: { right: 12 },
+//                     } as PDFKit.Mixins.CellOptions,
+//                     entries.reduce((sum, row) => sum + parseFloat(row[7]), 0).toFixed(2),
+//                     entries.reduce((sum, row) => sum + parseFloat(row[8]), 0).toFixed(2),
+//                 ],
+//             ],
+//         });
+//     }
+//     const chunks: Buffer[] = [];
+//     const doc = new pdf({
+//         size: "A4",
+//         margins: { top: 0, bottom: 40, left: 0, right: 40 },
+//     });
+//     doc.on("data", (data) => {
+//         chunks.push(data);
+//     });
+//     const finished = new Promise<Buffer<ArrayBuffer>>((resolve) => {
+//         doc.on("end", () => {
+//             resolve(Buffer.concat(chunks));
+//         });
+//     });
+//     doc.registerFont("Roboto-Regular", path.join(process.cwd(), "public", "fonts", "Roboto-Regular.ttf"));
+//     doc.registerFont("Roboto-Bold", path.join(process.cwd(), "public", "fonts", "Roboto-Bold.ttf"));
+//     doc.font("Roboto-Bold").fontSize(20).text("Faktura", ml, mt);
+//     doc.fontSize(10);
+//     doc.font("Roboto-Regular");
 
-    return await finished;
-}
+//     return await finished;
+// }
