@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { useCart } from "@/contexts/CartContext";
 import { CartItem } from "@/lib/types/cartTypes";
 import Image from "next/image";
@@ -11,6 +11,7 @@ import { EmptyCart } from "@/components/cart/EmptyCard";
 import { Stripe } from "@stripe/stripe-js";
 import { useUser } from "@/contexts/UserContext";
 import { Users } from "@/lib/types/userTypes";
+import { X } from "lucide-react";
 
 interface Props {
     stripePromise: Promise<Stripe | null>;
@@ -110,6 +111,10 @@ export function Checkout({ stripePromise }: Props) {
         [],
     );
 
+    const orderSummaryPrice = useMemo(() => {
+        return items.reduce((acc, item) => acc + item.price * item.quantity, 0);
+    }, [items]);
+
     const handleSubmit = useCallback((e: React.FormEvent) => {
         async function completeOrder() {
             await fetch("/api/v1/users/cart", {
@@ -121,6 +126,10 @@ export function Checkout({ stripePromise }: Props) {
                     console.log(data);
                     setOverlay(false)
                 });
+        }
+        if (formData.imie === "" || formData.nazwisko === "" || formData.email === "" || formData.telefon === "" || formData.ulica === "" || formData.kod_pocztowy === "" || formData.miasto === "" || formData.kraj === "") {
+            alert("Proszę wypełnić wszystkie pola");
+            return;
         }
         e.preventDefault();
         setOverlay(true);
@@ -292,7 +301,7 @@ export function Checkout({ stripePromise }: Props) {
                                     Metoda dostawy
                                 </h2>
                                 <div className="space-y-3">
-                                    {deliveryMethod &&
+                                    {deliveryMethod && deliveryMethod.length > 0 ?
                                         deliveryMethod.map((delivery, i) => (
                                             <DeliveryMethod
                                                 key={i}
@@ -304,7 +313,7 @@ export function Checkout({ stripePromise }: Props) {
                                                 onSelect={(w) => {
                                                     setSelectDeliveryMethod(w);
                                                 }}></DeliveryMethod>
-                                        ))}
+                                        )) : <div className="text-center text-gray-500">Brak metod dostawy</div>}
                                 </div>
                             </section>
                         </form>
@@ -366,20 +375,20 @@ export function Checkout({ stripePromise }: Props) {
                             <div className="flex justify-between py-2 text-sm">
                                 <span>Suma częściowa</span>
                                 <span>
-                                    {subtotal.toFixed(2).replace(".", ",")} zł
+                                    {orderSummaryPrice.toFixed(2).replace(".", ",")} zł
                                 </span>
                             </div>
 
                             <div className="flex justify-between py-2 text-sm">
                                 <span>Koszt dostawy</span>
-                                <span>{deliverFee}</span>
+                                <span>{deliverFee.toFixed(2).replace(".", ",")} zł</span>
                             </div>
 
                             <div className="border-t border-gray-200 my-4"></div>
 
                             <div className="flex justify-between py-2 font-bold text-base">
                                 <span>Razem</span>
-                                <span>{formattedTotal} zł</span>
+                                <span>{(orderSummaryPrice + deliverFee).toFixed(2).replace(".", ",")} zł</span>
                             </div>
 
                             <button
@@ -403,7 +412,13 @@ export function Checkout({ stripePromise }: Props) {
             )}
             {handlePayment && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-                    <div className="relative w-full max-w-lg rounded-2xl bg-white shadow-xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                    <div className="relative w-full max-w-lg rounded-2xl bg-white shadow-xl max-h-[90vh] overflow-y-auto p-12" onClick={(e) => e.stopPropagation()}>
+                        <div className="pt-4">
+                            <h2 className="text-lg font-bold text-gray-900 mb-4 text-center">
+                                Zapłać
+                            </h2>
+                            <X className="absolute top-4 right-4 cursor-pointer" onClick={() => setHandlePayment(false)} />
+                        </div>
                         <div className="flex items-center justify-center p-6 border-b border-gray-200">
                             <Elements
                                 stripe={stripePromise}

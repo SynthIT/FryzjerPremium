@@ -62,7 +62,7 @@ export default function NewDiscountPage() {
             }).then((r) => r.json());
 
             if (res.status === 0) {
-                router.push("/admin/manage/promocje");
+                router.push("/admin/discounts");
             } else {
                 alert(res.error || res.message);
             }

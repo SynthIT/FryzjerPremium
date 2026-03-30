@@ -1,14 +1,5 @@
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import ProductsPage from "@/components/ProductsPage";
+import ProduktyShopPage from "@/components/produkty/ProduktyShopPage";
 
 export default function Products() {
-  return (
-    <>
-      <Header />
-      <ProductsPage />
-      <Footer />
-    </>
-  );
+    return <ProduktyShopPage />;
 }
-

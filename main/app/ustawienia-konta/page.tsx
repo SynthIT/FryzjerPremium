@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+import StorefrontShell from "@/components/layout/StorefrontShell";
 import { Info, LockKeyhole, MapPin, Settings, User } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
 import { Users } from "@/lib/types/userTypes";
@@ -76,8 +75,7 @@ export default function AccountSettingsPage() {
     }, [newPass, reNewPass, passNot]);
 
     return (
-        <>
-            <Header />
+        <StorefrontShell>
             <main className="min-h-screen pt-[120px] pb-16 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-[1200px] mx-auto flex flex-col lg:flex-row gap-8">
                     <aside className="lg:w-64 shrink-0 rounded-xl border border-[rgba(212,196,176,0.3)] bg-white/60 p-4 h-fit">
@@ -580,7 +578,6 @@ export default function AccountSettingsPage() {
                     </div>
                 </div>
             </main>
-            <Footer />
-        </>
+        </StorefrontShell>
     );
 }

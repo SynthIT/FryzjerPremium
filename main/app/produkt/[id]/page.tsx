@@ -1,15 +1,6 @@
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import ProductPage from "@/components/ProductPage";
+import ProduktShopPage from "@/components/produkt/ProduktShopPage";
 
 export default async function Product({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  return (
-    <>
-      <Header />
-      <ProductPage productSlug={id} />
-      <Footer />
-    </>
-  );
+    const { id } = await params;
+    return <ProduktShopPage productSlug={id} />;
 }
-

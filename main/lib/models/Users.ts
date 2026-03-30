@@ -18,6 +18,7 @@ export const detailedProductOrderEntrySchema = new Schema<DetailedOrderEntry>({
     ilosc: { type: Number, required: true },
     cena: { type: Number, required: true },
     pozycja: { type: Types.ObjectId, ref: "Products" },
+    wariant: { type: String },
 }, { _id: false, optimisticConcurrency: true, timestamps: false, autoIndex: false });
 
 const roleSchemat = new Schema<Roles>(
@@ -99,6 +100,8 @@ export const schemaOrderList = new Schema<OrderList>(
         code: { type: Number },
         suma: { type: Number },
         data_zamowienia: { type: Date },
+        data_wystawienia_faktury: { type: Date },
+        data_wystawienia_faktury_kor: { type: [Date] },
         data_wyslania: { type: Date },
         data_zrealizowania: { type: Date },
         data_anulowania: { type: Date },

@@ -1,3 +1,4 @@
+import { formatLocaleDateTime } from "@/lib/dateFormat";
 import { getOrderByNumerZamowienia } from "@/lib/crud/orders/orders";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -42,7 +43,7 @@ export default async function OrderPage({ params }: { params: Promise<{ nrzam: s
                         <div className="grid gap-3 sm:grid-cols-2 border-2 border-gray-300 rounded-md p-2">
                             <div className="flex items-center gap-2">
                                 <CalendarIcon className="w-4 h-4" />
-                                <p className="text-sm text-foreground">Data rozpoczęcia kursu: {kurs.data_rozpoczecia?.toLocaleString()}</p>
+                                <p className="text-sm text-foreground">Data rozpoczęcia kursu: {formatLocaleDateTime(kurs.data_rozpoczecia ?? null)}</p>
                             </div>
                             <div className="flex items-center gap-2">
                                 <ClockIcon className="w-4 h-4" />

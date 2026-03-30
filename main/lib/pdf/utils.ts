@@ -5,6 +5,7 @@ import { Products } from "../types/productTypes";
 import { Courses } from "../types/coursesTypes";
 import { NextRequest } from "next/server";
 import path from "path";
+import { formatLocaleDateTime } from "../dateFormat";
 
 
 async function generateQRCode(data: string) {
@@ -13,33 +14,49 @@ async function generateQRCode(data: string) {
 
 export async function generatePDF(order: OrderList) {
     const entries: Array<Array<string>> = []
-    function prepareEntry(entry: Partial<Courses | Products>, quanity: number) {
+    function prepareEntry(entry: Partial<Courses | Products>, type: "kursy" | "produkty", quanity: number, wariant?: string) {
         const index = entries.length + 1;
         const cenavat = entry.cena! * (1 + (entry.vat! / 100));
-        const payload = [
-            `${index}`,
-            entry.nazwa!,
-            `${quanity}`,
-            "szt.",
-            `${cenavat}`,
-            `${entry.cena}`, `${entry.vat}%`,
-            (cenavat - entry.cena!).toFixed(2),
-            (quanity * cenavat).toFixed(2)
-        ];
-
-        entries.push(payload);
+        if (type === "kursy") {
+            const payload = [
+                `${index}`,
+                entry.nazwa!,
+                `${quanity}`,
+                "szt.",
+                `${cenavat.toFixed(2)}`,
+                `${entry.cena}`, `${entry.vat}%`,
+                ((cenavat - entry.cena!) * quanity).toFixed(2),
+                (quanity * cenavat).toFixed(2)
+            ];
+            entries.push(payload);
+        }
+        else if (type === "produkty") {
+            const product = entry as Products;
+            const nazwa = wariant ? product.nazwa + " " + wariant : product.nazwa;
+            const payload = [
+                `${index}`,
+                nazwa,
+                `${quanity}`,
+                "szt.",
+                `${cenavat.toFixed(2)}`,
+                `${entry.cena}`, `${entry.vat}%`,
+                ((cenavat - entry.cena!) * quanity).toFixed(2),
+                (quanity * cenavat).toFixed(2)];
+            entries.push(payload);
+        }
     }
+
     const ml = 40;
     const pt = 5;
     const mt = 40;
     const { dane, kursy, produkty } = order;
     for (const elem of kursy) {
         const { ilosc, pozycja } = elem;
-        prepareEntry((pozycja as Courses), ilosc)
+        prepareEntry((pozycja as Courses), "kursy", ilosc)
     }
     for (const elem of produkty) {
         const { ilosc, pozycja } = elem;
-        prepareEntry((pozycja as Products), ilosc)
+        prepareEntry((pozycja as Products), "produkty", ilosc, elem.wariant)
     }
     function moveToNextLine(lines: number) {
         return mt + lines * 20 + pt;
@@ -120,17 +137,23 @@ export async function generatePDF(order: OrderList) {
     });
     doc.registerFont("Roboto-Regular", path.join(process.cwd(), "public", "fonts", "Roboto-Regular.ttf"));
     doc.registerFont("Roboto-Bold", path.join(process.cwd(), "public", "fonts", "Roboto-Bold.ttf"));
-    doc.font("Roboto-Bold").fontSize(20).text("Faktura", ml, mt);
+    doc.font("Roboto-Bold").fontSize(20).text("Faktura VAT", ml, mt);
     doc.fontSize(10);
     doc.font("Roboto-Regular");
     drawText(
-        "Numer zamówienia: " + order.numer_zamowienia,
+        "Numer faktury: FV/" + order.numer_zamowienia,
         ml,
         moveToNextLine(1.5),
         10,
     );
     drawText(
-        "Data wystawienia: " + order.data_zamowienia,
+        "Numer zamówienia: " + order.numer_zamowienia,
+        ml,
+        moveToNextLine(2),
+        10,
+    );
+    drawText(
+        "Data wystawienia: " + formatLocaleDateTime(order.data_zamowienia ?? null),
         ml + 25,
         moveToNextLine(4),
     );
@@ -230,7 +253,11 @@ export async function generateTicket(req: NextRequest, order: OrderList) {
     doc.font("Roboto-Regular");
     drawText("Bilety kupione na klienta: " + order.dane?.imie + " " + order.dane?.nazwisko, ml, moveToNextLine(1));
     drawText("Numer zamówienia: " + order.numer_zamowienia, ml, moveToNextLine(3));
-    drawText("Data zamówienia: " + order.createdAt, ml, moveToNextLine(2));
+    drawText(
+        "Data zamówienia: " + formatLocaleDateTime(order.createdAt ?? null),
+        ml,
+        moveToNextLine(2),
+    );
     drawText("Suma: " + order.suma, ml, moveToNextLine(4));
     for (let i = 0; i < order.kursy.length; i++) {
         console.log((order.kursy[i].pozycja as Courses).nazwa);

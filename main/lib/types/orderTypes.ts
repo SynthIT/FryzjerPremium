@@ -16,6 +16,7 @@ export const detailedOrderEntry = zod.object({
     cena: zod.number(),
     koretka: zodCorrectionEntry.optional(),
     pozycja: zod.union([zod.string(), zodCartItem, zodProducts, zod.lazy(() => zodCourses)]),
+    wariant: zod.string().optional(),
 });
 
 export const fileOrderEntry = zod.object({
@@ -44,9 +45,12 @@ export const orderListSchema = zod.object({
     ]),
     produkty: zod.array(detailedOrderEntry),
     kursy: zod.array(detailedOrderEntry),
+    reason: zod.string().optional(),
     code: zod.number().optional(),
     suma: zod.number(),
     data_zamowienia: zod.date().optional(),
+    data_wystawienia_faktury: zod.date().optional(),
+    data_wystawienia_faktury_kor: zod.array(zod.date()).optional(),
     data_wyslania: zod.date().optional(),
     data_zrealizowania: zod.date().optional(),
     data_anulowania: zod.date().optional(),

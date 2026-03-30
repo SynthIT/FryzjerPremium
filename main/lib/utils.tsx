@@ -252,6 +252,8 @@ export const decodeCategory = (categorySlug: string): string => {
     }
 };
 
+export { formatLocaleDateTime, APP_DATE_LOCALE } from "./dateFormat";
+
 /**
  * Mapowanie podkategorii na słowa kluczowe w nazwie produktu
  */

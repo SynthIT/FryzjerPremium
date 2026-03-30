@@ -1,5 +1,6 @@
 "use client";
 
+import { formatLocaleDateTime } from "@/lib/dateFormat";
 import React, { createContext, useContext, ReactNode } from "react";
 
 export type NotificationType = "info" | "log" | "error" | "warning";
@@ -14,7 +15,7 @@ const NotificationContext = createContext<NotificationContextType | undefined>(
 
 export function NotificationProvider({ children }: { children: ReactNode }) {
     const notify = (message: string, type: NotificationType = "info") => {
-        const timestamp = new Date().toLocaleTimeString();
+        const timestamp = formatLocaleDateTime(new Date());
         const prefix = `[${timestamp}] ${type.toUpperCase()}:`;
         switch (type) {
             case "log":

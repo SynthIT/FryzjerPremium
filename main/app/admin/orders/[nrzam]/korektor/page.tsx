@@ -1,4 +1,5 @@
 'use client';
+import { formatLocaleDateTime } from "@/lib/dateFormat";
 import { useState, useEffect } from "react";
 import { OrderList } from "@/lib/types/userTypes";
 import { Courses } from "@/lib/types/coursesTypes";
@@ -77,7 +78,7 @@ export default function KorektorPage({ params }: { params: { nrzam: string } }) 
             <div>
                 <h1 className="text-2xl font-semibold tracking-tight">Dodaj fakturę korygującą</h1>
                 <p>Numer faktury: {order.nr_faktury}</p>
-                <p>Data wystawienia: {order.data_zamowienia?.toLocaleString()}</p>
+                <p>Data wystawienia: {formatLocaleDateTime(order.data_zamowienia ?? null)}</p>
                 <p>Faktura korygująca: FVK/{order.numer_zamowienia}/{order.nr_faktury_kor && order.nr_faktury_kor.length > 0 ? order.nr_faktury_kor.length + 1 : 1}</p>
             </div>
             <div className="flex flex-col gap-2 border-2 border-gray-300 rounded-md p-4">
@@ -87,7 +88,7 @@ export default function KorektorPage({ params }: { params: { nrzam: string } }) 
                         <p>Imię i nazwisko: {order.dane?.imie} {order.dane?.nazwisko}</p>
                         <p>Email: {order.dane?.email}</p>
                         <p>Telefon: {order.dane?.telefon}</p>
-                        <p>Adres: {order.dane?.nr_domu} {order.dane?.nr_lokalu} {order.dane?.ulica} {order.dane?.kod_pocztowy} {order.dane?.miasto} {order.dane?.kraj}</p>
+                        <p>Adres: {order.dane?.ulica}  {order.dane?.nr_domu} {order.dane?.nr_lokalu} </p>
 
                     </div>
                     <div className="flex flex-col gap-2 w-1/2">
@@ -130,7 +131,7 @@ export default function KorektorPage({ params }: { params: { nrzam: string } }) 
                                         <td>
                                             {oldValue} →
                                             <input
-                                            className="w-8 text-center ml-3"
+                                                className="w-8 text-center ml-3"
                                                 type="number"
                                                 min="0"
                                                 value={editingValue !== null ? editingValue : String(kurs.ilosc)}
@@ -190,7 +191,7 @@ export default function KorektorPage({ params }: { params: { nrzam: string } }) 
                 <h2 className="text-lg font-semibold tracking-tight">Uzasadnienie korekty</h2>
                 <textarea className="w-full h-24 border-2 border-gray-300 rounded-md p-2" value={reason} onChange={(e) => setReason(e.target.value)} />
             </div>
-            <div className="flex justify-end">
+            <div className="flex justify-end pb-12 mb-12">
                 <button type="button" className="bg-blue-500 text-white px-4 py-2 rounded-md" onClick={() => {
                     setEditingValue(null);
                     setSelectedToEdit(null);

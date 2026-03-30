@@ -5,7 +5,7 @@ import "@/app/globals2.css";
 import { useRouter } from "next/navigation";
 import { DeliveryMethods, DeliveryMethodsSizes } from "@/lib/types/deliveryTypes";
 import { Loader2, Plus } from "lucide-react";
-import AdminDeliverySizeEditable from "@/components/admin/components/AdminDeliverySizeEditable";
+import AdminDeliverySizeEditable from "@/components/admin/AdminDeliverySizeEditable";
 import { generateSlug } from "@/lib/utils_admin";
 
 

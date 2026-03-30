@@ -9,8 +9,7 @@ import { Product } from "@/lib/models/Products";
 import { Orders } from "@/lib/models/Users";
 import { verifyJWT } from "@/lib/admin_utils";
 import { Course } from "@/lib/models/Courses";
-import { convertSegmentPathToStaticExportFilename } from "next/dist/shared/lib/segment-cache/segment-value-encoding";
-import { Item } from "@radix-ui/react-dropdown-menu";
+
 
 /** Pola do faktury w zamówieniu (tylko polskie klucze – zgodne z orderDaneSchema w Mongo). */
 const DANE_KEYS = ["imie", "nazwisko", "email", "nr_domu", "nr_lokalu", "ulica", "miasto", "kraj", "kod_pocztowy", "telefon", "nip", "faktura", "osoba_prywatna"] as const;
@@ -47,11 +46,13 @@ function createOrderNumber() {
     const h = randomBytes(2 ** 3).toString("hex");
     const a = new Date();
     const d =
-        `${h}-${a.getDate() < 9 ? `0${a.getDate() + 1}` : a.getDate() + 1}` +
-        `${a.getMonth() < 9 ? `0${a.getMonth()}` : a.getMonth() + 1}` +
+        `${h}-${a.getDate() < 9 ? `0${a.getDate()}` : a.getDate()}` +
+        `${a.getMonth() < 9 ? `0${a.getMonth()+1}` : a.getMonth() + 1}` +
         `${a.getFullYear()}`;
     return d;
 }
+
+
 export async function GET(request: NextRequest) {
     const { val, user } = await verifyJWT(request);
     if (!val && !user) {
@@ -90,7 +91,7 @@ export async function POST(request: NextRequest) {
                 const product = await Product.findOne({ sku: item.object.sku, aktywne: true }).orFail();
                 if (item.quantity > product.ilosc) {
                     item.quantity = product.ilosc;
-                    refProducts.push({ ilosc: item.quantity, cena: item.price, pozycja: product._id });
+                    refProducts.push({ ilosc: item.quantity, cena: item.price, pozycja: product._id, wariant: item.wariant?.slug });
                     updatedCart.push(item);
                     changedEntries.push({ reason: "Brak dostępnej ilości produktu, nastąpiło automatyczne zmniejszenie ilości produktu z koszyka", item });
                     continue;
@@ -100,7 +101,7 @@ export async function POST(request: NextRequest) {
                     const wariant = product.wariant.find((w) => w.slug === wslug);
                     if (!wariant) {
                         if (wslug === "pdostw") {
-                            refProducts.push({ ilosc: item.quantity, cena: item.price, pozycja: product._id });
+                            refProducts.push({ ilosc: item.quantity, cena: item.price, pozycja: product._id, wariant: item.wariant?.slug });
                             updatedCart.push(item);
                             continue;
                         }
@@ -113,17 +114,17 @@ export async function POST(request: NextRequest) {
                     }
                     if (item.quantity > wariant.ilosc) {
                         item.quantity = wariant.ilosc;
-                        refProducts.push({ ilosc: item.quantity, cena: item.price, pozycja: product._id });
+                        refProducts.push({ ilosc: item.quantity, cena: item.price, pozycja: product._id, wariant: item.wariant?.slug });
                         updatedCart.push(item);
                         changedEntries.push({ reason: `Brak dostępnej ilości produktu, nastąpiło automatyczne zmniejszenie ilości produktu z koszyka`, item });
                         continue;
                     }
                 }
-                refProducts.push({ ilosc: item.quantity, cena: item.price, pozycja: product._id });
+                refProducts.push({ ilosc: item.quantity, cena: item.price, pozycja: product._id, wariant: item.wariant?.slug });
                 updatedCart.push(item);
             } else if (item.type === "kursy") {
                 const course = await Course.findOne({ slug: item.object.slug, aktywne: true }).orFail();
-                refCourses.push({ ilosc: item.quantity, cena: item.price, pozycja: course._id });
+                refCourses.push({ ilosc: item.quantity, cena: course.cena, pozycja: course._id });
                 updatedCart.push(item);
             }
         } catch (_) {

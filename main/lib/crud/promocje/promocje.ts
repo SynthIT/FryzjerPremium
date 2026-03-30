@@ -6,7 +6,7 @@ import { Types } from "mongoose";
 
 export async function collectPromo() {
     await db();
-    const promocje = await Promo.find({}).orFail();
+    const promocje = await Promo.find();
     return JSON.stringify(promocje);
 }
 

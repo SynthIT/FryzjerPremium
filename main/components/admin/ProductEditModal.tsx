@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Categories, Media } from "@/lib/types/shared";
+import { Categories, Media, Promos } from "@/lib/types/shared";
+import Link from "next/link";
 import { Products, Producents, Warianty } from "@/lib/types/productTypes";
 import Image from "next/image";
 import { X, Save, Trash2, Plus, Minus } from "lucide-react";
@@ -49,6 +50,8 @@ export default function ProductEditModal({
         string[]
     >([]);
     const [selectedProducent, setSelectedProducent] = useState<string>("");
+    const [promos, setPromos] = useState<Promos[]>([]);
+    const [selectedPromoId, setSelectedPromoId] = useState<string>("");
 
     useEffect(() => {
         // Konwertuj wartości 0 na undefined dla pól numerycznych
@@ -140,6 +143,31 @@ export default function ProductEditModal({
         fetchProducents();
     }, [product.producent]);
 
+    useEffect(() => {
+        const p = product.promocje;
+        if (p == null) setSelectedPromoId("");
+        else if (typeof p === "object" && p !== null && "_id" in p)
+            setSelectedPromoId(String((p as { _id: string })._id));
+        else setSelectedPromoId(String(p));
+    }, [product]);
+
+    useEffect(() => {
+        if (!isOpen) return;
+        async function fetchPromos() {
+            try {
+                const res = await fetch("/admin/api/v1/promo", {
+                    credentials: "include",
+                });
+                const data = await res.json();
+                if (data.status === 0 && Array.isArray(data.promos))
+                    setPromos(data.promos);
+            } catch (e) {
+                console.error("Błąd podczas pobierania promocji:", e);
+            }
+        }
+        fetchPromos();
+    }, [isOpen]);
+
     if (!isOpen) return null;
 
     const handleSave = async () => {
@@ -152,11 +180,8 @@ export default function ProductEditModal({
                 : typeof editedProduct.producent === "string"
                     ? editedProduct.producent
                     : "");
-            const promocjeId = editedProduct.promocje == null
-                ? null
-                : typeof editedProduct.promocje === "object" && editedProduct.promocje !== null && "_id" in editedProduct.promocje
-                    ? (editedProduct.promocje as { _id: string })._id
-                    : (editedProduct.promocje as string);
+            const promocjeId =
+                selectedPromoId === "" ? null : selectedPromoId;
 
             const productToSave: Products = {
                 ...editedProduct,
@@ -523,6 +548,41 @@ export default function ProductEditModal({
                                     className="w-full px-3 py-2 border rounded-md"
                                     placeholder="0.0"
                                 />
+                            </div>
+                            <div className="sm:col-span-2">
+                                <label className="block text-sm font-medium mb-1">
+                                    Promocja (globalna)
+                                </label>
+                                <select
+                                    value={selectedPromoId}
+                                    onChange={(e) =>
+                                        setSelectedPromoId(e.target.value)
+                                    }
+                                    className="w-full px-3 py-2 border rounded-md">
+                                    <option value="">— Brak promocji —</option>
+                                    {promos.map((pr) => {
+                                        const id = pr._id
+                                            ? String(pr._id)
+                                            : "";
+                                        if (!id) return null;
+                                        return (
+                                            <option key={id} value={id}>
+                                                {pr.nazwa}
+                                                {pr.procent != null &&
+                                                pr.procent > 0
+                                                    ? ` (−${pr.procent}%)`
+                                                    : ""}
+                                            </option>
+                                        );
+                                    })}
+                                </select>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                    <Link
+                                        href="/admin/discounts/new"
+                                        className="text-[#D2B79B] hover:underline">
+                                        Dodaj nową promocję
+                                    </Link>
+                                </p>
                             </div>
                             <div>
                                 <label className="block text-sm font-medium mb-1">

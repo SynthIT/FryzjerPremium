@@ -1,25 +1,5 @@
-"use client";
-
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import { loadStripe } from "@stripe/stripe-js";
-import { Checkout } from "@/components/checkout/CheckoutLayout";
-
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_PUBLISHABLE_STRIPE!)
-    .then((stripe) => {
-        return stripe;
-    })
-    .catch((error) => {
-        console.error("Błąd ładowania Stripe:", error);
-        return null;
-    });
+import KasaShopPage from "@/components/checkout/KasaShopPage";
 
 export default function CheckoutPage() {
-    return (
-        <>
-            <Header />
-            <Checkout stripePromise={stripePromise} />
-            <Footer />
-        </>
-    );
+    return <KasaShopPage />;
 }

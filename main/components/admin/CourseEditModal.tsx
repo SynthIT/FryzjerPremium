@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { Courses, Firmy, Lekcja } from "@/lib/types/coursesTypes";
-import { Categories, Media } from "@/lib/types/shared";
+import { Categories, Media, Promos } from "@/lib/types/shared";
+import Link from "next/link";
 import { Save, Trash2, Plus, Minus, Copy, BookOpen, Clock, Award, Info, Users } from "lucide-react";
 import { parseSlugName, generateSlug } from "@/lib/utils_admin";
 import { randomBytes } from "crypto";
@@ -44,6 +45,8 @@ export default function CourseEditModal({
         string[]
     >([]);
     const [selectedFirma, setSelectedFirma] = useState<string>("");
+    const [promos, setPromos] = useState<Promos[]>([]);
+    const [selectedPromoId, setSelectedPromoId] = useState<string>("");
 
     const FIRMA_INNA = "inna"; // Instruktor nieskojarzony z firmą
 
@@ -143,6 +146,30 @@ export default function CourseEditModal({
         fetchFirmy();
     }, []);
 
+    useEffect(() => {
+        const p = course.promocje;
+        if (p == null) setSelectedPromoId("");
+        else if (typeof p === "object" && p !== null && "_id" in p)
+            setSelectedPromoId(String((p as { _id: string })._id));
+        else setSelectedPromoId(String(p));
+    }, [course]);
+
+    useEffect(() => {
+        async function fetchPromos() {
+            try {
+                const res = await fetch("/admin/api/v1/promo", {
+                    credentials: "include",
+                });
+                const data = await res.json();
+                if (data.status === 0 && Array.isArray(data.promos))
+                    setPromos(data.promos);
+            } catch (e) {
+                console.error("Błąd podczas pobierania promocji:", e);
+            }
+        }
+        fetchPromos();
+    }, [course.slug]);
+
     // Sync selectedFirma z course z bazy: gdy firma === null → "Instruktor nieskojarzony z firmą", instruktor z obiektu
     useEffect(() => {
         const courseFirma = course.firma ?? null;
@@ -199,6 +226,10 @@ export default function CourseEditModal({
                     editedCourse.firma = firmaData._id || firmaData;
                 }
             }
+
+            editedCourse.promocje = (
+                selectedPromoId === "" ? null : selectedPromoId
+            ) as Courses["promocje"];
 
             const response = await fetch("/admin/api/v1/courses", {
                 method: "PUT",
@@ -426,6 +457,41 @@ export default function CourseEditModal({
                                     className="w-full px-3 py-2 border rounded-md"
                                     placeholder="23"
                                 />
+                            </div>
+                            <div className="sm:col-span-2">
+                                <label className="block text-sm font-medium mb-1">
+                                    Promocja (globalna)
+                                </label>
+                                <select
+                                    value={selectedPromoId}
+                                    onChange={(e) =>
+                                        setSelectedPromoId(e.target.value)
+                                    }
+                                    className="w-full px-3 py-2 border rounded-md">
+                                    <option value="">— Brak promocji —</option>
+                                    {promos.map((pr) => {
+                                        const id = pr._id
+                                            ? String(pr._id)
+                                            : "";
+                                        if (!id) return null;
+                                        return (
+                                            <option key={id} value={id}>
+                                                {pr.nazwa}
+                                                {pr.procent != null &&
+                                                pr.procent > 0
+                                                    ? ` (−${pr.procent}%)`
+                                                    : ""}
+                                            </option>
+                                        );
+                                    })}
+                                </select>
+                                <p className="text-xs text-gray-600 mt-1">
+                                    <Link
+                                        href="/admin/discounts/new"
+                                        className="text-[#D2B79B] hover:underline">
+                                        Dodaj nową promocję
+                                    </Link>
+                                </p>
                             </div>
                             <div>
                                 <label className="block text-sm font-medium mb-1">SKU</label>

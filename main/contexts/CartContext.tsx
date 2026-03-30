@@ -12,7 +12,6 @@ import { CartItem, Cart } from "@/lib/types/cartTypes";
 import { Courses } from "@/lib/types/coursesTypes";
 import { Promos } from "@/lib/types/shared";
 
-
 interface CartContextType {
     getCart: () => Cart;
     lastAddedItem: CartItem | null;
@@ -34,54 +33,82 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-// Funkcja pomocnicza do generowania ID (poza komponentem, aby była dostępna wszędzie)
 const getItemId = (product: string, wariant?: Warianty): string => {
-    return `${product}_${wariant ? wariant.nazwa.replace(" ", "_") : "0"}`;
+    return `${product}_${wariant ? wariant.nazwa.replace(/ /g, "_") : "0"}`;
 };
+
+/** Jednoznaczny klucz linii koszyka (zgodny z addToCart). */
+function lineIdForCartItem(item: CartItem): string {
+    return getItemId(`${item.type}_${item.object.slug}`, item.wariant);
+}
+
+function newCartId(): string {
+    const id = new Uint8Array(12);
+    crypto.getRandomValues(id);
+    return Array.from(id)
+        .map((b) => b.toString(16).padStart(2, "0"))
+        .join("");
+}
+
+/**
+ * Ujednolica id linii i scala duplikaty (stary localStorage / zmiana formatu id).
+ */
+function normalizeAndMergeItems(items: CartItem[]): CartItem[] {
+    const map = new Map<string, CartItem>();
+    for (const raw of items) {
+        if (!raw?.object?.slug || (raw.type !== "produkt" && raw.type !== "kursy")) {
+            continue;
+        }
+        const id = lineIdForCartItem(raw);
+        const cur = map.get(id);
+        if (cur) {
+            cur.quantity += Math.max(0, raw.quantity);
+        } else {
+            map.set(id, { ...raw, id });
+        }
+    }
+    return Array.from(map.values());
+}
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
     const [cart, setCart] = useState<Cart>({ id: "", items: [] });
     const [lastAddedItem, setLastAddedItem] = useState<CartItem | null>(null);
+    /** Bez tego pierwszy zapis nadpisuje localStorage pustym stanem zanim zadziała odczyt. */
+    const [cartHydrated, setCartHydrated] = useState(false);
 
-    // Ładuj koszyk z localStorage przy inicjalizacji
     useEffect(() => {
         if (typeof window === "undefined") return;
+
+        const finish = (next: Cart) => {
+            setCart(next);
+            setCartHydrated(true);
+        };
+
         const savedCart = localStorage.getItem("cart");
         if (savedCart) {
             try {
-                function p(c: Cart) {
-                    setCart(c);
-                }
                 const parsedCart: Cart = JSON.parse(savedCart);
-                // Upewnij się, że wszystkie elementy mają ID
-                if (parsedCart.items.length == 0) return;
-                const ci = parsedCart.items.map((item) => {
-                    if (item.id) return item;
-                    item.id = getItemId(item.object.slug!, item.wariant);
-                    return item;
-                });
-                parsedCart.items = ci;
-                p(parsedCart);
+                const id =
+                    typeof parsedCart.id === "string" && parsedCart.id
+                        ? parsedCart.id
+                        : newCartId();
+                const items = normalizeAndMergeItems(
+                    Array.isArray(parsedCart.items) ? parsedCart.items : [],
+                );
+                finish({ id, items });
             } catch (error) {
                 console.error("Błąd podczas ładowania koszyka:", error);
+                finish({ id: newCartId(), items: [] });
             }
         } else {
-            const id = new Uint8Array(12);
-            crypto.getRandomValues(id);
-            const cartId = Array.from(id)
-                .map((b) => b.toString(16).padStart(2, "0"))
-                .join("");
-            function a(c: Cart) {
-                setCart(c);
-            }
-            a({ id: cartId, items: [] });
+            finish({ id: newCartId(), items: [] });
         }
     }, []);
 
-    // Zapisz koszyk do localStorage przy każdej zmianie
     useEffect(() => {
+        if (!cartHydrated || typeof window === "undefined") return;
         localStorage.setItem("cart", JSON.stringify(cart));
-    }, [cart]);
+    }, [cart, cartHydrated]);
 
     const addToCart = useCallback(
         (
@@ -92,39 +119,42 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             wariant?: Warianty,
         ) => {
             const itemId = getItemId(type + "_" + object.slug, wariant);
+            const addQty = Math.max(0, quantity);
+
             setCart((prev) => {
                 const existingItemIndex = prev.items.findIndex(
-                    (item) => item.id === itemId,
+                    (item) => lineIdForCartItem(item) === itemId,
                 );
 
                 let newItem: CartItem;
                 if (existingItemIndex >= 0) {
-                    // Zwiększ ilość istniejącego produktu
                     const updated = [...prev.items];
-                    updated[existingItemIndex].quantity += quantity;
-                    newItem = updated[existingItemIndex];
+                    const row = { ...updated[existingItemIndex], id: itemId };
+                    row.quantity += addQty;
+                    updated[existingItemIndex] = row;
+                    newItem = row;
                     return { ...prev, items: updated };
-                } else {
-                    // Dodaj nowy produkt
-                    newItem = {
-                        id: itemId,
-                        type,
-                        object: {
-                            vat: object.vat,
-                            promocje: object.promocje as Promos | undefined,
-                            slug: object.slug,
-                            nazwa: object.nazwa,
-                            media: object.media,
-                            cena: object.cena,
-                            sku: object.sku || "",
-                        },
-                        quantity,
-                        price,
-                        wariant,
-                    };
-                    return { ...prev, items: [...prev.items, newItem] };
                 }
+
+                newItem = {
+                    id: itemId,
+                    type,
+                    object: {
+                        vat: object.vat,
+                        promocje: object.promocje as Promos | undefined,
+                        slug: object.slug,
+                        nazwa: object.nazwa,
+                        media: object.media,
+                        cena: object.cena,
+                        sku: object.sku || "",
+                    },
+                    quantity: addQty,
+                    price,
+                    wariant,
+                };
+                return { ...prev, items: [...prev.items, newItem] };
             });
+
             setLastAddedItem({
                 id: itemId,
                 type,
@@ -137,8 +167,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                     cena: object.cena,
                     sku: object.sku ?? "",
                 },
-                quantity,
-                price: (price * (1 + object.vat / 100)),
+                quantity: addQty,
+                price: price * (1 + object.vat / 100),
                 wariant,
             });
         },
@@ -148,7 +178,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const removeFromCart = useCallback((itemId: string) => {
         setCart((prev) => ({
             ...prev,
-            items: prev.items.filter((item) => item.id !== itemId),
+            items: prev.items.filter(
+                (item) => item.id !== itemId && lineIdForCartItem(item) !== itemId,
+            ),
         }));
     }, []);
 
@@ -161,7 +193,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             setCart((prev) => ({
                 ...prev,
                 items: prev.items.map((item) =>
-                    item.id === itemId ? { ...item, quantity } : item,
+                    item.id === itemId || lineIdForCartItem(item) === itemId
+                        ? { ...item, id: lineIdForCartItem(item), quantity }
+                        : item,
                 ),
             }));
         },
@@ -192,18 +226,28 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         if (savedCart) {
             try {
                 const parsedCart: Cart = JSON.parse(savedCart);
-                return parsedCart;
+                return {
+                    ...parsedCart,
+                    items: normalizeAndMergeItems(
+                        Array.isArray(parsedCart.items) ? parsedCart.items : [],
+                    ),
+                };
             } catch (error) {
                 console.error("Błąd podczas ładowania koszyka:", error);
                 return { id: "", items: [] };
             }
-        } else {
-            return { id: "", items: [] };
         }
+        return { id: "", items: [] };
     }, []);
 
     const refreshCart = useCallback(async (entry: Cart) => {
-        setCart(entry);
+        const id =
+            typeof entry.id === "string" && entry.id ? entry.id : newCartId();
+        setCart({
+            id,
+            items: normalizeAndMergeItems(entry.items ?? []),
+        });
+        setCartHydrated(true);
     }, []);
 
     return (

@@ -1,5 +1,6 @@
 "use client";
 
+import { formatLocaleDateTime } from "@/lib/dateFormat";
 import { Promos } from "@/lib/types/shared";
 import { useEffect, useMemo, useState } from "react";
 
@@ -41,6 +42,10 @@ export default function AdminPromoCard({
                 <h3 className="font-semibold text-lg line-clamp-2 group-hover:text-primary transition-colors">
                     {promo.nazwa || "Brak nazwy"}
                 </h3>
+                <div className="text-xs text-muted-foreground space-y-0.5">
+                    <p>Od: {formatLocaleDateTime(promo.rozpoczecie ?? null)}</p>
+                    <p>Do: {formatLocaleDateTime(promo.wygasa ?? null)}</p>
+                </div>
                 <div className="flex items-center justify-between pt-2 border-t">
                     <div>
                         <div className="text-sm text-green-700">
