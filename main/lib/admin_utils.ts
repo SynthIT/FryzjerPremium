@@ -290,3 +290,14 @@ export async function deleteUser(
     }
 }
 
+export async function linkOrdersToUser(req: NextRequest, email: string) {
+    const { val, user, mess } = await verifyJWT(req);
+    if (!val || !user) return { mess: mess! };
+    try {
+        await db();
+        await Orders.updateMany({ email: email }, { $set: { user: user._id } });
+        return { mess: "Zamówienia zostały ponownie przypisane do użytkownika" };
+    } catch (err) {
+        return { mess: `Błąd podczas linkowania zamówień do użytkownika: ${err}` };
+    }
+}

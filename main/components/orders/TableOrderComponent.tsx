@@ -21,6 +21,7 @@ export default function TableOrderComponent({
     const rows = type === "products" ? order.produkty : order.kursy;
     if (!rows?.length) return null;
 
+
     return (
         <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white/80">
             <table className="min-w-full text-left text-sm">
@@ -31,18 +32,21 @@ export default function TableOrderComponent({
                         <th className="px-4 py-3 font-semibold text-gray-800">Pozycja</th>
                         <th className="px-4 py-3 font-semibold text-gray-800">Ilość</th>
                         <th className="px-4 py-3 font-semibold text-gray-800">Cena</th>
+                        <th className="px-4 py-3 font-semibold text-gray-800">Suma</th>
                     </tr>
                 </thead>
                 <tbody>
                     {rows.map((row, i) => {
                         const pozycja = row.pozycja as Products | Courses;
+                        const cena = pozycja.cena * (1 + pozycja.vat / 100)
                         return (
                             <tr key={i} className="border-b border-gray-100 last:border-0">
                                 <td className="px-4 py-3 text-gray-700 text-center">{i + 1}</td>
                                 <td className="px-4 py-3 text-gray-700"><Image src={pozycja.media[0].path} alt={pozycja.nazwa} width={100} height={100} /></td>
                                 <td className="px-4 py-3 text-gray-700">{labelForPozycja(row.pozycja)}</td>
                                 <td className="px-4 py-3 text-gray-700">{row.ilosc}</td>
-                                <td className="px-4 py-3 text-gray-700">{row.cena?.toFixed?.(2) ?? row.cena} zł</td>
+                                <td className="px-4 py-3 text-gray-700">{cena?.toFixed?.(2) ?? cena} zł</td>
+                                <td className="px-4 py-3 text-gray-700">{(cena ?? 0) * (row.ilosc ?? 0)} zł</td>
                             </tr>
                         )
                     })}

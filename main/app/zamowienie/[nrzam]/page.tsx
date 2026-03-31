@@ -10,10 +10,6 @@ export default function OrderPage() {
     const { nrzam } = useParams();
     const query = useSearchParams();
     const redirected = query.get("redirected");
-    const { clearCart } = useCart();
-    if (redirected) {
-        clearCart();
-    }
     const [order, setOrder] = useState<OrderList | null>(null);
     useEffect(() => {
         async function getOrder() {

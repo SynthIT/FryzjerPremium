@@ -1,12 +1,14 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, } from "react";
 import "@/app/globals2.css";
 import { Products, Producents, Warianty } from "@/lib/types/productTypes";
 import { Categories } from "@/lib/types/shared";
-import { makeSlugKeys, parseSlugName, generateSlug } from "@/lib/utils_admin";
+import { generateSlug } from "@/lib/utils_admin";
 import { useRouter } from "next/navigation";
-import { Plus, Minus, X } from "lucide-react";
+import { Plus, Minus, X, BookOpen, Camera, ListChecks, Box } from "lucide-react";
+import { finalPrice } from "@/lib/utils";
+import Image from "next/image";
 
 
 
@@ -54,6 +56,12 @@ export default function NewProductPage() {
 
     // Warianty
     const [warianty, setWarianty] = useState<Warianty[]>([]);
+
+    const [cenaTyp, setCenaTyp] = useState<string>("brutto");
+
+    const handleCenaTypChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setCenaTyp(e.target.value);
+    };
 
     // Auto-generuj slug z nazwy
     useEffect(() => {
@@ -330,524 +338,467 @@ export default function NewProductPage() {
 
             <form
                 onSubmit={handleSubmit}
-                className="grid gap-4 rounded-lg border p-3 sm:p-4 sm:grid-cols-2">
+                className="space-y-8">
                 {/* Nazwa i Slug */}
-                <div className="grid gap-2 sm:col-span-2">
-                    <label className="text-sm font-medium">Nazwa *</label>
-                    <input
-                        type="text"
-                        value={nazwa}
-                        onChange={(e) => setNazwa(e.target.value)}
-                        required
-                        className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
-                        placeholder="Np. Szampon wygładzający"
-                    />
-                    <span className="text-xs text-muted-foreground">
-                        Slug (auto-generowany): {slug || "(wpisz nazwę)"}
-                    </span>
-                </div>
+                {/* Podstawowe informacje */}
+                <div className="rounded-lg border p-6 space-y-6">
+                    <h2 className="text-xl font-semibold flex items-center gap-2">
+                        <BookOpen className="h-5 w-5" />
+                        Podstawowe informacje
+                    </h2>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="sm:col-span-2">
+                            <label className="text-sm font-medium">Nazwa *</label>
+                            <input
+                                type="text"
+                                value={nazwa}
+                                onChange={(e) => setNazwa(e.target.value)}
+                                required
+                                className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
+                                placeholder="Np. Szampon wygładzający"
+                            />
+                            <span className="text-xs text-muted-foreground">
+                                Slug (auto-generowany): {slug || "(wpisz nazwę)"}
+                            </span>
+                        </div>
+                        <div className="sm:col-span-2">
+                            <label className="text-sm font-medium">Opis *</label>
+                            <textarea
+                                rows={4}
+                                value={opis}
+                                onChange={(e) => setOpis(e.target.value)}
+                                required
+                                className="w-full resize-none rounded-md border bg-background px-3 py-2 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
+                                placeholder="Krótki opis produktu"
+                            />
+                        </div>
 
-                {/* Cena i Cena skupu */}
-                <div className="grid gap-2">
-                    <label className="text-sm font-medium">
-                        Cena (bez VAT) *
-                    </label>
-                    <input
-                        type="number"
-                        step="0.01"
-                        value={cena}
-                        onChange={(e) =>
-                            setCena(parseFloat(e.target.value) || 0)
-                        }
-                        required
-                        className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
-                        placeholder="0.00"
-                    />
-                </div>
-                <div className="grid gap-2">
-                    <label className="text-sm font-medium">
-                        Cena skupu (analityka) *
-                    </label>
-                    <input
-                        type="number"
-                        step="0.01"
-                        value={cena_skupu}
-                        onChange={(e) =>
-                            setCena_skupu(parseFloat(e.target.value) || 0)
-                        }
-                        required
-                        className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
-                        placeholder="0.00"
-                    />
-                </div>
+                        {/* Cena i Cena skupu */}
+                        <div className="">
+                            <label className="block text-sm font-medium mb-2">
+                                Cena *
+                            </label>
+                            <div className="flex items-center gap-2">
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    value={cena}
+                                    onChange={(e) =>
+                                        setCena(parseFloat(e.target.value) || 0)
+                                    }
+                                    required
+                                    className="w-full rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
+                                    placeholder="0.00"
+                                />
+                                <select
+                                    className="w-1/3 rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
+                                    value={cenaTyp}
+                                    onChange={handleCenaTypChange}
+                                    required>
+                                    <option value="brutto">Brutto</option>
+                                    <option value="netto">Netto</option>
+                                </select>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">Cena z {cenaTyp === "netto" ? "VAT" : "bez VAT"}: {cenaTyp === "netto" ? finalPrice(cena, vat, undefined, undefined) : `${(cena / (1 + vat / 100)).toFixed(2)}`} zł</p>
+                        </div>
+                        <div className="">
+                            <label className="text-sm font-medium">
+                                Cena skupu (analityka) *
+                            </label>
+                            <input
+                                type="number"
+                                step="0.01"
+                                value={cena_skupu}
+                                onChange={(e) =>
+                                    setCena_skupu(parseFloat(e.target.value) || 0)
+                                }
+                                required
+                                className="w-full h-fit rounded-md border bg-background px-3 py-2 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
+                                placeholder="0.00"
+                            />
+                        </div>
 
-                {/* Dostępność */}
-                <div className="grid gap-2">
-                    <label className="text-sm font-medium">Dostępność *</label>
-                    <select
-                        value={dostepnosc}
-                        onChange={(e) => setDostepnosc(e.target.value)}
-                        required
-                        className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring">
-                        <option value="duza">Duża</option>
-                        <option value="ograniczona">Ograniczona</option>
-                        <option value="mała">Mała</option>
-                        <option value="niedostępne">Niedostępne</option>
-                    </select>
-                </div>
+                        {/* Dostępność */}
+                        <div className="">
+                            <label className="text-sm font-medium">Dostępność *</label>
+                            <select
+                                value={dostepnosc}
+                                onChange={(e) => setDostepnosc(e.target.value)}
+                                required
+                                className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring">
+                                <option value="duza">Duża</option>
+                                <option value="ograniczona">Ograniczona</option>
+                                <option value="mała">Mała</option>
+                                <option value="niedostępne">Niedostępne</option>
+                            </select>
+                        </div>
 
-                {/* Stan magazynowy */}
-                <div className="grid gap-2">
-                    <label className="text-sm font-medium">
-                        Stan magazynowy *
-                    </label>
-                    <input
-                        type="number"
-                        min="0"
-                        value={ilosc}
-                        onChange={(e) =>
-                            setIlosc(parseInt(e.target.value) || 0)
-                        }
-                        required
-                        className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
-                        placeholder="0"
-                    />
-                </div>
+                        {/* Stan magazynowy */}
+                        <div className="">
+                            <label className="text-sm font-medium">
+                                Stan magazynowy *
+                            </label>
+                            <input
+                                type="number"
+                                min="0"
+                                value={ilosc}
+                                onChange={(e) =>
+                                    setIlosc(parseInt(e.target.value) || 0)
+                                }
+                                required
+                                className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
+                                placeholder="0"
+                            />
+                        </div>
 
-                {/* Opis */}
-                <div className="grid gap-2 sm:col-span-2">
-                    <label className="text-sm font-medium">Opis *</label>
-                    <textarea
-                        rows={4}
-                        value={opis}
-                        onChange={(e) => setOpis(e.target.value)}
-                        required
-                        className="w-full resize-none rounded-md border bg-background px-3 py-2 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
-                        placeholder="Krótki opis produktu"
-                    />
-                </div>
+                        {/* Opis */}
 
-                {/* Kategorie */}
-                <div className="grid gap-2 sm:col-span-2">
-                    <label className="text-sm font-medium">Kategorie *</label>
-                    <div className="space-y-2">
+                    </div>
+                </div>
+                {/* Kategorie i producent */}
+                <div className="rounded-lg border p-6 space-y-6">
+                    <h2 className="text-xl font-semibold flex items-center gap-2">
+                        <BookOpen className="h-5 w-5" />
+                        Kategorie i producent
+                    </h2>
+                    <div className="grid gap-2 sm:col-span-2">
+                        <label className="text-sm font-medium">Kategorie *</label>
+                        <div className="space-y-2">
+                            <select
+                                value={selectedMainCategory}
+                                onChange={(e) =>
+                                    handleMainCategoryChange(e.target.value)
+                                }
+                                required
+                                className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring">
+                                <option value="">Wybierz główną kategorię</option>
+                                {categoriesSlug.map((cat) => (
+                                    <option key={cat} value={cat}>
+                                        {cat}
+                                    </option>
+                                ))}
+                            </select>
+                            {selectedMainCategory &&
+                                categories[selectedMainCategory] && (
+                                    <div className="space-y-1">
+                                        <label className="text-xs text-muted-foreground">
+                                            Wybierz podkategorie (wiele):
+                                        </label>
+                                        {categories[selectedMainCategory].map(
+                                            (cat) => (
+                                                <label
+                                                    key={cat._id || cat.nazwa}
+                                                    className="flex items-center gap-2 p-2 border rounded-md cursor-pointer hover:bg-accent">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={selectedSubCategories.includes(
+                                                            cat._id || "",
+                                                        )}
+                                                        onChange={() =>
+                                                            handleSubCategoryToggle(
+                                                                cat._id || "",
+                                                            )
+                                                        }
+                                                        className="w-4 h-4"
+                                                    />
+                                                    <span className="text-sm">
+                                                        {cat.nazwa}
+                                                    </span>
+                                                </label>
+                                            ),
+                                        )}
+                                    </div>
+                                )}
+                        </div>
+                    </div>
+
+                    {/* Producent */}
+                    <div className="grid gap-2 sm:col-span-2">
+                        <label className="text-sm font-medium">Producent *</label>
                         <select
-                            value={selectedMainCategory}
-                            onChange={(e) =>
-                                handleMainCategoryChange(e.target.value)
-                            }
+                            value={selectedProducent}
+                            onChange={(e) => setSelectedProducent(e.target.value)}
                             required
                             className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring">
-                            <option value="">Wybierz główną kategorię</option>
-                            {categoriesSlug.map((cat) => (
-                                <option key={cat} value={cat}>
-                                    {cat}
+                            <option value="">Wybierz producenta</option>
+                            {producents.map((prod) => (
+                                <option key={prod.slug} value={prod._id}>
+                                    {prod.nazwa}
                                 </option>
                             ))}
                         </select>
-                        {selectedMainCategory &&
-                            categories[selectedMainCategory] && (
-                                <div className="space-y-1">
-                                    <label className="text-xs text-muted-foreground">
-                                        Wybierz podkategorie (wiele):
-                                    </label>
-                                    {categories[selectedMainCategory].map(
-                                        (cat) => (
-                                            <label
-                                                key={cat._id || cat.nazwa}
-                                                className="flex items-center gap-2 p-2 border rounded-md cursor-pointer hover:bg-accent">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={selectedSubCategories.includes(
-                                                        cat._id || "",
-                                                    )}
-                                                    onChange={() =>
-                                                        handleSubCategoryToggle(
-                                                            cat._id || "",
-                                                        )
-                                                    }
-                                                    className="w-4 h-4"
-                                                />
-                                                <span className="text-sm">
-                                                    {cat.nazwa}
-                                                </span>
-                                            </label>
-                                        ),
-                                    )}
-                                </div>
-                            )}
                     </div>
                 </div>
 
-                {/* Producent */}
-                <div className="grid gap-2 sm:col-span-2">
-                    <label className="text-sm font-medium">Producent *</label>
-                    <select
-                        value={selectedProducent}
-                        onChange={(e) => setSelectedProducent(e.target.value)}
-                        required
-                        className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring">
-                        <option value="">Wybierz producenta</option>
-                        {producents.map((prod) => (
-                            <option key={prod.slug} value={prod._id}>
-                                {prod.nazwa}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-
                 {/* Media */}
-                <div className="grid gap-2 sm:col-span-2">
-                    <label className="text-sm font-medium">
-                        Zdjęcia produktu
-                    </label>
-                    <input
-                        type="file"
-                        accept="image/*"
-                        multiple
-                        onChange={handleMediaChange}
-                        className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
-                    />
-                    {mediaPreview.length > 0 && (
-                        <div className="grid grid-cols-4 gap-2 mt-2">
-                            {mediaPreview.map((preview, index) => (
-                                <div key={index} className="relative">
-                                    <img
-                                        src={preview}
-                                        alt={`Preview ${index}`}
-                                        className="w-full h-24 object-cover rounded-md border"
+                <div className="rounded-lg border p-6 space-y-6">
+                    <h2 className="text-xl font-semibold flex items-center gap-2">
+                        <Camera className="h-5 w-5" />
+                        Zdjęcia i pliki
+                    </h2>
+                    <div className="grid gap-2 sm:col-span-2">
+                        <label className="text-sm font-medium">
+                            Zdjęcia produktu
+                        </label>
+                        <input
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            onChange={handleMediaChange}
+                            className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
+                        />
+                        {mediaPreview.length > 0 && (
+                            <div className="grid grid-cols-4 gap-2 mt-2">
+                                {mediaPreview.map((preview, index) => (
+                                    <div key={index} className="relative">
+                                        <Image
+                                            src={preview}
+                                            alt={`Preview ${index}`}
+                                            className="w-full h-24 object-cover rounded-md border"
+                                            width={100}
+                                            height={100}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => removeMedia(index)}
+                                            className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600">
+                                            <X className="h-3 w-3" />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+                {/* Specyfikacja */}
+                <div className="rounded-lg border p-6 space-y-6">
+                    <h2 className="text-xl font-semibold flex items-center gap-2">
+                        <ListChecks className="h-5 w-5" />
+                        Specyfikacja
+                    </h2>
+                    <div className="grid gap-2 sm:col-span-2">
+                        <div className="flex items-center justify-between">
+                            <label className="text-sm font-medium">
+                                Specyfikacja
+                            </label>
+                            <button
+                                type="button"
+                                onClick={addSpecyfikacja}
+                                className="px-3 py-2 text-xs bg-primary border-2 text-primary-foreground rounded-md hover:bg-primary/90 flex items-center gap-1">
+                                <Plus className="h-3 w-3" />
+                                Dodaj
+                            </button>
+                        </div>
+                        <div className="space-y-2">
+                            {specyfikacja.map((spec, index) => (
+                                <div key={index} className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        placeholder="Klucz"
+                                        value={spec.key}
+                                        onChange={(e) =>
+                                            updateSpecyfikacja(
+                                                index,
+                                                "key",
+                                                e.target.value,
+                                            )
+                                        }
+                                        className="flex-1 rounded-md border bg-background px-3 py-2 text-sm"
+                                    />
+                                    <input
+                                        type="text"
+                                        placeholder="Wartość"
+                                        value={spec.value}
+                                        onChange={(e) =>
+                                            updateSpecyfikacja(
+                                                index,
+                                                "value",
+                                                e.target.value,
+                                            )
+                                        }
+                                        className="flex-1 rounded-md border bg-background px-3 py-2 text-sm"
                                     />
                                     <button
                                         type="button"
-                                        onClick={() => removeMedia(index)}
-                                        className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600">
-                                        <X className="h-3 w-3" />
+                                        onClick={() => removeSpecyfikacja(index)}
+                                        className="p-2 text-red-600 hover:bg-red-50 rounded-md">
+                                        <Minus className="h-4 w-4" />
                                     </button>
                                 </div>
                             ))}
                         </div>
-                    )}
-                </div>
-
-                {/* Specyfikacja */}
-                <div className="grid gap-2 sm:col-span-2">
-                    <div className="flex items-center justify-between">
-                        <label className="text-sm font-medium">
-                            Specyfikacja
-                        </label>
-                        <button
-                            type="button"
-                            onClick={addSpecyfikacja}
-                            className="px-2 py-1 text-xs bg-primary text-primary-foreground rounded-md hover:bg-primary/90 flex items-center gap-1">
-                            <Plus className="h-3 w-3" />
-                            Dodaj
-                        </button>
-                    </div>
-                    <div className="space-y-2">
-                        {specyfikacja.map((spec, index) => (
-                            <div key={index} className="flex gap-2">
-                                <input
-                                    type="text"
-                                    placeholder="Klucz"
-                                    value={spec.key}
-                                    onChange={(e) =>
-                                        updateSpecyfikacja(
-                                            index,
-                                            "key",
-                                            e.target.value,
-                                        )
-                                    }
-                                    className="flex-1 rounded-md border bg-background px-3 py-2 text-sm"
-                                />
-                                <input
-                                    type="text"
-                                    placeholder="Wartość"
-                                    value={spec.value}
-                                    onChange={(e) =>
-                                        updateSpecyfikacja(
-                                            index,
-                                            "value",
-                                            e.target.value,
-                                        )
-                                    }
-                                    className="flex-1 rounded-md border bg-background px-3 py-2 text-sm"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => removeSpecyfikacja(index)}
-                                    className="p-2 text-red-600 hover:bg-red-50 rounded-md">
-                                    <Minus className="h-4 w-4" />
-                                </button>
-                            </div>
-                        ))}
                     </div>
                 </div>
 
                 {/* Warianty */}
-                <div className="grid gap-2 sm:col-span-2">
-                    <div className="flex items-center justify-between">
-                        <label className="text-sm font-medium">Warianty</label>
-                        <button
-                            type="button"
-                            onClick={addWariant}
-                            className="px-2 py-1 text-xs bg-primary text-primary-foreground rounded-md hover:bg-primary/90 flex items-center gap-1">
-                            <Plus className="h-3 w-3" />
-                            Dodaj wariant
-                        </button>
-                    </div>
-                    <div className="space-y-4">
-                        {warianty.map((wariant, index) => (
-                            <div
-                                key={index}
-                                className="p-4 border rounded-md space-y-3">
-                                <div className="grid grid-cols-2 gap-2">
-                                    <div>
-                                        <label className="text-xs font-medium">
-                                            Nazwa wariantu *
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={wariant.nazwa}
-                                            onChange={(e) =>
-                                                updateWariant(
-                                                    index,
-                                                    "nazwa",
-                                                    e.target.value,
-                                                )
-                                            }
-                                            className="w-full rounded-md border bg-background px-3 py-2 text-sm"
-                                            placeholder="Np. Czerwony"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-xs font-medium">
-                                            Typ *
-                                        </label>
-                                        <select
-                                            value={wariant.typ}
-                                            onChange={(e) =>
-                                                updateWariant(
-                                                    index,
-                                                    "typ",
-                                                    e.target
-                                                        .value as Warianty["typ"],
-                                                )
-                                            }
-                                            className="w-full rounded-md border bg-background px-3 py-2 text-sm">
-                                            <option value="kolor">Kolor</option>
-                                            <option value="rozmiar">
-                                                Rozmiar
-                                            </option>
-                                            <option value="objetosc">
-                                                Objętość
-                                            </option>
-                                            <option value="specjalna">
-                                                Specjalna
-                                            </option>
-                                            <option value="hurt">Hurt</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                {/* Pola zależne od typu */}
-                                {wariant.typ === "kolor" && (
-                                    <div className="grid grid-cols-3 gap-2">
-                                        <input
-                                            type="text"
-                                            placeholder="Nazwa koloru"
-                                            value={wariant.kolory?.name || ""}
-                                            onChange={(e) =>
-                                                updateWariant(
-                                                    index,
-                                                    "kolory",
-                                                    {
-                                                        ...wariant.kolory,
-                                                        name: e.target.value,
-
-                                                    },
-                                                )
-                                            }
-                                            className="rounded-md border bg-background px-3 py-2 text-sm"
-                                        />
-                                        <input
-                                            type="text"
-                                            placeholder="Wartość"
-                                            value={wariant.kolory?.hex || "#000000"}
-                                            disabled={true}
-                                            className="rounded-md border bg-background px-3 py-2 text-sm"
-                                        />
-                                        <input
-                                            type="color"
-                                            value={
-                                                wariant.kolory?.hex || "#000000"
-                                            }
-                                            onChange={(e) =>
-                                                updateWariant(
-                                                    index,
-                                                    "kolory",
-                                                    {
-                                                        ...wariant.kolory,
-                                                        hex: e.target.value,
-                                                        val: e.target.value,
-                                                    },
-                                                )
-                                            }
-                                            className="rounded-md border bg-background h-10"
-                                        />
-                                    </div>
-                                )}
-                                {wariant.typ === "rozmiar" && (
+                <div className="rounded-lg border p-6 space-y-6">
+                    <h2 className="text-xl font-semibold flex items-center gap-2">
+                        <Box className="h-5 w-5" />
+                        Warianty
+                    </h2>
+                    <div className="grid gap-2 sm:col-span-2">
+                        <div className="flex items-center justify-between">
+                            <label className="text-sm font-medium">Warianty</label>
+                            <button
+                                type="button"
+                                onClick={addWariant}
+                                className="px-3 py-2 text-xs bg-primary border-2 text-primary-foreground rounded-md hover:bg-primary/90 flex items-center gap-1">
+                                <Plus className="h-3 w-3" />
+                                Dodaj wariant
+                            </button>
+                        </div>
+                        <div className="space-y-4">
+                            {warianty.map((wariant, index) => (
+                                <div
+                                    key={index}
+                                    className="p-4 border rounded-md space-y-3">
                                     <div className="grid grid-cols-2 gap-2">
-                                        <input
-                                            type="text"
-                                            placeholder="Nazwa rozmiaru"
-                                            value={wariant.rozmiary?.name || ""}
-                                            onChange={(e) =>
-                                                updateWariant(
-                                                    index,
-                                                    "rozmiary",
-                                                    {
-                                                        ...wariant.rozmiary,
-                                                        name: e.target.value,
-                                                        val: e.target.value,
-                                                    },
-                                                )
-                                            }
-                                            className="rounded-md border bg-background px-3 py-2 text-sm"
-                                        />
-                                        <input
-                                            type="text"
-                                            placeholder="Wartość"
-                                            value={wariant.rozmiary?.val || ""}
-                                            onChange={(e) =>
-                                                updateWariant(
-                                                    index,
-                                                    "rozmiary",
-                                                    {
-                                                        ...wariant.rozmiary,
-                                                        val: e.target.value,
-                                                    },
-                                                )
-                                            }
-                                            className="rounded-md border bg-background px-3 py-2 text-sm"
-                                        />
-                                    </div>
-                                )}
-                                {wariant.typ === "objetosc" && (
-                                    <div>
-                                        <input
-                                            type="number"
-                                            placeholder="Objętość (ml)"
-                                            value={wariant.objetosc || ""}
-                                            onChange={(e) =>
-                                                updateWariant(
-                                                    index,
-                                                    "objetosc",
-                                                    parseFloat(
-                                                        e.target.value,
-                                                    ) || 0,
-                                                )
-                                            }
-                                            className="w-full rounded-md border bg-background px-3 py-2 text-sm"
-                                        />
-                                    </div>
-                                )}
-
-                                {/* Nadpisuje cenę */}
-                                <div className="flex items-center gap-2">
-                                    <input
-                                        type="checkbox"
-                                        checked={
-                                            wariant.nadpisuje_cene || false
-                                        }
-                                        onChange={(e) =>
-                                            updateWariant(
-                                                index,
-                                                "nadpisuje_cene",
-                                                e.target.checked,
-                                            )
-                                        }
-                                        className="w-4 h-4"
-                                    />
-                                    <label className="text-xs">
-                                        Nadpisuje cenę
-                                    </label>
-                                    {wariant.nadpisuje_cene && (
-                                        <input
-                                            type="number"
-                                            step="0.01"
-                                            placeholder="Nowa cena"
-                                            value={wariant.nowa_cena || ""}
-                                            onChange={(e) =>
-                                                updateWariant(
-                                                    index,
-                                                    "nowa_cena",
-                                                    parseFloat(
-                                                        e.target.value,
-                                                    ) || 0,
-                                                )
-                                            }
-                                            className="flex-1 rounded-md border bg-background px-3 py-2 text-sm"
-                                        />
-                                    )}
-                                </div>
-
-                                {/* Inna cena skupu */}
-                                <div className="flex items-center gap-2">
-                                    <input
-                                        type="checkbox"
-                                        checked={
-                                            wariant.inna_cena_skupu || false
-                                        }
-                                        onChange={(e) =>
-                                            updateWariant(
-                                                index,
-                                                "inna_cena_skupu",
-                                                e.target.checked,
-                                            )
-                                        }
-                                        className="w-4 h-4"
-                                    />
-                                    <label className="text-xs">
-                                        Inna cena skupu (analityka)
-                                    </label>
-                                    {wariant.inna_cena_skupu && (
-                                        <input
-                                            type="number"
-                                            step="0.01"
-                                            placeholder="Cena skupu"
-                                            value={wariant.cena_skupu || ""}
-                                            onChange={(e) =>
-                                                updateWariant(
-                                                    index,
-                                                    "cena_skupu",
-                                                    parseFloat(
-                                                        e.target.value,
-                                                    ) || 0,
-                                                )
-                                            }
-                                            className="flex-1 rounded-md border bg-background px-3 py-2 text-sm"
-                                        />
-                                    )}
-                                </div>
-
-                                {/* Permisje */}
-                                {(wariant.typ === "hurt" ||
-                                    wariant.typ === "specjalna") && (
                                         <div>
                                             <label className="text-xs font-medium">
-                                                Permisje (opcjonalnie)
+                                                Nazwa wariantu *
                                             </label>
                                             <input
-                                                type="number"
-                                                placeholder="Kod permisji"
-                                                value={wariant.permisje || ""}
+                                                type="text"
+                                                value={wariant.nazwa}
                                                 onChange={(e) =>
                                                     updateWariant(
                                                         index,
-                                                        "permisje",
-                                                        parseInt(e.target.value) ||
-                                                        undefined,
+                                                        "nazwa",
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+                                                placeholder="Np. Czerwony"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-xs font-medium">
+                                                Typ *
+                                            </label>
+                                            <select
+                                                value={wariant.typ}
+                                                onChange={(e) =>
+                                                    updateWariant(
+                                                        index,
+                                                        "typ",
+                                                        e.target
+                                                            .value as Warianty["typ"],
+                                                    )
+                                                }
+                                                className="w-full rounded-md border bg-background px-3 py-2 text-sm">
+                                                <option value="kolor">Kolor</option>
+                                                <option value="rozmiar">
+                                                    Rozmiar
+                                                </option>
+                                                <option value="objetosc">
+                                                    Objętość
+                                                </option>
+                                                <option value="specjalna">
+                                                    Specjalna
+                                                </option>
+                                                <option value="hurt">Hurt</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    {/* Pola zależne od typu */}
+                                    {wariant.typ === "kolor" && (
+                                        <div className="grid grid-cols-3 gap-2">
+                                            <input
+                                                type="text"
+                                                placeholder="Nazwa koloru"
+                                                value={wariant.kolory?.name || ""}
+                                                onChange={(e) =>
+                                                    updateWariant(
+                                                        index,
+                                                        "kolory",
+                                                        {
+                                                            ...wariant.kolory,
+                                                            name: e.target.value,
+
+                                                        },
+                                                    )
+                                                }
+                                                className="rounded-md border bg-background px-3 py-2 text-sm"
+                                            />
+                                            <input
+                                                type="text"
+                                                placeholder="Wartość"
+                                                value={wariant.kolory?.hex || "#000000"}
+                                                disabled={true}
+                                                className="rounded-md border bg-background px-3 py-2 text-sm"
+                                            />
+                                            <input
+                                                type="color"
+                                                value={
+                                                    wariant.kolory?.hex || "#000000"
+                                                }
+                                                onChange={(e) =>
+                                                    updateWariant(
+                                                        index,
+                                                        "kolory",
+                                                        {
+                                                            ...wariant.kolory,
+                                                            hex: e.target.value,
+                                                            val: e.target.value,
+                                                        },
+                                                    )
+                                                }
+                                                className="rounded-md border bg-background h-10"
+                                            />
+                                        </div>
+                                    )}
+                                    {wariant.typ === "rozmiar" && (
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <input
+                                                type="text"
+                                                placeholder="Nazwa rozmiaru"
+                                                value={wariant.rozmiary?.name || ""}
+                                                onChange={(e) =>
+                                                    updateWariant(
+                                                        index,
+                                                        "rozmiary",
+                                                        {
+                                                            ...wariant.rozmiary,
+                                                            name: e.target.value,
+                                                            val: e.target.value,
+                                                        },
+                                                    )
+                                                }
+                                                className="rounded-md border bg-background px-3 py-2 text-sm"
+                                            />
+                                            <input
+                                                type="text"
+                                                placeholder="Wartość"
+                                                value={wariant.rozmiary?.val || ""}
+                                                onChange={(e) =>
+                                                    updateWariant(
+                                                        index,
+                                                        "rozmiary",
+                                                        {
+                                                            ...wariant.rozmiary,
+                                                            val: e.target.value,
+                                                        },
+                                                    )
+                                                }
+                                                className="rounded-md border bg-background px-3 py-2 text-sm"
+                                            />
+                                        </div>
+                                    )}
+                                    {wariant.typ === "objetosc" && (
+                                        <div>
+                                            <input
+                                                type="number"
+                                                placeholder="Objętość (ml)"
+                                                value={wariant.objetosc || ""}
+                                                onChange={(e) =>
+                                                    updateWariant(
+                                                        index,
+                                                        "objetosc",
+                                                        parseFloat(
+                                                            e.target.value,
+                                                        ) || 0,
                                                     )
                                                 }
                                                 className="w-full rounded-md border bg-background px-3 py-2 text-sm"
@@ -855,114 +806,229 @@ export default function NewProductPage() {
                                         </div>
                                     )}
 
-                                <button
-                                    type="button"
-                                    onClick={() => removeWariant(index)}
-                                    className="w-full px-3 py-2 text-sm text-red-600 border border-red-300 rounded-md hover:bg-red-50">
-                                    Usuń wariant
-                                </button>
-                            </div>
-                        ))}
+                                    {/* Nadpisuje cenę */}
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="checkbox"
+                                            checked={
+                                                wariant.nadpisuje_cene || false
+                                            }
+                                            onChange={(e) =>
+                                                updateWariant(
+                                                    index,
+                                                    "nadpisuje_cene",
+                                                    e.target.checked,
+                                                )
+                                            }
+                                            className="w-4 h-4"
+                                        />
+                                        <label className="text-xs">
+                                            Nadpisuje cenę
+                                        </label>
+                                        {wariant.nadpisuje_cene && (
+                                            <input
+                                                type="number"
+                                                step="0.01"
+                                                placeholder="Nowa cena"
+                                                value={wariant.nowa_cena || ""}
+                                                onChange={(e) =>
+                                                    updateWariant(
+                                                        index,
+                                                        "nowa_cena",
+                                                        parseFloat(
+                                                            e.target.value,
+                                                        ) || 0,
+                                                    )
+                                                }
+                                                className="flex-1 rounded-md border bg-background px-3 py-2 text-sm"
+                                            />
+                                        )}
+                                    </div>
+
+                                    {/* Inna cena skupu */}
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="checkbox"
+                                            checked={
+                                                wariant.inna_cena_skupu || false
+                                            }
+                                            onChange={(e) =>
+                                                updateWariant(
+                                                    index,
+                                                    "inna_cena_skupu",
+                                                    e.target.checked,
+                                                )
+                                            }
+                                            className="w-4 h-4"
+                                        />
+                                        <label className="text-xs">
+                                            Inna cena skupu (analityka)
+                                        </label>
+                                        {wariant.inna_cena_skupu && (
+                                            <input
+                                                type="number"
+                                                step="0.01"
+                                                placeholder="Cena skupu"
+                                                value={wariant.cena_skupu || ""}
+                                                onChange={(e) =>
+                                                    updateWariant(
+                                                        index,
+                                                        "cena_skupu",
+                                                        parseFloat(
+                                                            e.target.value,
+                                                        ) || 0,
+                                                    )
+                                                }
+                                                className="flex-1 rounded-md border bg-background px-3 py-2 text-sm"
+                                            />
+                                        )}
+                                    </div>
+
+                                    {/* Permisje */}
+                                    {(wariant.typ === "hurt" ||
+                                        wariant.typ === "specjalna") && (
+                                            <div>
+                                                <label className="text-xs font-medium">
+                                                    Permisje (opcjonalnie)
+                                                </label>
+                                                <input
+                                                    type="number"
+                                                    placeholder="Kod permisji"
+                                                    value={wariant.permisje || ""}
+                                                    onChange={(e) =>
+                                                        updateWariant(
+                                                            index,
+                                                            "permisje",
+                                                            parseInt(e.target.value) ||
+                                                            undefined,
+                                                        )
+                                                    }
+                                                    className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+                                                />
+                                            </div>
+                                        )}
+
+                                    <button
+                                        type="button"
+                                        onClick={() => removeWariant(index)}
+                                        className="w-full px-3 py-2 text-sm text-red-600 border border-red-300 rounded-md hover:bg-red-50">
+                                        Usuń wariant
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
 
                 {/* Dodatkowe pola */}
-                <div className="grid grid-cols-2 gap-4 sm:col-span-2">
-                    <div className="grid gap-2">
-                        <label className="text-sm font-medium">
-                            Czas wysyłki (dni) *
-                        </label>
-                        <input
-                            type="number"
-                            min="1"
-                            value={czas_wysylki}
-                            onChange={(e) =>
-                                setCzas_wysylki(parseInt(e.target.value) || 1)
-                            }
-                            required
-                            className="w-full rounded-md border bg-background px-3 py-2 text-sm"
-                        />
-                    </div>
-                    <div className="grid gap-2">
-                        <label className="text-sm font-medium">
-                            Kod produkcyjny *
-                        </label>
-                        <input
-                            type="text"
-                            value={kod_produkcyjny}
-                            onChange={(e) => setKod_produkcyjny(e.target.value)}
-                            required
-                            className="w-full rounded-md border bg-background px-3 py-2 text-sm"
-                        />
-                    </div>
-                    <div className="grid gap-2">
-                        <label className="text-sm font-medium">VAT (%)</label>
-                        <input
-                            type="number"
-                            min="0"
-                            max="100"
-                            value={vat}
-                            onChange={(e) =>
-                                setVat(parseFloat(e.target.value) || 23)
-                            }
-                            className="w-full rounded-md border bg-background px-3 py-2 text-sm"
-                        />
-                    </div>
-                    <div className="grid gap-2">
-                        <label className="text-sm font-medium">Ocena</label>
-                        <input
-                            type="number"
-                            min="0"
-                            max="5"
-                            step="0.1"
-                            value={ocena}
-                            onChange={(e) =>
-                                setOcena(parseFloat(e.target.value) || 0)
-                            }
-                            className="w-full rounded-md border bg-background px-3 py-2 text-sm"
-                        />
-                    </div>
-                    <div className="grid gap-2">
-                        <label className="text-sm font-medium">Kod EAN</label>
-                        <input
-                            type="text"
-                            value={kod_ean}
-                            onChange={(e) => setKod_ean(e.target.value)}
-                            className="w-full rounded-md border bg-background px-3 py-2 text-sm"
-                        />
-                    </div>
-                    <div className="grid gap-2">
-                        <label className="text-sm font-medium">SKU</label>
-                        <input
-                            type="text"
-                            value={sku}
-                            onChange={(e) => setSku(e.target.value)}
-                            className="w-full rounded-md border bg-background px-3 py-2 text-sm"
-                        />
+                <div className="rounded-lg border p-6 space-y-6">
+                    <h2 className="text-xl font-semibold flex items-center gap-2">
+                        <Box className="h-5 w-5" />
+                        Dodatkowe pola
+                    </h2>
+                    <div className="grid grid-cols-2 gap-4 sm:col-span-2">
+                        <div className="grid gap-2">
+                            <label className="text-sm font-medium">
+                                Czas wysyłki (dni) *
+                            </label>
+                            <input
+                                type="number"
+                                min="1"
+                                value={czas_wysylki}
+                                onChange={(e) =>
+                                    setCzas_wysylki(parseInt(e.target.value) || 1)
+                                }
+                                required
+                                className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+                            />
+                        </div>
+                        <div className="grid gap-2">
+                            <label className="text-sm font-medium">
+                                Kod produkcyjny *
+                            </label>
+                            <input
+                                type="text"
+                                value={kod_produkcyjny}
+                                onChange={(e) => setKod_produkcyjny(e.target.value)}
+                                required
+                                className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+                            />
+                        </div>
+                        <div className="grid gap-2">
+                            <label className="text-sm font-medium">VAT (%)</label>
+                            <input
+                                type="number"
+                                min="0"
+                                max="100"
+                                value={vat}
+                                onChange={(e) =>
+                                    setVat(parseFloat(e.target.value) || 23)
+                                }
+                                className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+                            />
+                        </div>
+                        <div className="grid gap-2">
+                            <label className="text-sm font-medium">Ocena</label>
+                            <input
+                                type="number"
+                                min="0"
+                                max="5"
+                                step="0.1"
+                                value={ocena}
+                                onChange={(e) =>
+                                    setOcena(parseFloat(e.target.value) || 0)
+                                }
+                                className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+                            />
+                        </div>
+                        <div className="grid gap-2">
+                            <label className="text-sm font-medium">Kod EAN</label>
+                            <input
+                                type="text"
+                                value={kod_ean}
+                                onChange={(e) => setKod_ean(e.target.value)}
+                                className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+                            />
+                        </div>
+                        <div className="grid gap-2">
+                            <label className="text-sm font-medium">SKU</label>
+                            <input
+                                type="text"
+                                value={sku}
+                                onChange={(e) => setSku(e.target.value)}
+                                className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+                            />
+                        </div>
                     </div>
                 </div>
 
                 {/* Aktywne */}
-                <div className="flex items-center gap-2 sm:col-span-2">
-                    <input
-                        type="checkbox"
-                        checked={aktywne}
-                        onChange={(e) => setAktywne(e.target.checked)}
-                        className="w-4 h-4"
-                    />
-                    <label className="text-sm font-medium">
-                        Produkt aktywny
-                    </label>
-                </div>
-
                 {/* Submit */}
-                <div className="sm:col-span-2">
-                    <button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="inline-flex items-center rounded-md border px-4 py-2 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50">
-                        {isSubmitting ? "Zapisywanie..." : "Zapisz produkt"}
-                    </button>
+                <div className="rounded-lg border p-6 space-y-6">
+                    <h2 className="text-xl font-semibold flex items-center gap-2">
+                        <ListChecks className="h-5 w-5" />
+                        Ustawienia produktu i zapis
+                    </h2>
+                    <div className="flex items-center gap-2 sm:col-span-2">
+                        <input
+                            type="checkbox"
+                            checked={aktywne}
+                            onChange={(e) => setAktywne(e.target.checked)}
+                            className="w-4 h-4"
+                        />
+                        <label className="text-sm font-medium">
+                            Produkt aktywny
+                        </label>
+                    </div>
+
+                    <div className="sm:col-span-2">
+                        <button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className="inline-flex items-center rounded-md border px-4 py-2 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50">
+                            {isSubmitting ? "Zapisywanie..." : "Zapisz produkt"}
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>

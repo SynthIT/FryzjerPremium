@@ -66,6 +66,6 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: "Order not updated" }, { status: 400 });
     }
     const response = NextResponse.json({ status: 200, message: "Order updated successfully" }, { status: 302 });
-    response.headers.set("Location", `${protocol}//${host}/zamowienie/${updatedOrder.numer_zamowienia}`);
+    response.headers.set("Location", `${protocol}//${host}/zamowienie/${updatedOrder.numer_zamowienia}?redirected=true`);
     return response;
 }

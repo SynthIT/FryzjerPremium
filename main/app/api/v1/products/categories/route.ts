@@ -3,6 +3,8 @@ import path from "path";
 import { readFileSync } from "fs";
 import { NextRequest, NextResponse } from "next/server";
 
+export const runtime = "nodejs";
+
 export async function GET(req: NextRequest) {
     const file = readFileSync(
         path.join(process.cwd(), "data", "kategorie.json"),

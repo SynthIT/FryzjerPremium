@@ -6,6 +6,8 @@ import mongoose from "mongoose";
 import path from "path";
 import { readFileSync, writeFileSync } from "fs";
 
+export const runtime = "nodejs";
+
 export async function POST(req: NextRequest) {
     try {
         const body = await req.json();

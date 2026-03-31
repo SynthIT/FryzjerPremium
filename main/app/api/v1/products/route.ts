@@ -5,6 +5,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { checkRequestAuth, returnAvailableWariant } from "@/lib/admin_utils";
 import { collectProducts } from "@/lib/crud/products/product";
 
+export const runtime = "nodejs";
+
 export async function GET(req: NextRequest) {
     const url = req.url.split("/");
     const querystring =
@@ -76,49 +78,3 @@ export async function PUT(req: NextRequest) {
     }
 }
 
-export async function DELETE(req: NextRequest) {
-    try {
-        const { val, mess } = await checkRequestAuth(req, ["admin:products"]);
-        if (!val) {
-            return NextResponse.json(
-                { status: 1, error: "Brak autoryzacji", details: mess },
-                { status: 401 },
-            );
-        }
-        const { searchParams } = new URL(req.url);
-        const slug = searchParams.get("slug");
-
-        if (!slug) {
-            return NextResponse.json(
-                { status: 1, error: "Brak slug produktu" },
-                { status: 400 },
-            );
-        }
-
-        const filePath = path.join(process.cwd(), "data", "produkty.json");
-        const file = readFileSync(filePath, "utf8");
-        const products: Products[] = JSON.parse(file);
-
-        const filteredProducts = products.filter((p) => p.slug !== slug);
-        if (filteredProducts.length === products.length) {
-            return NextResponse.json(
-                { status: 1, error: "Produkt nie znaleziony" },
-                { status: 404 },
-            );
-        }
-
-        writeFileSync(
-            filePath,
-            JSON.stringify(filteredProducts, null, 2),
-            "utf8",
-        );
-
-        return NextResponse.json({ status: 0, message: "Produkt usunięty" });
-    } catch (error) {
-        console.error("Błąd podczas usuwania produktu:", error);
-        return NextResponse.json(
-            { status: 1, error: "Błąd podczas usuwania produktu" },
-            { status: 500 },
-        );
-    }
-}

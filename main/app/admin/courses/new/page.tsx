@@ -115,6 +115,11 @@ export default function NewCoursePage() {
     const [mainImagePreview, setMainImagePreview] = useState<string>("");
     const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
     const [galleryPreview, setGalleryPreview] = useState<string[]>([]);
+    const [cenaTyp, setCenaTyp] = useState<string>("brutto");
+
+    const handleCenaTypChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setCenaTyp(e.target.value);
+    };
 
     // Sync coursePayload.kategoria with selectedSubCategories
     useEffect(() => {
@@ -302,10 +307,13 @@ export default function NewCoursePage() {
                 });
             }
 
+            const price = cenaTyp === "netto" ?  coursePayload.cena : coursePayload.cena * (1 + coursePayload.vat / 100);
+
             const courseData = {
                 ...coursePayload,
                 kategoria: selectedSubCategories,
                 firma: firmaData ? firmaData._id : null,
+                cena: price,
                 instruktor: coursePayload.instruktor || undefined,
                 lekcje: coursePayload.lekcje ?? [],
                 media: mediaData.length > 0 ? mediaData : coursePayload.media,
@@ -411,21 +419,31 @@ export default function NewCoursePage() {
 
                         <div>
                             <label className="block text-sm font-medium mb-2">
-                                Cena (bez VAT) *
+                                Cena *
                             </label>
-                            <input
-                                type="number"
-                                step="0.01"
-                                min="0"
-                                value={coursePayload.cena}
-                                onChange={(e) =>
-                                    handleCoursePayloadChange("cena", parseFloat(e.target.value) || 0)
-                                }
-                                required
-                                className="w-full rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
-                                placeholder="0.00"
-                            />
-                            <p className="text-xs text-muted-foreground mt-1">Cena z VAT: {finalPrice(coursePayload.cena, coursePayload.vat, undefined, undefined)} zł</p>
+                            <div className="flex items-center gap-2">
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    value={coursePayload.cena}
+                                    onChange={(e) =>
+                                        handleCoursePayloadChange("cena", parseFloat(e.target.value) || 0)
+                                    }
+                                    required
+                                    className="w-full rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
+                                    placeholder="0.00"
+                                />
+                                <select
+                                    className="w-1/3 rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
+                                    value={cenaTyp}
+                                    onChange={handleCenaTypChange}
+                                    required>
+                                    <option value="brutto">Brutto</option>
+                                    <option value="netto">Netto</option>
+                                </select>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">Cena z {cenaTyp === "netto" ? "VAT" : "bez VAT"}: { cenaTyp === "netto" ?  finalPrice(coursePayload.cena, coursePayload.vat, undefined, undefined) : `${(coursePayload.cena / (1 + coursePayload.vat / 100)).toFixed(2)}` } zł</p>
                         </div>
 
                         <div>
