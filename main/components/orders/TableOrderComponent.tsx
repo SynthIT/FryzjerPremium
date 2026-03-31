@@ -46,7 +46,7 @@ export default function TableOrderComponent({
                                 <td className="px-4 py-3 text-gray-700">{labelForPozycja(row.pozycja)}</td>
                                 <td className="px-4 py-3 text-gray-700">{row.ilosc}</td>
                                 <td className="px-4 py-3 text-gray-700">{cena?.toFixed?.(2) ?? cena} zł</td>
-                                <td className="px-4 py-3 text-gray-700">{(cena ?? 0) * (row.ilosc ?? 0)} zł</td>
+                                <td className="px-4 py-3 text-gray-700">{((cena ?? 0) * (row.ilosc ?? 0)).toFixed?.(2)} zł</td>
                             </tr>
                         )
                     })}

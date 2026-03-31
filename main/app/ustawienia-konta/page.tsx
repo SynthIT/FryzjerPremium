@@ -8,7 +8,7 @@ import { Users } from "@/lib/types/userTypes";
 
 export default function AccountSettingsPage() {
     const [activeSection, setActiveSection] = useState("personal");
-    const { userData,  changePassword, changeUserData } = useUser();
+    const { userData, changePassword, changeUserData } = useUser();
     const [user, setUserData] = useState<Partial<Users>>({
         imie: "",
         nazwisko: "",
@@ -85,11 +85,10 @@ export default function AccountSettingsPage() {
                                 <button
                                     key={section.id}
                                     type="button"
-                                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-sm font-medium transition-colors ${
-                                        activeSection === section.id
+                                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-sm font-medium transition-colors ${activeSection === section.id
                                             ? "bg-[#D2B79B]/20 text-[#D2B79B]"
                                             : "text-gray-700 hover:bg-gray-100"
-                                    }`}
+                                        }`}
                                     onClick={() =>
                                         setActiveSection(section.id)
                                     }>
@@ -541,6 +540,21 @@ export default function AccountSettingsPage() {
                                         zaawansowane akcje.
                                     </p>
                                     <div className="space-y-4">
+                                        <div className="rounded-xl border border-[rgba(212,196,176,0.3)] bg-white/60 p-6">
+                                            <div className="flex-1">
+                                                <h3 className="text-lg font-bold text-gray-900 mb-1">
+                                                    Weryfikacja
+                                                </h3>
+                                                <p className="text-sm text-gray-600 mb-4">
+                                                    Prowadzisz firmę? Zweryfikuj swoje konto i otrzymaj dodatkowe zniżki i promocje.
+                                                    Między innymi dostęp do wariantów hurtowych, czy też odddzielne promocje.
+                                                    Aby zweryfikować swoje konto, wciśnij przycisk poniżej.
+                                                </p>
+                                            </div>
+                                            <button className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-100 transition-colors">
+                                                Weryfikuj konto
+                                            </button>
+                                        </div>
                                         <div className="rounded-xl border border-[rgba(212,196,176,0.3)] bg-white/60 p-6">
                                             <div className="flex-1">
                                                 <h3 className="text-lg font-bold text-gray-900 mb-1">

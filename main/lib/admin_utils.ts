@@ -132,11 +132,13 @@ export async function verifyJWT(req: NextRequest): Promise<{
     val: boolean;
     user?: Users;
     mess?: string;
+    jwt?: string[];
 }> {
-    const cookieAuth = req.cookies.get("Authorization");
-    if (!cookieAuth) return { val: false };
-    if (cookieAuth.value.split(" ")[0] !== "Bearer") return { val: false, mess: "Nieprawidłowy token" };
+    await db();
     try {
+        const cookieAuth = req.cookies.get("Authorization");
+        if (!cookieAuth) throw new Error("Nieprawidłowy token");
+        if (cookieAuth.value.split(" ")[0] !== "Bearer") throw new Error("Nieprawidłowy token");
         const cookie = verify(
             cookieAuth.value.split(" ")[1],
             createPublicKey({
@@ -162,11 +164,13 @@ export async function verifyJWT(req: NextRequest): Promise<{
                 type: "pkcs1",
             } as PublicKeyInput),
         );
+
         const email = (cookie as JwtPayload).email;
-        if (!email) return { val: false, mess: "Nieprawidłowy token" };
-        const user = await User.findOne({ email: email }).populate("role").orFail().lean();
-        if (!user) return { val: false, mess: "Użytkownik nie istnieje" };
-        return { val: true, user: user };
+        if (!email) return { val: false, mess: "Nieprawidłowy token rf" };
+        const user = await User.findOne({ email: email }).populate("role").lean();
+        if (!user) return { val: false, mess: "Użytkownik nie istnieje rf" };
+        const jwt = createJWT(user);
+        return { val: true, user: user, jwt: jwt };
     }
 }
 

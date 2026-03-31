@@ -153,7 +153,7 @@ export default function OrderListPage({ order, redirected }: { order: OrderList,
                 </div>
                 <div className="col-span-1 flex flex-row items-center gap-6 justify-end">
                     <h2 className="text-xl text-gray-900 font-bold">Suma zamówienia</h2>
-                    <p className={styles}>{order.suma?.toFixed?.(2) ?? order.suma} zł</p>
+                    <p className={styles}>{order.suma?.toFixed?.(2)} zł</p>
                 </div>
                 <div>
                     <h2 className="text-xl text-gray-900 font-bold">Pliki dołączone do zamówienia</h2>
