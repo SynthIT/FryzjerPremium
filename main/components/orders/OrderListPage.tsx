@@ -12,9 +12,6 @@ import Link from "next/link";
 export default function OrderListPage({ order, redirected }: { order: OrderList, redirected: boolean }) {
     const { userData } = useUser();
     const { clearCart } = useCart();
-    if (redirected) {
-        clearCart();
-    }
 
     const status = {
         "w_koszyku": "W koszyku",
@@ -39,9 +36,12 @@ export default function OrderListPage({ order, redirected }: { order: OrderList,
                     setLoading(false);
                 }
             }
+            if (redirected) {
+                clearCart();
+            }
         }
         s();
-    }, [userData, order]);
+    }, [userData, order, redirected, clearCart]);
 
 
     const handleSubmit = () => {
@@ -98,6 +98,7 @@ export default function OrderListPage({ order, redirected }: { order: OrderList,
     }
 
     const customer = order.dane as Partial<Users>;
+
     return (
         <div className="max-w-[1200px] mx-auto pt-[180px] pb-20 px-6 min-h-[calc(100vh-200px)] w-full relative">
             <div className="max-w-[1200px] mx-auto relative z-10  p-12 rounded-3xl border border-white/20 bg-white/60 backdrop-blur-[10px]">
