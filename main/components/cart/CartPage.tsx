@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { useUser } from "@/contexts/UserContext";
 import { CartItem } from "@/lib/types/cartTypes";
+import { X } from "lucide-react";
 
 export default function CartPage() {
     const {
@@ -16,8 +17,10 @@ export default function CartPage() {
         getTotalPrice,
         refreshCart,
     } = useCart();
-    const { user } = useUser();
+    const { user, setUserAsEmail } = useUser();
     const [items, setItems] = useState<CartItem[]>([]);
+    const [showEditModal, setShowEditModal] = useState<boolean>(false);
+    const [editModalData, setEditModalData] = useState<{ email: string, id: string }>({ email: "", id: getCart().id });
     useEffect(() => {
         async function validate() {
             await fetch("/api/v1/users/cart", {
@@ -114,6 +117,34 @@ export default function CartPage() {
 
     return (
         <div className="min-h-screen pt-[120px] pb-16 px-4 sm:px-6 lg:px-8">
+            {showEditModal && (
+                <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50 bg-black/50 p-4 w-full h-full">
+                    <div className="bg-white p-4 rounded-lg w-full max-w-md flex flex-col items-center justify-center gap-4">
+                        <div className="flex items-center justify-between w-full">
+                            <h2 className="text-lg font-bold text-gray-900">Edytuj adres email</h2>
+                            <button className="text-sm text-gray-500 hover:text-gray-600 transition-colors" onClick={() => setShowEditModal(false)}>
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+                        <input type="email" value={editModalData.email} onChange={(e) => setEditModalData((prev) => ({ ...prev, email: e.target.value }))} className="w-full p-2 rounded-lg border border-gray-300 text-gray-900" />
+                        <input type="hidden" value={editModalData.id} onChange={(e) => setEditModalData((prev) => ({ ...prev, id: e.target.value }))} className="w-full p-2 rounded-lg border border-gray-300" />
+                        <button className="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 transition-colors mt-4" onClick={() => {
+                            fetch("/api/v1/payments/edit?scope=email", {
+                                method: "POST",
+                                body: JSON.stringify({ email: editModalData.email, id: editModalData.id }),
+                            }).then(res => res.json()).then(data => {
+                                if (data.status === 0) {
+                                    setShowEditModal(false);
+                                    setUserAsEmail(editModalData.email);
+                                } else {
+                                    alert(data.error);
+                                }
+                            })
+                        }}>Zapisz</button>
+                    </div>
+                </div >
+            )
+            }
             <div className="max-w-[1200px] mx-auto">
                 <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600 mb-6">
                     <Link href="/" className="text-[#D2B79B] hover:underline">Strona główna</Link>
@@ -122,7 +153,15 @@ export default function CartPage() {
                 </div>
                 <div className="flex flex-col lg:flex-row gap-8">
                     <div className="flex-1 min-w-0">
-                        <h1 className="text-2xl font-bold text-gray-900 mb-6">Twój koszyk</h1>
+                        <h1 className="text-2xl font-bold text-gray-900 mb-2">Twój koszyk</h1>
+                        {user?.includes("@") && (<div className="mb-6 flex items-center gap-2">
+                            <p className="text-gray-600 text-sm">
+                                <span className="font-medium"> Zakupy na adres email:</span> {user}
+                            </p>
+                            <button className="text-sm text-blue-500 hover:underline" onClick={() => {
+                                setShowEditModal(true);
+                            }}>Edytuj... </button>
+                        </div>)}
                         <div className="space-y-4">
                             {items.map((item) => {
                                 const productPrice = item.price;
@@ -262,6 +301,7 @@ export default function CartPage() {
                     </div>
                 </div>
             </div>
+
         </div >
     );
 }

@@ -1,6 +1,7 @@
 import { Users, Roles, OrderList } from "@/lib/types/userTypes";
 import { Orders, Role, User } from "@/lib/models/Users";
 import {
+    hasAnyAdminPermission,
     hasPermission,
     permissionKeys,
     PermissionTable,
@@ -37,7 +38,7 @@ import { createStripeCustomer } from "./payments/utils";
  */
 export async function checkRequestAuth(
     req: NextRequest,
-    scope?: typeof permissionKeys,
+    scope?: (typeof permissionKeys) | "admin:any",
 ): Promise<{
     val: boolean;
     user?: Users;
@@ -52,10 +53,16 @@ export async function checkRequestAuth(
         if (!role.admin) continue;
         bits |= role.admin;
     }
+    if (scope === "admin:any") {
+        const ok = hasAnyAdminPermission(user.role as Roles[]);
+        if (!ok) return { val: false, mess: "Nie wystarczające uprawienienia do wykonania operacji" };
+        return { val: true, user: user, mess: "" };
+    }
     let mask = 0;
     for (const bit of scope!) {
         mask |= PermissionTable[bit];
     }
+
     const enoughPermissions = hasPermission(bits, mask);
     return { val: enoughPermissions, mess: enoughPermissions ? "" : "Nie wystarczające uprawienienia do wykonania operacji" };
 }

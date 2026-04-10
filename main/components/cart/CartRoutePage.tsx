@@ -17,7 +17,7 @@ export default function CartRoutePage() {
     const [authStatus, setAuthStatus] = useState<AuthStatus>("loading");
     const [userExists, setUserExists] = useState(false);
     const [email, setEmail] = useState("");
-    const { setUserAsEmail } = useUser();
+    const { setUserAsEmail, user } = useUser();
 
     const checkAuth = useCallback(async () => {
         try {
@@ -30,14 +30,19 @@ export default function CartRoutePage() {
     }, []);
 
     useEffect(() => {
+        function check() {
+            if (user) return setAuthStatus("logged_in");
+            console.log(user);
+            checkAuth().then((status) => {
+                if (!cancelled) setAuthStatus(status);
+            });
+        }
         let cancelled = false;
-        checkAuth().then((status) => {
-            if (!cancelled) setAuthStatus(status);
-        });
+        check();
         return () => {
             cancelled = true;
         };
-    }, [checkAuth]);
+    }, [checkAuth, user]);
 
     const handleBackWithoutEmail = () => {
         if (!email.trim()) {

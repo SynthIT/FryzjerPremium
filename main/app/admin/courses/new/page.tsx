@@ -307,7 +307,7 @@ export default function NewCoursePage() {
                 });
             }
 
-            const price = cenaTyp === "netto" ?  coursePayload.cena : coursePayload.cena * (1 + coursePayload.vat / 100);
+            const price = cenaTyp === "netto" ? coursePayload.cena : Math.round((coursePayload.cena / (1 + coursePayload.vat / 100)) * 100) / 100;
 
             const courseData = {
                 ...coursePayload,
@@ -443,7 +443,7 @@ export default function NewCoursePage() {
                                     <option value="netto">Netto</option>
                                 </select>
                             </div>
-                            <p className="text-xs text-muted-foreground mt-1">Cena z {cenaTyp === "netto" ? "VAT" : "bez VAT"}: { cenaTyp === "netto" ?  finalPrice(coursePayload.cena, coursePayload.vat, undefined, undefined) : `${(coursePayload.cena / (1 + coursePayload.vat / 100)).toFixed(2)}` } zł</p>
+                            <p className="text-xs text-muted-foreground mt-1">Cena z {cenaTyp === "netto" ? "VAT" : "bez VAT"}: {cenaTyp === "netto" ? finalPrice(coursePayload.cena, coursePayload.vat, undefined, undefined) : `${(coursePayload.cena / (1 + coursePayload.vat / 100)).toFixed(2)}`} zł</p>
                         </div>
 
                         <div>

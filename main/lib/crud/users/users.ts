@@ -37,6 +37,16 @@ export async function addAdmin(user: Users) {
     }
 }
 
+export async function getUserByEmail(email: string) {
+    try {
+        await db();
+        const user = await User.findOne({ email: email }).populate("role");
+        return user;
+    } catch (error) {
+        console.error(error);
+    }
+}
+
 export async function createOrder(order: OrderList) {
     try {
         await db();

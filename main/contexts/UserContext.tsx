@@ -72,8 +72,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
         }
     }, [user, userData]);
 
-
-
     const addUser = useCallback((user: Users, orders?: OrderList[]) => {
         const ok = userSchema.safeParse(user);
         if (!ok.success) return;

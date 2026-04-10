@@ -19,14 +19,19 @@ export default function AdminLayout({
 
     React.useEffect(()=>{
         document.body.classList.add("admin-panel-active");
-        fetch("/admin/api/v1/auth", {
+        fetch("/admin/api/v1/auth?scope=required_admin", {
             method:"POST",
             credentials: "include"
         }).then((res)=> res.json())
         .then((data)=>{
+            if(data.status !== 0) {
+                router.push("/");
+                return;
+            }
             document.body.classList.remove("admin-panel-active")
             setLoading(false);
         }).catch(()=>{
+            router.push("/");
             document.body.classList.remove("admin-panel-active")
             setLoading(false);
         });

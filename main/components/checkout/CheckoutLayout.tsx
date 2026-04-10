@@ -26,6 +26,7 @@ export function Checkout({ stripePromise }: Props) {
     const [overlay, setOverlay] = useState<boolean>(false);
     const [cs, setCs] = useState<string | null>(null);
     const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethods[]>();
+    const [allowModifyEmail, setAllowModifyEmail] = useState<boolean>(true);
     const [selectedDeliveryMethod, setSelectDeliveryMethod] =
         useState<DeliveryMethods>();
     const [total, setTotal] = useState<number>(0);
@@ -58,15 +59,20 @@ export function Checkout({ stripePromise }: Props) {
     }, []);
 
     useEffect(() => {
+        if (user?.includes("@")) {
+            setAllowModifyEmail(false);
+            return setFormData((prev) => ({ ...prev, email: user }));
+        }
         if (userData) {
             return setFormData((prev) => ({ ...prev, firstName: userData.imie, lastName: userData.nazwisko, email: userData.email, phone: userData.telefon, street: userData.ulica, city: userData.miasto, postalCode: userData.kod_pocztowy, country: userData.kraj }));
         }
-    }, [userData]);
+    }, [userData, user]);
 
 
     useEffect(() => {
         let cancelled = false;
         const ac = new AbortController();
+
         async function getClientSecret() {
             try {
                 const response = await fetch("/api/v1/payments", {
@@ -138,7 +144,7 @@ export function Checkout({ stripePromise }: Props) {
     }, [formData, getCart, user]);
 
     const formattedTotal = total.toFixed(2).replace(".", ",");
-    const inputClass = "w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-[#D2B79B] focus:ring-2 focus:ring-[#D2B79B]/20 outline-none";
+    const inputClass = "w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-[#D2B79B] focus:ring-2 focus:ring-[#D2B79B]/20 outline-none disabled:bg-gray-100 disabled:text-gray-500";
     const labelClass = "text-sm font-medium text-gray-700";
 
     if (items.length === 0) {
@@ -208,8 +214,9 @@ export function Checkout({ stripePromise }: Props) {
                                             name="email"
                                             value={formData.email}
                                             onChange={handleInputChange}
-                                            className={inputClass}
+                                            className={inputClass }
                                             required
+                                            disabled={allowModifyEmail}
                                         />
                                     </div>
                                     <div className="flex flex-col gap-1">
