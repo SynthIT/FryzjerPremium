@@ -1,11 +1,10 @@
 "use client";
 import StorefrontShell from "@/components/layout/StorefrontShell";
-import { useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { Suspense, useEffect } from "react";
 import ProcessingPageView from "@/components/platnosci/ProcessingPageView";
-import { useRouter } from "next/navigation";
 
-export default function ProcessingPage() {
+function ProcessingPageContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const payment_intent = searchParams.get("payment_intent");
@@ -24,10 +23,22 @@ export default function ProcessingPage() {
         }, 3000);
     }, [payment_intent, router]);
     return (
-        <>
-            <StorefrontShell>
-                <ProcessingPageView />
-            </StorefrontShell>
-        </>
-    )
+        <StorefrontShell>
+            <ProcessingPageView />
+        </StorefrontShell>
+    );
+}
+
+export default function ProcessingPage() {
+    return (
+        <Suspense
+            fallback={
+                <StorefrontShell>
+                    <ProcessingPageView />
+                </StorefrontShell>
+            }
+        >
+            <ProcessingPageContent />
+        </Suspense>
+    );
 }
