@@ -22,7 +22,7 @@ export default function OrdersPage() {
 
     startRef.current = performance.now();
 
-    const tick = (now: number) => {
+    const tick = (now: number): void => {
       const elapsed = now - (startRef.current ?? now);
       const remaining = Math.max(0, 100 - (elapsed / TOAST_DURATION) * 100);
       setProgress(remaining);

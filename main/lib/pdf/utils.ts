@@ -137,11 +137,11 @@ export async function generatePDF(order: OrderList) {
     });
     doc.registerFont("Roboto-Regular", path.join(process.cwd(), "public", "fonts", "Roboto-Regular.ttf"));
     doc.registerFont("Roboto-Bold", path.join(process.cwd(), "public", "fonts", "Roboto-Bold.ttf"));
-    doc.font("Roboto-Bold").fontSize(20).text("Faktura VAT", ml, mt);
+    doc.font("Roboto-Bold").fontSize(20).text("Potwierdzenie zamówienia", ml, mt);
     doc.fontSize(10);
     doc.font("Roboto-Regular");
     drawText(
-        "Numer faktury: FV/" + order.numer_zamowienia,
+        "Numer potwierdzenia: PV/" + order.numer_zamowienia,
         ml,
         moveToNextLine(1.5),
         10,
@@ -203,6 +203,7 @@ export async function generatePDF(order: OrderList) {
     // Yield żeby nie zablokować event loop – doc.table() robi synchronicznie layout + rysowanie każdej komórki
     await new Promise<void>((r) => setImmediate(r));
     drawTable(entries, ml, moveToNextLine(12));
+    
     doc.end();
 
     return await finished;

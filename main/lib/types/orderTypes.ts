@@ -20,7 +20,7 @@ export const detailedOrderEntry = zod.object({
 });
 
 export const fileOrderEntry = zod.object({
-    typ: zod.string(),
+    typ: zod.enum(["potwierdzenie", "bilet", "korekta"]),
     nazwa: zod.string(),
     url: zod.string(),
 });
@@ -32,7 +32,7 @@ export const orderListSchema = zod.object({
     dane: zod.lazy(() => userSchema.partial()).optional(),
     email: zod.string(),
     status: zod
-        .enum(["w_koszyku", "nowe", "w_realizacji", "wyslane", "zrealizowane", "anulowane"])
+        .enum(["w_koszyku", "nieudana", "opłacone", "w_realizacji", "wyslane", "zrealizowane", "anulowane"])
         .default("w_koszyku"),
     numer_zamowienia: zod.string(),
     nr_faktury: zod.string().optional(),
