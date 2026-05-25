@@ -1,5 +1,6 @@
 import { db } from "@/lib/db/init";
 import { Orders } from "@/lib/models/Users";
+import { OrderStatus } from "@/lib/types/orderTypes";
 import { OrderList, orderListSchema } from "@/lib/types/userTypes";
 
 export async function collectOrders() {
@@ -55,7 +56,7 @@ export async function getOrdersByUserId(userId: string) {
     return res;
 }
 
-export async function getOrdersByStatus(status: string) {
+export async function getOrdersByStatus(status: OrderStatus[]) {
     await db();
     const res = await Orders.find({ status: status });
     return res;

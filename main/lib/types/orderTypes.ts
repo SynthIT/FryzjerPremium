@@ -25,15 +25,15 @@ export const fileOrderEntry = zod.object({
     url: zod.string(),
 });
 
+export const orderStatus = zod.enum(["w_koszyku", "nieudana", "opłacone", "w_realizacji", "wyslane", "zrealizowane", "anulowane"]);
+
 
 export const orderListSchema = zod.object({
     _id: zod.string().optional(),
     user: zod.union([zod.string(), zod.lazy(() => userSchema), zod.null()]),
     dane: zod.lazy(() => userSchema.partial()).optional(),
     email: zod.string(),
-    status: zod
-        .enum(["w_koszyku", "nieudana", "opłacone", "w_realizacji", "wyslane", "zrealizowane", "anulowane"])
-        .default("w_koszyku"),
+    status: orderStatus.default("w_koszyku"),
     numer_zamowienia: zod.string(),
     nr_faktury: zod.string().optional(),
     nr_faktury_kor: zod.array(zod.string()).optional(),
@@ -60,6 +60,7 @@ export const orderListSchema = zod.object({
 });
 
 export type OrderList = zod.infer<typeof orderListSchema>;
+export type OrderStatus = zod.infer<typeof orderStatus>;
 export type DetailedOrderEntry = zod.infer<typeof detailedOrderEntry>;
 export type CorrectionEntry = zod.infer<typeof zodCorrectionEntry>;
 export type FileOrderEntry = zod.infer<typeof fileOrderEntry>;

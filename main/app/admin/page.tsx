@@ -38,7 +38,7 @@ export default function AdminPage() {
     }, []);
 
     const { overallRevenueFromProducts, overallRevenueFromCourses, bestProducts, bestCourses } =
-        useAnalists(orders);
+        useAnalists(orders, analists);
 
     const lowStock = useMemo(() => {
         return products.filter((product) => {

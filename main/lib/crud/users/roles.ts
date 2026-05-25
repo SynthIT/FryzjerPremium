@@ -20,7 +20,7 @@ export async function deleteRoleByName(nazwa: string) {
     await db();
     const role = await Role.findOne({ nazwa: nazwa }).orFail();
     const usersWithRole = await User.find({
-        role: [new mongoose.Types.ObjectId(role._id!)],
+        role: role._id,
     }).orFail();
     for (const doc of usersWithRole) {
         if (!doc.role) return;

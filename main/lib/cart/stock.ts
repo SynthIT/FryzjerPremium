@@ -47,10 +47,11 @@ export function variantIndex(
 
 export function maxAvailableForSelection(
     productIlosc: number,
-    warianty: Warianty[] | undefined,
+    warianty: Warianty[] | Warianty | undefined,
     selected?: Warianty,
 ): number {
-    const list = warianty ?? [];
+    if (!warianty) return availableQuantity(productIlosc, undefined, 0);
+    const list = Array.isArray(warianty) ? warianty : [warianty];
     const index = variantIndex(list, selected);
     const w =
         index >= 0 && list[index] ? list[index] : selected;

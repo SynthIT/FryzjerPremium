@@ -110,7 +110,7 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
         if (!product) return 0;
         return maxAvailableForSelection(
             product.ilosc,
-            product.wariant,
+            product.wariant ?? undefined,
             selectedWariant,
         );
     }, [product, selectedWariant]);
@@ -307,7 +307,7 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                                                 const max =
                                                     maxAvailableForSelection(
                                                         product.ilosc,
-                                                        product.wariant,
+                                                        product.wariant ?? undefined,
                                                         w,
                                                     );
                                                 setQuantity((prev) =>
