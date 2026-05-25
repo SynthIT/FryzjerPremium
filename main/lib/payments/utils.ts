@@ -32,16 +32,29 @@ const createPaymentIntent = async (
     koszyk: string,
     customerId?: string,
 ) => {
-    try {
-        const params: Stripe.PaymentIntentCreateParams = {
+    const customer = await getStripeCustomer(customerId ?? "");
+    let params;
+    if (!customer) {
+        params = {
             amount: amount,
             currency: currency,
-            customer: customerId ?? undefined,
             payment_method_types: ["card", "blik", "klarna", "link"],
             metadata: {
                 "koszyk_id": `${koszyk}`,
             },
         };
+    } else {
+        params = {
+            amount: amount,
+            currency: currency,
+            customer: customer.id,
+            payment_method_types: ["card", "blik", "klarna", "link"],
+            metadata: {
+                "koszyk_id": `${koszyk}`,
+            },
+        };
+    }
+    try {
         const paymentIntent = await stripe.paymentIntents.create(params);
         return paymentIntent;
     } catch (error) {

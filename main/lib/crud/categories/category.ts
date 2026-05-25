@@ -55,7 +55,7 @@ export async function updateCategory(newCat: Categories) {
     const category = await Category.findOneAndUpdate(
         filter,
         { $set: updateFields },
-        { new: true },
+        { returnDocument: "after" },
     ).orFail();
     return category;
 }

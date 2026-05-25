@@ -3,20 +3,23 @@
 import { useState, useEffect } from "react";
 import { Categories, Media, Promos } from "@/lib/types/shared";
 import Link from "next/link";
-import { Products, Producents, Warianty } from "@/lib/types/productTypes";
+import { Products, Producents } from "@/lib/types/productTypes";
 import Image from "next/image";
-import { X, Save, Trash2, Plus, Minus } from "lucide-react";
-import { parseSlugName } from "@/lib/utils_admin";
-
-// Helper do generowania slug
-function generateSlug(text: string): string {
-    return text
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/(^-|-$)/g, "");
-}
+import { X, Save, Trash2, Plus, Minus, BookOpen, Camera, ListChecks, Box } from "lucide-react";
+import {
+    AdminFormSection,
+    adminModalBodyGrid,
+    adminModalOverlay,
+    adminModalPanel,
+    adminFormSpanFull,
+} from "@/components/admin/AdminFormLayout";
+import { generateSlug } from "@/lib/utils_admin";
+import { CenaTyp } from "@/lib/admin/pricing";
+import { useCategoryTree } from "@/components/admin/hooks/useCategoryTree";
+import AdminCategoryPicker from "@/components/admin/AdminCategoryPicker";
+import AdminPriceVatFields from "@/components/admin/AdminPriceVatFields";
+import AdminSpecListEditor from "@/components/admin/AdminSpecListEditor";
+import ProductVariantsEditor from "@/components/admin/ProductVariantsEditor";
 
 interface ProductEditModalProps {
     product: Products;
@@ -36,19 +39,10 @@ export default function ProductEditModal({
     const [editedProduct, setEditedProduct] = useState<Products>(product);
     const [isSaving, setIsSaving] = useState(false);
 
-    // Kategorie i producent z API
-    const [categories, setCategories] = useState<Record<string, Categories[]>>(
-        {},
-    );
-    const [categoriesSlug, setCategoriesSlug] = useState<string[]>([]);
+    const categoryTree = useCategoryTree();
+    const [cenaTyp, setCenaTyp] = useState<CenaTyp>("netto");
     const [producents, setProducents] = useState<Producents[]>([]);
 
-    // Wybrane kategorie (główna + podrzędne)
-    const [selectedMainCategory, setSelectedMainCategory] =
-        useState<string>("");
-    const [selectedSubCategories, setSelectedSubCategories] = useState<
-        string[]
-    >([]);
     const [selectedProducent, setSelectedProducent] = useState<string>("");
     const [promos, setPromos] = useState<Promos[]>([]);
     const [selectedPromoId, setSelectedPromoId] = useState<string>("");
@@ -76,46 +70,22 @@ export default function ProductEditModal({
         }
     }, [editedProduct.nazwa, editedProduct.slug]);
 
-    // Pobierz kategorie
     useEffect(() => {
-        async function fetchCategories() {
-            try {
-                const response = await fetch("/admin/api/v1/category", {
-                    method: "GET",
-                    credentials: "include",
-                });
-                const data = await response.json();
-                if (data.status === 0 && data.categories) {
-                    const raw = data.categories;
-                    const catList: Categories[] = typeof raw === "string" ? JSON.parse(raw) : Array.isArray(raw) ? raw : [];
-                    // Grupuj po głównej kategorii (pole "kategoria"); podkategoria to "nazwa"
-                    const byKategoria = catList.reduce<Record<string, Categories[]>>((acc, c) => {
-                        const k = c.kategoria ?? "";
-                        (acc[k] ??= []).push(c);
-                        return acc;
-                    }, {});
-                    setCategories(byKategoria);
-                    setCategoriesSlug(Object.keys(byKategoria));
-
-                    // Ustaw wybrane kategorie na podstawie produktu (kategoria = tablica _id lub populated)
-                    const k = product.kategoria;
-                    if (Array.isArray(k) && k.length > 0) {
-                        const ids = k.map((c) => (typeof c === "string" ? c : (c as Categories)._id ?? "")).filter(Boolean);
-                        let main = "";
-                        if (typeof k[0] === "object" && k[0] !== null && "kategoria" in k[0])
-                            main = (k[0] as Categories).kategoria ?? "";
-                        else if (ids[0] && catList.length)
-                            main = catList.find((c) => (c._id ?? "") === ids[0])?.kategoria ?? "";
-                        if (main) setSelectedMainCategory(main);
-                        if (ids.length) setSelectedSubCategories(ids);
-                    }
-                }
-            } catch (error) {
-                console.error("Błąd podczas pobierania kategorii:", error);
-            }
-        }
-        fetchCategories();
-    }, [product.kategoria]);
+        if (!categoryTree.categoriesSlug.length) return;
+        const k = product.kategoria;
+        if (!Array.isArray(k) || k.length === 0) return;
+        const catList = Object.values(categoryTree.categories).flat();
+        const ids = k
+            .map((c) => (typeof c === "string" ? c : (c as Categories)._id ?? ""))
+            .filter(Boolean);
+        let main = "";
+        if (typeof k[0] === "object" && k[0] !== null && "kategoria" in k[0])
+            main = (k[0] as Categories).kategoria ?? "";
+        else if (ids[0])
+            main = catList.find((c) => (c._id ?? "") === ids[0])?.kategoria ?? "";
+        categoryTree.setInitialSelection(main, ids);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- init selection once categories load
+    }, [product.kategoria, categoryTree.categoriesSlug.length]);
     useEffect(() => {
         async function fetchProducents() {
             try {
@@ -174,7 +144,7 @@ export default function ProductEditModal({
         setIsSaving(true);
         try {
             // Zapisujemy tylko _id (referencje do kolekcji)
-            const kategoriaIds = selectedSubCategories.filter(Boolean);
+            const kategoriaIds = categoryTree.getSelectedCategoryIds();
             const producentId = selectedProducent || (editedProduct.producent != null && typeof editedProduct.producent === "object" && editedProduct.producent !== null && "_id" in editedProduct.producent
                 ? (editedProduct.producent as Producents)._id
                 : typeof editedProduct.producent === "string"
@@ -236,22 +206,6 @@ export default function ProductEditModal({
         setEditedProduct((prev) => ({ ...prev, [field]: value }));
     };
 
-    // Obsługa wyboru głównej kategorii (pole "kategoria" = główna, "nazwa" = podkategoria)
-    const handleMainCategoryChange = (mainName: string) => {
-        setSelectedMainCategory(mainName);
-        setSelectedSubCategories([]);
-    };
-
-    // Obsługa wyboru podkategorii (zapisujemy tylko _id)
-    const handleSubCategoryToggle = (subCategoryId: string) => {
-        setSelectedSubCategories((prev) => {
-            const newSelected = prev.includes(subCategoryId)
-                ? prev.filter((id) => id !== subCategoryId)
-                : [...prev, subCategoryId];
-            return newSelected;
-        });
-    };
-
     // Obsługa zmiany producenta (zapisujemy _id)
     const handleProducentChange = (producentId: string) => {
         setSelectedProducent(producentId);
@@ -282,85 +236,11 @@ export default function ProductEditModal({
         );
     };
 
-    // Obsługa specyfikacji
-    const getSpecyfikacja = () => {
-        return editedProduct.specyfikacja || [];
-    };
-
-    const addSpecyfikacja = () => {
-        const spec = getSpecyfikacja();
-        updateField("specyfikacja", [...spec, { key: "", value: "" }]);
-    };
-
-    const updateSpecyfikacja = (
-        index: number,
-        field: "key" | "value",
-        value: string,
-    ) => {
-        const spec = getSpecyfikacja();
-        const updated = [...spec];
-        updated[index] = { ...updated[index], [field]: value };
-        updateField("specyfikacja", updated);
-    };
-
-    const removeSpecyfikacja = (index: number) => {
-        const spec = getSpecyfikacja();
-        updateField(
-            "specyfikacja",
-            spec.filter((_, i) => i !== index),
-        );
-    };
-
-    // Obsługa wariantów
-    const getWarianty = (): Warianty[] => {
-        return editedProduct.wariant || [];
-    };
-
-    const addWariant = () => {
-        const warianty = getWarianty();
-        updateField("wariant", [
-            ...warianty,
-            {
-                nazwa: "",
-                slug: "",
-                typ: "kolor",
-                ilosc: 0,
-                nadpisuje_cene: false,
-                inna_cena_skupu: false,
-            },
-        ]);
-    };
-
-    const updateWariant = (
-        index: number,
-        field: keyof Warianty,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        value: any,
-    ) => {
-        const warianty = getWarianty();
-        const updated = [...warianty];
-        updated[index] = { ...updated[index], [field]: value };
-        // Auto-generuj slug z nazwy wariantu
-        if (field === "nazwa" && value) {
-            updated[index].slug = generateSlug(value);
-        }
-        updateField("wariant", updated);
-    };
-
-    const removeWariant = (index: number) => {
-        const warianty = getWarianty();
-        updateField(
-            "wariant",
-            warianty.filter((_, i) => i !== index),
-        );
-    };
-
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-            <div className="bg-background rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-                {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b">
-                    <h2 className="text-2xl font-bold">Edytuj produkt</h2>
+        <div className={adminModalOverlay}>
+            <div className={adminModalPanel}>
+                <div className="flex items-center justify-between px-5 py-4 border-b shrink-0">
+                    <h2 className="text-xl font-bold sm:text-2xl">Edytuj produkt</h2>
                     <button
                         onClick={onClose}
                         className="p-2 hover:bg-accent rounded-md transition-colors">
@@ -368,14 +248,10 @@ export default function ProductEditModal({
                     </button>
                 </div>
 
-                {/* Content */}
-                <div className="flex-1 overflow-y-auto p-6 space-y-6">
-                    {/* Basic Info */}
-                    <div className="space-y-4">
-                        <h3 className="text-lg font-semibold">
-                            Podstawowe informacje
-                        </h3>
-                        <div className="grid grid-cols-2 gap-4">
+                <div className="flex-1 overflow-y-auto p-4 sm:p-5">
+                    <div className={adminModalBodyGrid}>
+                    <AdminFormSection title="Podstawowe informacje" icon={BookOpen} dense>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div>
                                 <label className="block text-sm font-medium mb-1">
                                     Nazwa produktu *
@@ -406,53 +282,27 @@ export default function ProductEditModal({
                                     Slug jest automatycznie generowany z nazwy
                                 </span>
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium mb-1">
-                                    Cena (bez VAT) *
-                                </label>
-                                <input
-                                    type="number"
-                                    step="0.01"
-                                    value={editedProduct.cena && editedProduct.cena !== 0 ? editedProduct.cena : ""}
-                                    onChange={(e) => {
-                                        const val = e.target.value;
-                                        if (val === "" || val === null || val === undefined) {
-                                            updateField("cena", 0);
-                                        } else {
-                                            const numVal = parseFloat(val);
-                                            if (!isNaN(numVal)) {
-                                                updateField("cena", numVal);
-                                            }
-                                        }
-                                    }}
-                                    onFocus={(e) => {
-                                        if (e.target.value === "0" || e.target.value === "") {
-                                            e.target.select();
-                                        }
-                                    }}
-                                    className="w-full px-3 py-2 border rounded-md"
-                                    placeholder="0.00"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium mb-1">
-                                    Cena skupu (analityka) *
-                                </label>
-                                <input
-                                    type="number"
-                                    step="0.01"
-                                    value={editedProduct.cena_skupu === 0 || editedProduct.cena_skupu === undefined || editedProduct.cena_skupu === null ? "" : editedProduct.cena_skupu}
-                                    onChange={(e) => {
-                                        const val = e.target.value;
-                                        updateField(
-                                            "cena_skupu",
-                                            val === "" ? 0 : parseFloat(val) || 0,
-                                        );
-                                    }}
-                                    className="w-full px-3 py-2 border rounded-md"
-                                    placeholder="0.00"
-                                />
-                            </div>
+                            <AdminPriceVatFields
+                                label="Cena *"
+                                required
+                                storedNetValue={editedProduct.cena || 0}
+                                vatPercent={editedProduct.vat ?? 23}
+                                cenaTyp={cenaTyp}
+                                onStoredNetChange={(v) => updateField("cena", v)}
+                                onCenaTypChange={setCenaTyp}
+                                variant="modal"
+                            />
+                            <AdminPriceVatFields
+                                label="Cena skupu (analityka) *"
+                                required
+                                storedNetValue={editedProduct.cena_skupu || 0}
+                                vatPercent={editedProduct.vat ?? 23}
+                                cenaTyp={cenaTyp}
+                                onStoredNetChange={(v) => updateField("cena_skupu", v)}
+                                onCenaTypChange={setCenaTyp}
+                                variant="modal"
+                                previewPrefix="Cena skupu z VAT"
+                            />
                             <div>
                                 <label className="block text-sm font-medium mb-1">
                                     Ilość *
@@ -569,7 +419,7 @@ export default function ProductEditModal({
                                             <option key={id} value={id}>
                                                 {pr.nazwa}
                                                 {pr.procent != null &&
-                                                pr.procent > 0
+                                                    pr.procent > 0
                                                     ? ` (−${pr.procent}%)`
                                                     : ""}
                                             </option>
@@ -624,83 +474,30 @@ export default function ProductEditModal({
                                 </label>
                             </div>
                         </div>
-                    </div>
-
-                    {/* Description */}
-                    <div>
-                        <label className="block text-sm font-medium mb-1">
-                            Opis *
-                        </label>
-                        <textarea
-                            value={editedProduct.opis || ""}
-                            onChange={(e) =>
-                                updateField("opis", e.target.value)
-                            }
-                            rows={4}
-                            className="w-full px-3 py-2 border rounded-md"
-                        />
-                    </div>
-
-                    {/* Categories - Select */}
-                    <div>
-                        <h3 className="text-lg font-semibold mb-2">
-                            Kategorie *
-                        </h3>
-                        <div className="space-y-2">
-                            <select
-                                value={selectedMainCategory}
-                                onChange={(e) =>
-                                    handleMainCategoryChange(e.target.value)
-                                }
-                                className="w-full px-3 py-2 border rounded-md">
-                                <option value="">
-                                    Wybierz główną kategorię
-                                </option>
-                                {categoriesSlug.map((slug) => (
-                                    <option key={slug} value={slug}>
-                                        {parseSlugName(slug)}
-                                    </option>
-                                ))}
-                            </select>
-                            {selectedMainCategory &&
-                                categories[selectedMainCategory] && (
-                                    <div className="space-y-1">
-                                        <label className="text-xs text-muted-foreground">
-                                            Wybierz podkategorie (wiele):
-                                        </label>
-                                        {categories[selectedMainCategory].map(
-                                            (cat) => (
-                                                <label
-                                                    key={cat._id || cat.nazwa}
-                                                    className="flex items-center gap-2 p-2 border rounded-md cursor-pointer hover:bg-accent">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={selectedSubCategories.includes(
-                                                            cat._id || "",
-                                                        )}
-                                                        onChange={() =>
-                                                            handleSubCategoryToggle(
-                                                                cat._id || "",
-                                                            )
-                                                        }
-                                                        className="w-4 h-4"
-                                                    />
-                                                    <span className="text-sm">
-                                                        {cat.nazwa}
-                                                    </span>
-                                                </label>
-                                            ),
-                                        )}
-                                    </div>
-                                )}
+                        <div className="sm:col-span-2">
+                            <label className="block text-sm font-medium mb-1">Opis *</label>
+                            <textarea
+                                value={editedProduct.opis || ""}
+                                onChange={(e) => updateField("opis", e.target.value)}
+                                rows={3}
+                                className="w-full px-3 py-2 border rounded-md text-sm"
+                            />
                         </div>
-                    </div>
+                    </AdminFormSection>
 
-                    {/* Producer - Select */}
-                    <div>
-                        <h3 className="text-lg font-semibold mb-2">
-                            Producent *
-                        </h3>
+                    <AdminFormSection title="Kategorie i producent" icon={BookOpen} dense>
+                        <AdminCategoryPicker
+                            categories={categoryTree.categories}
+                            categoriesSlug={categoryTree.categoriesSlug}
+                            selectedMainCategory={categoryTree.selectedMainCategory}
+                            selectedSubCategories={categoryTree.selectedSubCategories}
+                            onMainCategoryChange={categoryTree.handleMainCategoryChange}
+                            onSubCategoryToggle={categoryTree.handleSubCategoryToggle}
+                            variant="modal"
+                            parseMainLabels
+                        />
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Producent *</label>
                         <select
                             value={selectedProducent}
                             onChange={(e) =>
@@ -714,464 +511,77 @@ export default function ProductEditModal({
                                 </option>
                             ))}
                         </select>
-                    </div>
+                        </div>
+                    </AdminFormSection>
 
-                    {/* Specyfikacja */}
-                    <div>
-                        <div className="flex items-center justify-between mb-2">
-                            <h3 className="text-lg font-semibold">
-                                Specyfikacja
-                            </h3>
+                    <AdminFormSection title="Specyfikacja" icon={ListChecks} dense>
+                        <AdminSpecListEditor
+                            items={editedProduct.specyfikacja || []}
+                            onChange={(spec) => updateField("specyfikacja", spec)}
+                            variant="modal"
+                            showHeader={false}
+                        />
+                    </AdminFormSection>
+
+                    <AdminFormSection title="Media" icon={Camera} dense>
+                        <div className="flex items-center justify-between">
+                            <span className="text-sm text-muted-foreground">Zdjęcia i pliki</span>
                             <button
                                 type="button"
-                                onClick={addSpecyfikacja}
+                                onClick={addMedia}
                                 className="px-3 py-1 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90 flex items-center gap-1">
                                 <Plus className="h-4 w-4" />
                                 Dodaj
                             </button>
                         </div>
-                        <div className="space-y-2">
-                            {getSpecyfikacja().map((spec, index) => (
-                                <div key={index} className="flex gap-2">
-                                    <input
-                                        type="text"
-                                        placeholder="Klucz"
-                                        value={spec.key}
-                                        onChange={(e) =>
-                                            updateSpecyfikacja(
-                                                index,
-                                                "key",
-                                                e.target.value,
-                                            )
-                                        }
-                                        className="flex-1 px-3 py-2 border rounded-md"
-                                    />
-                                    <input
-                                        type="text"
-                                        placeholder="Wartość"
-                                        value={spec.value}
-                                        onChange={(e) =>
-                                            updateSpecyfikacja(
-                                                index,
-                                                "value",
-                                                e.target.value,
-                                            )
-                                        }
-                                        className="flex-1 px-3 py-2 border rounded-md"
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() =>
-                                            removeSpecyfikacja(index)
-                                        }
-                                        className="p-2 text-red-600 hover:bg-red-50 rounded-md">
-                                        <Minus className="h-4 w-4" />
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Warianty */}
-                    <div>
-                        <div className="flex items-center justify-between mb-2">
-                            <h3 className="text-lg font-semibold">Warianty</h3>
-                            <button
-                                type="button"
-                                onClick={addWariant}
-                                className="px-3 py-1 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90 flex items-center gap-1">
-                                <Plus className="h-4 w-4" />
-                                Dodaj wariant
-                            </button>
-                        </div>
-                        <div className="space-y-4">
-                            {getWarianty().map((wariant, index) => (
-                                <div
-                                    key={index}
-                                    className="p-4 border rounded-md space-y-3">
-                                    <div className="grid grid-cols-2 gap-2">
-                                        <div>
-                                            <label className="text-xs font-medium">
-                                                Nazwa wariantu *
-                                            </label>
-                                            <input
-                                                type="text"
-                                                value={wariant.nazwa}
-                                                onChange={(e) =>
-                                                    updateWariant(
-                                                        index,
-                                                        "nazwa",
-                                                        e.target.value,
-                                                    )
-                                                }
-                                                className="w-full px-3 py-2 border rounded-md text-sm"
-                                                placeholder="Np. Czerwony"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="text-xs font-medium">
-                                                Typ *
-                                            </label>
-                                            <select
-                                                value={wariant.typ}
-                                                onChange={(e) =>
-                                                    updateWariant(
-                                                        index,
-                                                        "typ",
-                                                        e.target
-                                                            .value as Warianty["typ"],
-                                                    )
-                                                }
-                                                className="w-full px-3 py-2 border rounded-md text-sm">
-                                                <option value="kolor">
-                                                    Kolor
-                                                </option>
-                                                <option value="rozmiar">
-                                                    Rozmiar
-                                                </option>
-                                                <option value="objetosc">
-                                                    Objętość
-                                                </option>
-                                                <option value="specjalna">
-                                                    Specjalna
-                                                </option>
-                                                <option value="hurt">
-                                                    Hurt
-                                                </option>
-                                            </select>
-                                        </div>
-                                    </div>
-
-                                    {/* Pola zależne od typu */}
-                                    {wariant.typ === "kolor" && (
-                                        <div className="grid grid-cols-3 gap-2">
-                                            <input
-                                                type="text"
-                                                placeholder="Nazwa koloru"
-                                                value={
-                                                    wariant.kolory?.name || ""
-                                                }
-                                                onChange={(e) =>
-                                                    updateWariant(
-                                                        index,
-                                                        "kolory",
-                                                        {
-                                                            ...wariant.kolory,
-                                                            name: e.target
-                                                                .value,
-                                                            val: e.target.value,
-                                                            hex:
-                                                                wariant.kolory
-                                                                    ?.hex ||
-                                                                null,
-                                                        },
-                                                    )
-                                                }
-                                                className="px-3 py-2 border rounded-md text-sm"
-                                            />
-                                            <input
-                                                type="text"
-                                                placeholder="Wartość"
-                                                value={
-                                                    wariant.kolory?.val || ""
-                                                }
-                                                onChange={(e) =>
-                                                    updateWariant(
-                                                        index,
-                                                        "kolory",
-                                                        {
-                                                            ...wariant.kolory,
-                                                            name:
-                                                                wariant.kolory
-                                                                    ?.name ||
-                                                                "",
-                                                            val: e.target.value,
-                                                            hex:
-                                                                wariant.kolory
-                                                                    ?.hex ||
-                                                                null,
-                                                        },
-                                                    )
-                                                }
-                                                className="px-3 py-2 border rounded-md text-sm"
-                                            />
-                                            <input
-                                                type="color"
-                                                value={
-                                                    wariant.kolory?.hex ||
-                                                    "#000000"
-                                                }
-                                                onChange={(e) =>
-                                                    updateWariant(
-                                                        index,
-                                                        "kolory",
-                                                        {
-                                                            ...wariant.kolory,
-                                                            name:
-                                                                wariant.kolory
-                                                                    ?.name ||
-                                                                "",
-                                                            val:
-                                                                wariant.kolory
-                                                                    ?.val || "",
-                                                            hex: e.target.value,
-                                                        },
-                                                    )
-                                                }
-                                                className="rounded-md border h-10"
-                                            />
-                                        </div>
-                                    )}
-                                    {wariant.typ === "rozmiar" && (
-                                        <div className="grid grid-cols-2 gap-2">
-                                            <input
-                                                type="text"
-                                                placeholder="Nazwa rozmiaru"
-                                                value={
-                                                    wariant.rozmiary?.name || ""
-                                                }
-                                                onChange={(e) =>
-                                                    updateWariant(
-                                                        index,
-                                                        "rozmiary",
-                                                        {
-                                                            ...wariant.rozmiary,
-                                                            name: e.target
-                                                                .value,
-                                                            val: e.target.value,
-                                                            hex: null,
-                                                        },
-                                                    )
-                                                }
-                                                className="px-3 py-2 border rounded-md text-sm"
-                                            />
-                                            <input
-                                                type="text"
-                                                placeholder="Wartość"
-                                                value={
-                                                    wariant.rozmiary?.val || ""
-                                                }
-                                                onChange={(e) =>
-                                                    updateWariant(
-                                                        index,
-                                                        "rozmiary",
-                                                        {
-                                                            ...wariant.rozmiary,
-                                                            name:
-                                                                wariant.rozmiary
-                                                                    ?.name ||
-                                                                "",
-                                                            val: e.target.value,
-                                                            hex: null,
-                                                        },
-                                                    )
-                                                }
-                                                className="px-3 py-2 border rounded-md text-sm"
-                                            />
-                                        </div>
-                                    )}
-                                    {wariant.typ === "objetosc" && (
-                                        <div>
-                                            <input
-                                                type="number"
-                                                placeholder="Objętość (ml)"
-                                                value={wariant.objetosc === 0 || wariant.objetosc === undefined || wariant.objetosc === null ? "" : wariant.objetosc}
-                                                onChange={(e) => {
-                                                    const val = e.target.value;
-                                                    updateWariant(
-                                                        index,
-                                                        "objetosc",
-                                                        val === "" ? undefined : parseFloat(val) || undefined,
-                                                    );
-                                                }}
-                                                className="w-full px-3 py-2 border rounded-md text-sm"
-                                            />
-                                        </div>
-                                    )}
-
-                                    {/* Nadpisuje cenę */}
-                                    <div className="flex items-center gap-2">
-                                        <input
-                                            type="checkbox"
-                                            checked={
-                                                wariant.nadpisuje_cene || false
-                                            }
-                                            onChange={(e) =>
-                                                updateWariant(
-                                                    index,
-                                                    "nadpisuje_cene",
-                                                    e.target.checked,
-                                                )
-                                            }
-                                            className="w-4 h-4"
-                                        />
-                                        <label className="text-xs">
-                                            Nadpisuje cenę
-                                        </label>
-                                        {wariant.nadpisuje_cene && (
-                                            <input
-                                                type="number"
-                                                step="0.01"
-                                                placeholder="Nowa cena"
-                                                value={wariant.nowa_cena === 0 || wariant.nowa_cena === undefined || wariant.nowa_cena === null ? "" : wariant.nowa_cena}
-                                                onChange={(e) => {
-                                                    const val = e.target.value;
-                                                    updateWariant(
-                                                        index,
-                                                        "nowa_cena",
-                                                        val === "" ? undefined : parseFloat(val) || undefined,
-                                                    );
-                                                }}
-                                                className="flex-1 px-3 py-2 border rounded-md text-sm"
-                                            />
-                                        )}
-                                    </div>
-
-                                    {/* Inna cena skupu */}
-                                    <div className="flex items-center gap-2">
-                                        <input
-                                            type="checkbox"
-                                            checked={
-                                                wariant.inna_cena_skupu || false
-                                            }
-                                            onChange={(e) =>
-                                                updateWariant(
-                                                    index,
-                                                    "inna_cena_skupu",
-                                                    e.target.checked,
-                                                )
-                                            }
-                                            className="w-4 h-4"
-                                        />
-                                        <label className="text-xs">
-                                            Inna cena skupu (analityka)
-                                        </label>
-                                        {wariant.inna_cena_skupu && (
-                                            <input
-                                                type="number"
-                                                step="0.01"
-                                                placeholder="Cena skupu"
-                                                value={wariant.cena_skupu === 0 || wariant.cena_skupu === undefined || wariant.cena_skupu === null ? "" : wariant.cena_skupu}
-                                                onChange={(e) => {
-                                                    const val = e.target.value;
-                                                    updateWariant(
-                                                        index,
-                                                        "cena_skupu",
-                                                        val === "" ? undefined : parseFloat(val) || undefined,
-                                                    );
-                                                }}
-                                                className="flex-1 px-3 py-2 border rounded-md text-sm"
-                                            />
-                                        )}
-                                    </div>
-
-                                    {/* Permisje */}
-                                    {(wariant.typ === "hurt" ||
-                                        wariant.typ === "specjalna") && (
-                                            <div>
-                                                <label className="text-xs font-medium">
-                                                    Permisje (opcjonalnie)
-                                                </label>
-                                                <input
-                                                    type="number"
-                                                    placeholder="Kod permisji"
-                                                    value={wariant.permisje || ""}
-                                                    onChange={(e) =>
-                                                        updateWariant(
-                                                            index,
-                                                            "permisje",
-                                                            parseInt(
-                                                                e.target.value,
-                                                            ) || undefined,
-                                                        )
-                                                    }
-                                                    className="w-full px-3 py-2 border rounded-md text-sm"
-                                                />
-                                            </div>
-                                        )}
-
-                                    <button
-                                        type="button"
-                                        onClick={() => removeWariant(index)}
-                                        className="w-full px-3 py-2 text-sm text-red-600 border border-red-300 rounded-md hover:bg-red-50">
-                                        Usuń wariant
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Media - Array */}
-                    <div>
-                        <div className="flex items-center justify-between mb-2">
-                            <h3 className="text-lg font-semibold">Media</h3>
-                            <button
-                                onClick={addMedia}
-                                className="px-3 py-1 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90 flex items-center gap-1">
-                                <Plus className="h-4 w-4" />
-                                Dodaj media
-                            </button>
-                        </div>
-                        <div className="space-y-2">
+                        <div className="space-y-2 max-h-48 overflow-y-auto">
                             {(editedProduct.media || []).map((media, index) => (
                                 <div
                                     key={index}
-                                    className="flex gap-2 items-start p-3 border rounded-md">
+                                    className="flex gap-2 items-start p-2 border rounded-md">
                                     <div className="flex-1 grid grid-cols-2 gap-2">
                                         <input
                                             type="text"
-                                            placeholder="Ścieżka do pliku"
+                                            placeholder="Ścieżka"
                                             value={media.path || ""}
                                             onChange={(e) =>
-                                                updateMedia(
-                                                    index,
-                                                    "path",
-                                                    e.target.value,
-                                                )
+                                                updateMedia(index, "path", e.target.value)
                                             }
-                                            className="px-3 py-2 border rounded-md"
+                                            className="px-2 py-1.5 border rounded-md text-sm"
                                         />
                                         <input
                                             type="text"
-                                            placeholder="Alt text"
+                                            placeholder="Alt"
                                             value={media.alt || ""}
                                             onChange={(e) =>
-                                                updateMedia(
-                                                    index,
-                                                    "alt",
-                                                    e.target.value,
-                                                )
+                                                updateMedia(index, "alt", e.target.value)
                                             }
-                                            className="px-3 py-2 border rounded-md"
+                                            className="px-2 py-1.5 border rounded-md text-sm"
                                         />
                                         <select
                                             value={media.typ || "image"}
                                             onChange={(e) =>
-                                                updateMedia(
-                                                    index,
-                                                    "typ",
-                                                    e.target.value,
-                                                )
+                                                updateMedia(index, "typ", e.target.value)
                                             }
-                                            className="px-3 py-2 border rounded-md">
+                                            className="px-2 py-1.5 border rounded-md text-sm col-span-2">
                                             <option value="image">Obraz</option>
                                             <option value="video">Video</option>
                                             <option value="pdf">PDF</option>
                                             <option value="other">Inne</option>
                                         </select>
-                                        {media.path &&
-                                            media.typ === "image" && (
-                                                <div className="relative w-full h-24 border rounded-md overflow-hidden">
-                                                    <Image
-                                                        src={media.path}
-                                                        alt={media.alt || ""}
-                                                        fill
-                                                        className="object-cover"
-                                                    />
-                                                </div>
-                                            )}
+                                        {media.path && media.typ === "image" && (
+                                            <div className="relative w-full h-20 border rounded-md overflow-hidden col-span-2">
+                                                <Image
+                                                    src={media.path}
+                                                    alt={media.alt || ""}
+                                                    fill
+                                                    className="object-cover"
+                                                />
+                                            </div>
+                                        )}
                                     </div>
                                     <button
+                                        type="button"
                                         onClick={() => removeMedia(index)}
                                         className="p-2 text-red-600 hover:bg-red-50 rounded-md">
                                         <Minus className="h-4 w-4" />
@@ -1179,17 +589,32 @@ export default function ProductEditModal({
                                 </div>
                             ))}
                             {(editedProduct.media || []).length === 0 && (
-                                <p className="text-sm text-muted-foreground text-center py-4">
-                                    Brak mediów. Kliknij {'"'}Dodaj media{'"'}{" "}
-                                    aby dodać.
+                                <p className="text-sm text-muted-foreground text-center py-3">
+                                    Brak mediów
                                 </p>
                             )}
                         </div>
+                    </AdminFormSection>
+
+                    <AdminFormSection
+                        title="Warianty"
+                        icon={Box}
+                        dense
+                        className={adminFormSpanFull}>
+                        <ProductVariantsEditor
+                            warianty={editedProduct.wariant || []}
+                            onChange={(w) => updateField("wariant", w)}
+                            vatPercent={editedProduct.vat ?? 23}
+                            cenaTyp={cenaTyp}
+                            variant="modal"
+                            lockFirstVariantQty
+                            showSectionHeader={false}
+                        />
+                    </AdminFormSection>
                     </div>
                 </div>
 
-                {/* Footer */}
-                <div className="flex items-center justify-between p-6 border-t bg-muted/50">
+                <div className="flex items-center justify-between px-5 py-4 border-t bg-muted/50 shrink-0">
                     <button
                         onClick={handleDelete}
                         className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-2">

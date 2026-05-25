@@ -1,9 +1,13 @@
 import { getOrderByNumerZamowienia, updateOrder } from "@/lib/crud/orders/orders";
+import { Products } from "@/lib/types/productTypes";
+import { reduceProductQuantity } from "@/lib/crud/products/product";
 import { generatePDF, generateTicket } from "@/lib/pdf/utils";
 import { put } from "@vercel/blob";
 import { appendFile, mkdirSync } from "fs";
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
+import { notificationsType } from "@/lib/types/notificationsTypes";
+import { Notifications } from "@/lib/models/Notifications";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
@@ -28,6 +32,18 @@ export async function POST(req: NextRequest) {
             if (!order) {
                 return NextResponse.json({}, { status: 404 });
             }
+            for (const item of order.produkty) {
+                await reduceProductQuantity((item.pozycja as Products)._id! as string, item.ilosc, item.wariant);
+            }
+            const notificationsPayload: notificationsType = {
+                nazwa: "Nowe zamówienie",
+                typ: "Nowe zamówienie",
+                tresc: `Nowe zamówienie ${order.numer_zamowienia} o wartości ${order.suma.toFixed(2)} zł. Więcej informacji na stronie zamówienia.`,
+                link: `/admin/orders/${order.numer_zamowienia}`,
+                czy_przeczytane: false,
+                czy_aktywne: true
+            };
+            await Notifications.create(notificationsPayload);
             const code = Math.floor(Math.random() * 1000000 + 1);
             const data_zamowienia = new Date();
             const potwierdzenie = await generatePDF({ ...order, data_zamowienia: data_zamowienia });

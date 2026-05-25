@@ -1,0 +1,53 @@
+{
+  "Producents": {
+    "table": "producents",
+    "mongoModel": "main/lib/models/Products.ts → Producent",
+    "zodType": "main/lib/types/productTypes.ts → zodProducents"
+  },
+  "Categories": {
+    "table": "categories",
+    "mongoModel": "main/lib/models/shared.ts → Category",
+    "zodType": "main/lib/types/shared.ts → zodCategories"
+  },
+  "Products": {
+    "table": "products",
+    "mongoModel": "main/lib/models/Products.ts → Product",
+    "zodType": "main/lib/types/productTypes.ts → zodProducts",
+    "notes": "cena, cena_skupu, wariant[].nowa_cena — netto; FK producent_id, kategoria_ids[], promocje_id"
+  },
+  "Roles": {
+    "table": "roles",
+    "mongoModel": "main/lib/models/Users.ts",
+    "zodType": "main/lib/types/userTypes.ts"
+  },
+  "Users": {
+    "table": "users",
+    "mongoModel": "main/lib/models/Users.ts",
+    "zodType": "main/lib/types/userTypes.ts"
+  },
+  "Courses": {
+    "table": "courses",
+    "mongoModel": "main/lib/models/Courses.ts",
+    "zodType": "main/lib/types/coursesTypes.ts"
+  },
+  "Orders": {
+    "table": "orders",
+    "mongoModel": "main/lib/models/Users.ts (OrderList)",
+    "zodType": "main/lib/types/orderTypes.ts"
+  },
+  "Delivery": {
+    "table": "delivery_methods",
+    "mongoModel": "main/lib/models/Delivery.ts",
+    "zodType": "main/lib/types/deliveryTypes.ts"
+  },
+  "Promos": {
+    "table": "promos",
+    "mongoModel": "main/lib/models/shared.ts",
+    "zodType": "main/lib/types/shared.ts → zodPromocje"
+  },
+  "Notifications": {
+    "table": "notifications",
+    "mongoModel": "main/lib/models/Notifications.ts",
+    "zodType": "main/lib/types/notificationsTypes.ts"
+  }
+}

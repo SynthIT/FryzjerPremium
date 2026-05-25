@@ -15,7 +15,6 @@ import {
     Receipt,
     Package,
     PlusSquare,
-    Boxes,
     ChartBar,
     PanelLeftClose,
     PanelLeftOpen,
@@ -26,7 +25,6 @@ import {
     ChevronDown,
     ChevronRight,
     User,
-    Shield,
     Factory,
     FolderKanban,
     Percent,
@@ -34,6 +32,8 @@ import {
     PlusCircle,
     TruckIcon,
     GraduationCap,
+    FolderTree,
+    ShieldCheck,
 } from "lucide-react";
 
 type NavItem = {
@@ -50,7 +50,7 @@ const navItems: NavItem[] = [
         icon: <LayoutDashboard className="h-5 w-5" />,
     },
     {
-        href: "/admin/customers",
+        href: "/admin/customers/uzytkownicy",
         label: "Klienci",
         icon: <Users2 className="h-5 w-5" />,
         children: [
@@ -69,6 +69,11 @@ const navItems: NavItem[] = [
                 label: "Firmy",
                 icon: <Factory className="h-4 w-4" />,
             },
+            {
+                href: "/admin/customers/account-verify",
+                label: "Weryfikacja kont",
+                icon: <ShieldCheck className="h-4 w-4" />,
+            }
         ],
     },
     {
@@ -111,7 +116,7 @@ const navItems: NavItem[] = [
             {
                 href: "/admin/manage/categories",
                 label: "Kategorie",
-                icon: <Boxes className="h-4 w-4" />,
+                icon: <FolderTree className="h-4 w-4" />,
             },
         ],
     },

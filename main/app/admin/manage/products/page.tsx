@@ -6,6 +6,7 @@ import AdminProductCard from "@/components/admin/AdminProductCard";
 import ProductEditModal from "@/components/admin/ProductEditModal";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { Package, Plus } from "lucide-react";
 
 export default function ProductPage() {
     const documentQuery = useSearchParams();
@@ -162,30 +163,18 @@ export default function ProductPage() {
         <div className="space-y-4 sm:space-y-6">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
+                    <h1 className="text-gray-900 flex items-center gap-2 text-2xl font-semibold tracking-tight text-[var(--text-dark)] sm:text-3xl">
+                        <Package className="h-8 w-8 text-[var(--primary-dark)]" />
                         Produkty
                     </h1>
                     <p className="text-sm text-muted-foreground sm:text-base">
                         Dodawaj, edytuj i organizuj produkty.
                     </p>
                 </div>
-                <button
-                    onClick={() => {
-                        fetch("/admin/api/v1/products/cache", {
-                            credentials: "include",
-                        }).then(res => res.json()).then(data => {
-                            if (data.status === 0) {
-                                alert("Plik cache naprawiony");
-                            } else {
-                                alert("Błąd podczas naprawiania pliku cache: " + data.error);
-                            }
-                        });
-                    }}
-                    className="w-full rounded-md border px-3 py-2 text-sm transition-colors hover:bg-accent sm:w-auto"
-                >Napraw plik cache</button>
                 <Link
                     href="/admin/manage/products/new"
-                    className="w-full rounded-md border px-3 py-2 text-sm transition-colors hover:bg-accent sm:w-auto">
+                    className="text-gray-900 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--primary)] px-4 py-3 text-sm font-medium text-[var(--text-dark)] shadow-sm transition-all hover:bg-[var(--primary-dark)] hover:text-white sm:w-auto">
+                    <Plus className="h-4 w-4" />
                     Dodaj produkt
                 </Link>
             </div>

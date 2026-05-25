@@ -49,7 +49,7 @@ export async function updateCourse(courseData: Courses) {
         { slug: courseData.slug },
         { $set: courseData },
         {
-            new: true,
+            returnDocument: "after",
         },
     );
     return cours;

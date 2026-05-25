@@ -208,6 +208,14 @@ export default function OrderPage() {
                                     <tbody>
                                         {order?.produkty?.map((produkt, index) => {
                                             const produktData = produkt.pozycja as Products;
+                                            if (!produktData)
+                                                return (
+                                                    <tr key={`${index}`}>
+                                                        <td className="border-2 border-gray-300">{index + 1}</td>
+                                                        <td className="border-2 border-gray-300">Produkt został usunięty</td>
+                                                        <td className="border-2 border-gray-300">{produkt.ilosc}</td>
+                                                    </tr>
+                                                )
                                             return (
                                                 <tr key={produktData._id + `${index}`}>
                                                     <td className="border-2 border-gray-300">{index + 1}</td>

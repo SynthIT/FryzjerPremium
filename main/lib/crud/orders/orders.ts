@@ -24,7 +24,7 @@ export async function createOrder(order: OrderList) {
 export async function updateOrder(order: OrderList) {
     await db();
     try {
-        const res = await Orders.findOneAndUpdate({ _id: order._id }, { $set: order }, { new: true });
+        const res = await Orders.findOneAndUpdate({ _id: order._id }, { $set: order }, { returnDocument: "after" });
         return res;
     } catch (error) {
         console.error(error);

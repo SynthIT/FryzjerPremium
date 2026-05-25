@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
+import NavbarNotificationComponent from "./NavbarNotifiComponent";
 
 export function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
     const { theme, setTheme } = useTheme();
@@ -55,12 +56,7 @@ export function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
                             <Moon className="h-5 w-5" />
                         )}
                     </button>
-                    <Link
-                        href="#"
-                        aria-label="Powiadomienia"
-                        className="rounded p-2 transition-colors hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring">
-                        <Bell className="h-5 w-5" />
-                    </Link>
+                    <NavbarNotificationComponent />
                     <Link
                         href="/admin/settings/account"
                         aria-label="Ustawienia"

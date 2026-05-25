@@ -63,7 +63,7 @@ export async function addAndUpdateOrderToUser(userId: string, order: OrderList) 
         if (zamowienia && zamowienia.length > 0) {
             const existingOrder = zamowienia.find((o) => o.numer_zamowienia === order.numer_zamowienia);
             if (existingOrder) {
-                const res = await Orders.findOneAndUpdate({ _id: existingOrder._id }, { $set: { ...order } }, { new: true });
+                const res = await Orders.findOneAndUpdate({ _id: existingOrder._id }, { $set: { ...order } }, { returnDocument: "after" });
                 return res;
             } else {
                 const res = await Orders.create(order);
@@ -83,7 +83,7 @@ export async function addAndUpdateOrderToUserByEmail(email: string, order: Order
         await db();
         const zamowienia = await Orders.findOne({ email: email, status: "w_koszyku" });
         if (zamowienia) {
-            const res = await Orders.findOneAndUpdate({ _id: zamowienia._id }, { $set: { ...order } }, { new: false });
+            const res = await Orders.findOneAndUpdate({ _id: zamowienia._id }, { $set: { ...order } }, { returnDocument: "before" });
             return res;
         } else {
             const res = await Orders.create(order);

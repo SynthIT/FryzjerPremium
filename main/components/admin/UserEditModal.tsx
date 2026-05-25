@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { Users, Roles } from "@/lib/types/userTypes";
-import { X } from "lucide-react";
+import { Edit, X } from "lucide-react";
 
 interface UserEditModalProps {
     user: Users;
@@ -139,11 +139,19 @@ export default function UserEditModal({
                                         .join(", ") || "—"}
                                 </p>
                             </div>
+                            <div>
+                                <label className="block text-sm font-medium mb-1">NIP</label>
+                                <p className="px-3 py-2 border rounded-md bg-muted/50">{user.nip ?? "—"}</p>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="flex items-center justify-end p-6 border-t">
+                <div className="flex items-center justify-end gap-2 p-6 border-t">
+                    <button className="px-4 py-2 text-sm border rounded-md hover:bg-accent transition-colors flex items-center gap-2">
+                        <Edit className="h-4 w-4" />
+                        Edytuj
+                    </button>
                     <button
                         onClick={onClose}
                         className="px-4 py-2 text-sm border rounded-md hover:bg-accent transition-colors">

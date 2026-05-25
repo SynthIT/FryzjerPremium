@@ -1,17 +1,5 @@
 import z from "zod";
 
-export const keys = [
-    "sku",
-    "nazwa",
-    "cena_skupu",
-    "cena",
-    "ilosc",
-    "profit",
-    "pop_cena_skupu",
-    "pop_cena",
-    "pop_ilosc",
-    "pop_profit",
-] as const;
 
 export const zodAnalist = z.object({
     _id: z.string().optional(),
@@ -21,7 +9,12 @@ export const zodAnalist = z.object({
     cena_skupu: z.number(),
     cena: z.number(),
     ilosc: z.number(),
-    nr_zam: z.string(),
+    delta: z.number(),
+    kod_produkcyjny: z.string().optional(),
+    kod_ean: z.string().optional(),
+    pop_cena: z.number().optional(),
+    pop_cena_skupu: z.number().optional(),
+    pop_ilosc: z.number().optional(),
     createdAt: z.date().optional(),
     updatedAt: z.date().optional(),
     __V: z.number().optional(),

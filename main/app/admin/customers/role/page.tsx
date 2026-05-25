@@ -5,6 +5,7 @@ import { Roles } from "@/lib/types/userTypes";
 import AdminRoleCard from "@/components/admin/AdminRoleCart";
 import RoleEditModal from "@/components/admin/RoleEditModal";
 import Link from "next/link";
+import { Plus, ShieldCheck } from "lucide-react";
 
 export default function RolePage() {
     const [roles, setRoles] = useState<Roles[]>([]);
@@ -102,7 +103,8 @@ export default function RolePage() {
         <div className="space-y-4 sm:space-y-6">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
+                    <h1 className="text-gray-900 flex items-center gap-2 text-2xl font-semibold tracking-tight text-[var(--text-dark)] sm:text-3xl">
+                        <ShieldCheck className="h-8 w-8 text-[var(--primary-dark)]" />
                         Role
                     </h1>
                     <p className="text-sm text-muted-foreground sm:text-base">
@@ -111,12 +113,13 @@ export default function RolePage() {
                 </div>
                 <Link
                     href="/admin/customers/role/new"
-                    className="w-full rounded-md border px-3 py-2 text-sm transition-colors hover:bg-accent sm:w-auto">
+                    className="text-gray-900 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--primary)] px-4 py-3 text-sm font-medium text-[var(--text-dark)] shadow-sm transition-all hover:bg-[var(--primary-dark)] hover:text-white sm:w-auto">
+                    <Plus className="h-4 w-4" />
                     Dodaj rolę
                 </Link>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 border-b pb-4">
                 <input
                     type="text"
                     placeholder="Szukaj ról..."

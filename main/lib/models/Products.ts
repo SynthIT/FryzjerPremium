@@ -33,6 +33,7 @@ export const wariantySchema = new Schema<Warianty>(
             type: String,
             enum: ["kolor", "rozmiar", "objetosc", "specjalna", "hurt"],
         },
+        ilosc: { type: Number, min: 0, required: true, default: 0 },
         kolory: { type: wariantPropsSchema },
         rozmiary: { type: wariantPropsSchema },
         objetosc: { type: Number },

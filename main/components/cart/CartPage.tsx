@@ -6,7 +6,11 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { useUser } from "@/contexts/UserContext";
 import { CartItem } from "@/lib/types/cartTypes";
+import CartValidationMessages, {
+    type CartChangeEntry,
+} from "@/components/cart/CartValidationMessages";
 import { X } from "lucide-react";
+import { finalPrice } from "@/lib/utils";
 
 export default function CartPage() {
     const {
@@ -19,31 +23,34 @@ export default function CartPage() {
     } = useCart();
     const { user, setUserAsEmail } = useUser();
     const [items, setItems] = useState<CartItem[]>([]);
+    const [cartMessages, setCartMessages] = useState<CartChangeEntry[]>([]);
     const [showEditModal, setShowEditModal] = useState<boolean>(false);
     const [editModalData, setEditModalData] = useState<{ email: string, id: string }>({ email: "", id: getCart().id });
     useEffect(() => {
         async function validate() {
-            await fetch("/api/v1/users/cart", {
-                method: "POST",
-                body: JSON.stringify({ userId: user, koszyk: getCart() }),
-            })
-                .then((res) => res.json())
-                .then((validation) => {
-                    if (validation.status === 0) {
-                        if (validation.changedEntries) {
-                            validation.changedEntries.forEach(
-                                (entry: { reason: string; item: CartItem }) => {
-                                    console.log(entry.reason);
-                                },
-                            );
-                        }
-                        refreshCart(validation.koszyk);
-                        setItems(validation.koszyk.items);
-                    } else {
-                        setItems(getCart().items);
-                    }
-                })
-                .catch(() => setItems(getCart().items));
+            try {
+                const res = await fetch("/api/v1/users/cart", {
+                    method: "POST",
+                    credentials: "include",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ userId: user, koszyk: getCart() }),
+                });
+                const validation = await res.json();
+                if (validation.status === 0) {
+                    const entries = Array.isArray(validation.changedEntries)
+                        ? (validation.changedEntries as CartChangeEntry[])
+                        : [];
+                    setCartMessages(entries);
+                    refreshCart(validation.koszyk);
+                    setItems(validation.koszyk.items ?? []);
+                } else {
+                    setCartMessages([]);
+                    setItems(getCart().items);
+                }
+            } catch {
+                setCartMessages([]);
+                setItems(getCart().items);
+            }
         }
         validate();
         // eslint-disable-next-line react-hooks/exhaustive-deps -- run only on mount
@@ -85,6 +92,10 @@ export default function CartPage() {
                         <span className="text-gray-900">Koszyk</span>
                     </div>
                     <div className="flex flex-col items-center justify-center py-16 text-center">
+                    <CartValidationMessages
+                            messages={cartMessages}
+                            onDismiss={() => setCartMessages([])}
+                        />
                         <div className="text-[#D2B79B] mb-4">
                             <svg
                                 fill="none"
@@ -106,7 +117,7 @@ export default function CartPage() {
                         <p className="text-gray-600 mb-6 max-w-md">
                             Dodaj produkty do koszyka, aby kontynuować zakupy.
                         </p>
-                        <Link href="/products" className="inline-block px-8 py-3 rounded-xl font-semibold text-black bg-[#D2B79B] hover:bg-[#b89a7f] transition-colors">
+                        <Link href="/produkty" className="inline-block px-8 py-3 rounded-xl font-semibold text-black bg-[#D2B79B] hover:bg-[#b89a7f] transition-colors">
                             Przejdź do sklepu
                         </Link>
                     </div>
@@ -154,14 +165,27 @@ export default function CartPage() {
                 <div className="flex flex-col lg:flex-row gap-8">
                     <div className="flex-1 min-w-0">
                         <h1 className="text-2xl font-bold text-gray-900 mb-2">Twój koszyk</h1>
-                        {user?.includes("@") && (<div className="mb-6 flex items-center gap-2">
-                            <p className="text-gray-600 text-sm">
-                                <span className="font-medium"> Zakupy na adres email:</span> {user}
-                            </p>
-                            <button className="text-sm text-blue-500 hover:underline" onClick={() => {
-                                setShowEditModal(true);
-                            }}>Edytuj... </button>
-                        </div>)}
+                        {user?.includes("@") && (
+                            <div className="mb-4 flex items-center gap-2">
+                                <p className="text-gray-600 text-sm">
+                                    <span className="font-medium">
+                                        {" "}
+                                        Zakupy na adres email:
+                                    </span>{" "}
+                                    {user}
+                                </p>
+                                <button
+                                    type="button"
+                                    className="text-sm text-blue-500 hover:underline"
+                                    onClick={() => setShowEditModal(true)}>
+                                    Edytuj...
+                                </button>
+                            </div>
+                        )}
+                        <CartValidationMessages
+                            messages={cartMessages}
+                            onDismiss={() => setCartMessages([])}
+                        />
                         <div className="space-y-4">
                             {items.map((item) => {
                                 const productPrice = item.price;
@@ -207,9 +231,11 @@ export default function CartPage() {
                                             {item.wariant && (
                                                 <p className="text-sm text-gray-500">{item.wariant.typ}: {item.wariant.nazwa}</p>
                                             )}
+                                            <p className="text-sm text-gray-500">Cena: {finalPrice(item.object.cena, item.object.vat, item.wariant, item.object.promocje)} zł</p>
+                                        </div>
+                                        <div className="flex flex-row gap-2">
                                             <p className="font-semibold text-[#D2B79B]">{itemTotal} zł</p>
                                         </div>
-
                                         <button
                                             type="button"
                                             className="p-2 text-gray-500 hover:text-red-600 rounded-lg transition-colors"

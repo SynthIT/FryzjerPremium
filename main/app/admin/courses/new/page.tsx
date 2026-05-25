@@ -2,22 +2,22 @@
 
 import { useState, useEffect, useMemo } from "react";
 import "@/app/globals2.css";
-import { Courses, Firmy, Lekcja } from "@/lib/types/coursesTypes";
+import { Courses, Firmy } from "@/lib/types/coursesTypes";
 import { Categories, Media } from "@/lib/types/shared";
 import { useRouter } from "next/navigation";
 import { X, Clock, Users, BookOpen, Award, Info } from "lucide-react";
 import { Users as User, userSchema } from "@/lib/types/userTypes";
-import { finalPrice } from "@/lib/utils";
-
-// Helper do generowania slug
-function generateSlug(text: string): string {
-    return text
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/(^-|-$)/g, "");
-}
+import { CenaTyp } from "@/lib/admin/pricing";
+import AdminPriceVatFields from "@/components/admin/AdminPriceVatFields";
+import { generateSlug } from "@/lib/utils_admin";
+import { useCategoryTree } from "@/components/admin/hooks/useCategoryTree";
+import AdminCategoryPicker from "@/components/admin/AdminCategoryPicker";
+import CourseLessonsEditor from "@/components/admin/CourseLessonsEditor";
+import {
+    AdminFormSection,
+    adminFormPageGrid,
+    adminFormSpanFull,
+} from "@/components/admin/AdminFormLayout";
 
 
 function calculateProwizja(cena: number, prowizja: number, prowizja_typ: string, vat: number): number {
@@ -90,24 +90,8 @@ export default function NewCoursePage() {
         }
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const handleLessonPayloadChange = (index: number, key: keyof Lekcja, value: any) => {
-        setCoursePayload((prev) => ({
-            ...prev,
-            lekcje: prev.lekcje?.map((lesson, i) => i === index ? { ...lesson, [key]: value } : lesson),
-        }));
-    };
-
-
     const [prowizjaCheckbox, setProwizjaCheckbox] = useState<boolean>(false);
-    // Kategorie i firma
-    const [categories, setCategories] = useState<Categories[]>([]);
-    const [uniqueCategories, setUniqueCategories] = useState<Record<string, Categories[]>>({});
-    const [selectedMainCategory, setSelectedMainCategory] =
-        useState<string>("");
-    const [selectedSubCategories, setSelectedSubCategories] = useState<
-        string[]
-    >([]);
+    const categoryTree = useCategoryTree();
     const [firmy, setFirmy] = useState<Firmy[]>([]);
 
     // Media - główne zdjęcie + galeria
@@ -115,16 +99,14 @@ export default function NewCoursePage() {
     const [mainImagePreview, setMainImagePreview] = useState<string>("");
     const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
     const [galleryPreview, setGalleryPreview] = useState<string[]>([]);
-    const [cenaTyp, setCenaTyp] = useState<string>("brutto");
+    const [cenaTyp, setCenaTyp] = useState<CenaTyp>("brutto");
 
-    const handleCenaTypChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setCenaTyp(e.target.value);
-    };
-
-    // Sync coursePayload.kategoria with selectedSubCategories
     useEffect(() => {
-        setCoursePayload((prev) => ({ ...prev, kategoria: selectedSubCategories }));
-    }, [selectedSubCategories]);
+        setCoursePayload((prev) => ({
+            ...prev,
+            kategoria: categoryTree.getSelectedCategoryIds(),
+        }));
+    }, [categoryTree.selectedSubCategories, categoryTree.selectedMainCategory]);
 
     // Sync coursePayload.lekcje length with liczbaLekcji
     useEffect(() => {
@@ -154,54 +136,21 @@ export default function NewCoursePage() {
         }
     }, [coursePayload.nazwa]);
 
-    // Pobierz kategorie
     useEffect(() => {
-        async function fetchCategories() {
+        async function fetchFirmy() {
             try {
-                const p1 = fetch("/admin/api/v1/category", {
+                const res = await fetch("/admin/api/v1/firmy", {
                     method: "GET",
                     credentials: "include",
-                }).then((data) => data.json());
-                const p2 = fetch("/admin/api/v1/firmy", {
-                    method: "GET",
-                    credentials: "include",
-                }).then((data) => data.json());
-                await Promise.all([p1, p2]).then(([a, b]) => {
-                    if (a.status == 0) {
-                        const cat = JSON.parse(a.categories);
-                        setCategories(cat);
-                        setUniqueCategories(cat.reduce((acc: Record<string, Categories[]>, cat: Categories) => {
-                            (acc[cat.kategoria] ??= []).push(cat);
-                            return acc;
-                        }, {}));
-                    }
-                    if (b.status == 0) {
-                        setFirmy(b.firmy);
-                    }
                 });
+                const data = await res.json();
+                if (data.status == 0) setFirmy(data.firmy);
             } catch (error) {
-                console.error("Błąd podczas pobierania danych:", error);
+                console.error("Błąd podczas pobierania firm:", error);
             }
         }
-        fetchCategories();
+        fetchFirmy();
     }, []);
-
-    // Obsługa wyboru głównej kategorii
-    const handleMainCategoryChange = (mainSlug: string) => {
-        setSelectedMainCategory(mainSlug);
-        setSelectedSubCategories([]);
-    };
-
-    // Obsługa wyboru podkategorii
-    const handleSubCategoryToggle = (subCategoryId: string) => {
-        setSelectedSubCategories((prev) => {
-            if (prev.includes(subCategoryId)) {
-                return prev.filter((id) => id !== subCategoryId);
-            } else {
-                return [...prev, subCategoryId];
-            }
-        });
-    };
 
     // Obsługa głównego zdjęcia
     const handleMainImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -245,15 +194,14 @@ export default function NewCoursePage() {
         setIsSubmitting(true);
 
         try {
-            // Przygotuj kategorie
-            const selectedCategories: (string | Categories)[] = [];
-            if (selectedMainCategory && uniqueCategories[selectedMainCategory]) {
-                uniqueCategories[selectedMainCategory].forEach((cat) => {
-                    if (selectedSubCategories.includes(cat._id || "")) {
-                        selectedCategories.push(cat);
-                    }
-                });
-            }
+            const selectedCategories = categoryTree
+                .getSelectedCategoryIds()
+                .map((id) =>
+                    Object.values(categoryTree.categories)
+                        .flat()
+                        .find((c) => c._id === id),
+                )
+                .filter(Boolean) as Categories[];
 
             const firmaData = firmy.find((f) => f._id!.toString() === coursePayload.firma);
             if (!firmaData && coursePayload.firma !== "inna") {
@@ -307,11 +255,11 @@ export default function NewCoursePage() {
                 });
             }
 
-            const price = cenaTyp === "netto" ? coursePayload.cena : Math.round((coursePayload.cena / (1 + coursePayload.vat / 100)) * 100) / 100;
+            const price = coursePayload.cena;
 
             const courseData = {
                 ...coursePayload,
-                kategoria: selectedSubCategories,
+                kategoria: selectedCategories,
                 firma: firmaData ? firmaData._id : null,
                 cena: price,
                 instruktor: coursePayload.instruktor || undefined,
@@ -373,14 +321,8 @@ export default function NewCoursePage() {
                     </div>
                 </div>
             }
-            <form onSubmit={handleSubmit} className="space-y-8">
-                {/* Sekcja 1: Podstawowe informacje */}
-                <div className="rounded-lg border p-6 space-y-6">
-                    <h2 className="text-xl font-semibold flex items-center gap-2">
-                        <BookOpen className="h-5 w-5" />
-                        Podstawowe informacje
-                    </h2>
-
+            <form onSubmit={handleSubmit} className={adminFormPageGrid}>
+                <AdminFormSection title="Podstawowe informacje" icon={BookOpen}>
                     <div className="grid gap-4 sm:grid-cols-2">
                         <div className="sm:col-span-2">
                             <label className="block text-sm font-medium mb-2">
@@ -417,34 +359,15 @@ export default function NewCoursePage() {
                             </p>
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-medium mb-2">
-                                Cena *
-                            </label>
-                            <div className="flex items-center gap-2">
-                                <input
-                                    type="number"
-                                    step="0.01"
-                                    min="0"
-                                    value={coursePayload.cena}
-                                    onChange={(e) =>
-                                        handleCoursePayloadChange("cena", parseFloat(e.target.value) || 0)
-                                    }
-                                    required
-                                    className="w-full rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
-                                    placeholder="0.00"
-                                />
-                                <select
-                                    className="w-1/3 rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
-                                    value={cenaTyp}
-                                    onChange={handleCenaTypChange}
-                                    required>
-                                    <option value="brutto">Brutto</option>
-                                    <option value="netto">Netto</option>
-                                </select>
-                            </div>
-                            <p className="text-xs text-muted-foreground mt-1">Cena z {cenaTyp === "netto" ? "VAT" : "bez VAT"}: {cenaTyp === "netto" ? finalPrice(coursePayload.cena, coursePayload.vat, undefined, undefined) : `${(coursePayload.cena / (1 + coursePayload.vat / 100)).toFixed(2)}`} zł</p>
-                        </div>
+                        <AdminPriceVatFields
+                            label="Cena *"
+                            required
+                            storedNetValue={coursePayload.cena}
+                            vatPercent={coursePayload.vat}
+                            cenaTyp={cenaTyp}
+                            onStoredNetChange={(v) => handleCoursePayloadChange("cena", v)}
+                            onCenaTypChange={setCenaTyp}
+                        />
 
                         <div>
                             <label className="block text-sm font-medium mb-2">
@@ -494,15 +417,9 @@ export default function NewCoursePage() {
                             />
                         </div>
                     </div>
+                </AdminFormSection>
 
-                </div>
-
-                {/* Sekcja 2: Szkolenia */}
-                <div className="rounded-lg border p-6 space-y-6">
-                    <h2 className="text-xl font-semibold flex items-center gap-2">
-                        <Clock className="h-5 w-5" />
-                        Szkolenia
-                    </h2>
+                <AdminFormSection title="Parametry szkolenia" icon={Clock}>
                     <div className="grid gap-4 sm:grid-cols-2">
                         <div>
                             <label className="block text-sm font-medium mb-2">
@@ -603,61 +520,28 @@ export default function NewCoursePage() {
                             </label>
                         </div>
                     </div>
-                </div>
+                </AdminFormSection>
 
-                {/* Sekcja 3: Szczegóły szkoleń */}
                 {coursePayload.liczbaLekcji != null && coursePayload.liczbaLekcji > 0 && (
-                    <div className="rounded-lg border p-6 space-y-6">
-                        <h2 className="text-xl font-semibold flex items-center gap-2">
-                            <Clock className="h-5 w-5" />
-                            Szczegóły szkoleń
-                        </h2>
-                        {(coursePayload.lekcje ?? []).map((lekcja, index) => (
-                            <div key={index} className="rounded-lg border p-4 space-y-4">
-                                <h3 className="text-lg font-semibold">Lekcja #{index + 1}</h3>
-                                <div className="grid gap-4 sm:grid-cols-2">
-                                    <div className="sm:col-span-2">
-                                        <label className="block text-sm font-medium mb-2">Tytuł lekcji</label>
-                                        <input
-                                            type="text"
-                                            value={lekcja.tytul}
-                                            onChange={(e) => handleLessonPayloadChange(index, "tytul", e.target.value)}
-                                            className="w-full rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
-                                            placeholder="Np. Wprowadzenie do kursu"
-                                        />
-                                    </div>
-                                    <div className="sm:col-span-2">
-                                        <label className="block text-sm font-medium mb-2">Opis lekcji</label>
-                                        <textarea
-                                            rows={2}
-                                            value={lekcja.opis}
-                                            onChange={(e) => handleLessonPayloadChange(index, "opis", e.target.value)}
-                                            className="w-full rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
-                                            placeholder="Krótki opis lekcji"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium mb-2">Długość (np. 15:30 lub 45 min)</label>
-                                        <input
-                                            type="text"
-                                            value={lekcja.dlugosc}
-                                            onChange={(e) => handleLessonPayloadChange(index, "dlugosc", e.target.value)}
-                                            className="w-full rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring"
-                                            placeholder="15:30"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+                    <AdminFormSection
+                        title="Szczegóły lekcji"
+                        icon={Clock}
+                        className={adminFormSpanFull}>
+                        <CourseLessonsEditor
+                            liczbaLekcji={coursePayload.liczbaLekcji}
+                            lekcje={coursePayload.lekcje ?? []}
+                            onLiczbaLekcjiChange={(n) =>
+                                handleCoursePayloadChange("liczbaLekcji", n)
+                            }
+                            onLekcjeChange={(lekcje) =>
+                                handleCoursePayloadChange("lekcje", lekcje)
+                            }
+                            showLiczbaInput={false}
+                        />
+                    </AdminFormSection>
                 )}
 
-                {/* Sekcja: Czego się nauczysz */}
-                <div className="rounded-lg border p-6 space-y-6">
-                    <h2 className="text-xl font-semibold flex items-center gap-2">
-                        <Award className="h-5 w-5" />
-                        Czego się nauczysz
-                    </h2>
+                <AdminFormSection title="Czego się nauczysz" icon={Award}>
                     <p className="text-sm text-muted-foreground">Dodaj punkty wyświetlane na stronie kursu (dodaj/usuń).</p>
                     {(coursePayload.czegoSieNauczysz ?? []).map((punkt, index) => (
                         <div key={index} className="flex gap-2">
@@ -688,14 +572,9 @@ export default function NewCoursePage() {
                     >
                         + Dodaj punkt
                     </button>
-                </div>
+                </AdminFormSection>
 
-                {/* Sekcja: Wymagania */}
-                <div className="rounded-lg border p-6 space-y-6">
-                    <h2 className="text-xl font-semibold flex items-center gap-2">
-                        <Info className="h-5 w-5" />
-                        Wymagania
-                    </h2>
+                <AdminFormSection title="Wymagania" icon={Info}>
                     <p className="text-sm text-muted-foreground">Dodaj wymagania wobec uczestnika (dodaj/usuń).</p>
                     {(coursePayload.wymagania ?? []).map((w, index) => (
                         <div key={index} className="flex gap-2">
@@ -726,11 +605,9 @@ export default function NewCoursePage() {
                     >
                         + Dodaj wymaganie
                     </button>
-                </div>
+                </AdminFormSection>
 
-                {/* Opcjonalnie: Gwarancja i zawartość */}
-                <div className="rounded-lg border p-6 space-y-6">
-                    <h2 className="text-xl font-semibold">Gwarancja i zawartość kursu</h2>
+                <AdminFormSection title="Gwarancja i zawartość">
                     <div className="grid gap-4 sm:grid-cols-2">
                         <div>
                             <label className="block text-sm font-medium mb-2">Gwarancja (dni, 0 = brak)</label>
@@ -797,11 +674,9 @@ export default function NewCoursePage() {
                             + Dodaj pozycję zawartości
                         </button>
                     </div>
-                </div>
+                </AdminFormSection>
 
-                {/* Daty i miejsce */}
-                <div className="rounded-lg border p-6 space-y-6">
-                    <h2 className="text-xl font-semibold">Daty i miejsce</h2>
+                <AdminFormSection title="Daty i miejsce" icon={Clock}>
                     <p className="text-sm text-muted-foreground">Opcjonalnie dla szkoleń stacjonarnych / z ustalonym terminem.</p>
                     <div className="grid gap-4 sm:grid-cols-2">
                         <div>
@@ -846,12 +721,12 @@ export default function NewCoursePage() {
                             />
                         </div>
                     </div>
-                </div>
+                </AdminFormSection>
 
-                {/* Sekcja 3: Opis */}
-                <div className="rounded-lg border p-6 space-y-6">
-                    <h2 className="text-xl font-semibold">Opis szkolenia</h2>
-
+                <AdminFormSection
+                    title="Opis szkolenia"
+                    icon={BookOpen}
+                    className={adminFormSpanFull}>
                     <div>
                         <label className="block text-sm font-medium mb-2">
                             Pełny opis *
@@ -865,69 +740,31 @@ export default function NewCoursePage() {
                             placeholder="Szczegółowy opis szkolenia, czego się nauczysz, program kursu..."
                         />
                     </div>
-                </div>
+                </AdminFormSection>
 
-                {/* Sekcja 4: Kategorie i firma */}
-                <div className="rounded-lg border p-6 space-y-6">
-                    <h2 className="text-xl font-semibold flex items-center gap-2">
-                        <Users className="h-5 w-5" />
-                        Kategorie i organizator
-                    </h2>
-
+                <AdminFormSection title="Kategorie i organizator" icon={Users}>
                     <div className="space-y-4">
                         <div>
                             <label className="block text-sm font-medium mb-2">
                                 Kategorie *
                             </label>
-                            <div className="space-y-2">
-                                <select
-                                    value={selectedMainCategory || ""}
-                                    onChange={(e) => {
-                                        handleMainCategoryChange(e.target.value)
-                                    }}
-                                    required
-                                    className="w-full rounded-md border bg-background px-4 py-3 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring">
-                                    <option value="">
-                                        Wybierz główną kategorię
-                                    </option>
-                                    {Object.keys(uniqueCategories).map((key: string) => (
-                                        <option key={key} value={key}>
-                                            {key}
-                                        </option>
-                                    ))}
-                                </select>
-                                {selectedMainCategory &&
-                                    uniqueCategories[selectedMainCategory] && (
-                                        <div className="space-y-2 mt-2">
-                                            <label className="text-xs text-muted-foreground">
-                                                Wybierz podkategorie (wiele):
-                                            </label>
-                                            {uniqueCategories[
-                                                selectedMainCategory
-                                            ].map((cat) => (
-                                                <label
-                                                    key={cat._id || cat.nazwa}
-                                                    className="flex items-center gap-2 p-3 border rounded-md cursor-pointer hover:bg-accent">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={selectedSubCategories.includes(
-                                                            cat._id || "",
-                                                        )}
-                                                        onChange={() => {
-                                                            handleSubCategoryToggle(
-                                                                cat._id || "",
-                                                            );
-                                                        }}
-                                                        className="w-4 h-4"
-                                                    />
-                                                    <span className="text-sm">
-                                                        {cat.nazwa}
-                                                    </span>
-                                                </label>
-                                            ))}
-                                        </div>
-                                    )}
-                            </div>
+                            <AdminCategoryPicker
+                                categories={categoryTree.categories}
+                                categoriesSlug={categoryTree.categoriesSlug}
+                                selectedMainCategory={
+                                    categoryTree.selectedMainCategory
+                                }
+                                selectedSubCategories={
+                                    categoryTree.selectedSubCategories
+                                }
+                                onMainCategoryChange={
+                                    categoryTree.handleMainCategoryChange
+                                }
+                                onSubCategoryToggle={
+                                    categoryTree.handleSubCategoryToggle
+                                }
+                                required
+                            />
                         </div>
 
                         <div>
@@ -1040,12 +877,11 @@ export default function NewCoursePage() {
                             </div>
                         )}
                     </div>
-                </div>
+                </AdminFormSection>
 
-                {/* Sekcja 5: Zdjęcia */}
-                <div className="rounded-lg border p-6 space-y-6">
-                    <h2 className="text-xl font-semibold">Zdjęcia szkolenia</h2>
-
+                <AdminFormSection
+                    title="Zdjęcia szkolenia"
+                    className={adminFormSpanFull}>
                     <div className="space-y-4">
                         <div>
                             <label className="block text-sm font-medium mb-2">
@@ -1111,10 +947,9 @@ export default function NewCoursePage() {
                             )}
                         </div>
                     </div>
-                </div>
+                </AdminFormSection>
 
-                {/* Sekcja 6: Status */}
-                <div className="rounded-lg border p-6">
+                <AdminFormSection title="Publikacja" className={adminFormSpanFull}>
                     <div className="flex items-center gap-2">
                         <input
                             type="checkbox"
@@ -1129,10 +964,9 @@ export default function NewCoursePage() {
                             Szkolenie aktywne (widoczne w sklepie)
                         </label>
                     </div>
-                </div>
+                </AdminFormSection>
 
-                {/* Submit */}
-                <div className="flex justify-end gap-4">
+                <div className={`flex justify-end gap-4 ${adminFormSpanFull}`}>
                     <button
                         type="button"
                         onClick={() => router.back()}

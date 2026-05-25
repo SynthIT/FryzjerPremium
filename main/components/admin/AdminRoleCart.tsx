@@ -32,6 +32,19 @@ export default function AdminRoleCard({
         }
     }, [role]);
 
+    const preparedNames = () => {
+        const adminNames = adminPermissionNames.map((name) => {
+            return name.split(":").pop();
+        });
+        const userNames = userPermissionNames.map((name) => {
+            return name.split(":").pop();
+        });
+        return {
+            adminNames,
+            userNames,
+        };
+    }
+
     return (
         <div
             onClick={onClick}
@@ -42,10 +55,10 @@ export default function AdminRoleCard({
                 <h3 className="font-semibold text-lg line-clamp-2 group-hover:text-primary transition-colors">
                     Nazwa: {role.nazwa || "Brak nazwy"} </h3>
                 <p className="text-sm text-muted-foreground">
-                    Uzytkownik: {userPermissionNames.join(", ")}
+                    Uzytkownik: {preparedNames().userNames.join(", ")}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                    Admin: {adminPermissionNames.join(", ")}
+                    Admin: {preparedNames().adminNames.join(", ")}
                 </p>
             </div>
         </div>

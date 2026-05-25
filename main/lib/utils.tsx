@@ -221,7 +221,7 @@ export const renderStars = (
                         />
                     </svg>
                 ))}
-            <span className="rating-number">{rating}/5</span>
+            <span className="rating-number text-gray-500 text-sm">{rating}/5</span>
         </div>
     );
 };

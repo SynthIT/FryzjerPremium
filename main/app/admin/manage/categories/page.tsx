@@ -1,7 +1,7 @@
 "use client";
 
 import { Categories } from "@/lib/types/shared";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import AdminCategoryCard from "@/components/admin/AdminCategoryCard";
 import Link from "next/link";
 import { FolderTree, Plus } from "lucide-react";
@@ -50,6 +50,10 @@ export default function CategoriesPage() {
         }
     };
 
+    const filterCategories = useMemo(() => {
+        return [categories?.filter((cat) => cat.type === "product"), categories?.filter((cat) => cat.type === "course")]
+    }, [categories])
+
     if (loading) {
         return (
             <div className="flex min-h-[400px] items-center justify-center">
@@ -83,15 +87,32 @@ export default function CategoriesPage() {
             </div>
 
             {categories && categories.length > 0 ? (
-                <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
-                    {categories.map((val) => (
-                        <AdminCategoryCard
-                            key={val._id ?? val.slug}
-                            category={val}
-                            onDelete={handleDelete}
-                        />
-                    ))}
-                </div>
+                <>
+                    <div className="m-4 border-b">
+                        <h2>Kategorie kursów</h2>
+                    </div>
+                    <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
+                        {filterCategories[1]?.map((val) => (
+                            <AdminCategoryCard
+                                key={val._id ?? val.slug}
+                                category={val}
+                                onDelete={handleDelete}
+                            />
+                        ))}
+                    </div>
+                    <div className="m-4 border-b">
+                        <h2>Kategorie produktów</h2>
+                    </div>
+                    <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
+                        {filterCategories[0]?.map((val) => (
+                            <AdminCategoryCard
+                                key={val._id ?? val.slug}
+                                category={val}
+                                onDelete={handleDelete}
+                            />
+                        ))}
+                    </div>
+                </>
             ) : categories && categories.length === 0 ? (
                 <div className="rounded-xl border border-[var(--border)] bg-white/80 p-12 text-center shadow-sm">
                     <FolderTree className="mx-auto h-12 w-12 text-muted-foreground/60" />

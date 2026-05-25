@@ -65,8 +65,8 @@ body {
   box-shadow: 0 0 0 2px var(--ring);
 }
 
-/* Subtle card look for bordered containers */
-.border {
+/* Subtle card look — tylko kontenery, nie przyciski z klasą `border` */
+.rounded-lg.border {
   background: color-mix(in oklab, var(--background) 98%, transparent);
 }
 

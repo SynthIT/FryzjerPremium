@@ -12,6 +12,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Products } from "@/lib/types/productTypes";
 import { OrderList } from "@/lib/types/userTypes";
 import { Analist } from "@/lib/types/analistTypes";
+import { useAnalists } from "@/lib/analists/analists";
+import AnalyticsChartElement from "@/components/admin/AnalyticsChartElement";
 
 
 export default function AdminPage() {
@@ -19,7 +21,6 @@ export default function AdminPage() {
     const [orders, setOrders] = useState<OrderList[]>([]);
     const [analists, setAnalists] = useState<Analist[]>([]);
     const [loading, setLoading] = useState(true);
-    const [bestProducts, setBestProducts] = useState<{ name: string, income: number }[]>([]);
 
 
     useEffect(() => {
@@ -36,18 +37,8 @@ export default function AdminPage() {
         fetchData();
     }, []);
 
-    useEffect(() => {
-        const raport = Object.values(analists.reduce((acc: Record<string, { name: string, income: number }>, curr) => {
-            const zysk = curr.cena - curr.cena_skupu;
-            const income = zysk * curr.ilosc;
-            if (!acc[curr.sku]) {
-                acc[curr.sku] = { name: curr.nazwa, income: 0 };
-            }
-            acc[curr.sku].income += income;
-            return acc;
-        }, {}));
-        setBestProducts(raport.sort((a, b) => b.income - a.income).slice(0, 5));
-    }, [analists]);
+    const { overallRevenueFromProducts, overallRevenueFromCourses, bestProducts, bestCourses } =
+        useAnalists(orders);
 
     const lowStock = useMemo(() => {
         return products.filter((product) => {
@@ -119,8 +110,8 @@ export default function AdminPage() {
                 />
             </section>
             <section className="grid gap-4 sm:gap-6 lg:grid-cols-3">
-                <div className="rounded-lg border p-3 sm:p-4 lg:col-span-2">
-                    <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex min-h-[320px] flex-col rounded-lg border p-3 sm:min-h-[380px] sm:p-4 lg:col-span-2 lg:min-h-[432px]">
+                    <div className="mb-4 flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                         <h2 className="text-sm font-medium sm:text-base">
                             Przychód w czasie
                         </h2>
@@ -128,13 +119,28 @@ export default function AdminPage() {
                             Miesięcznie
                         </button>
                     </div>
-                    <div className="h-48 w-full rounded-md bg-linear-to-br from-zinc-900/5 to-zinc-500/5 sm:h-64" />
+                    <div className="min-w-0 overflow-hidden rounded-md bg-linear-to-br from-zinc-900/5 to-zinc-500/5 p-2 sm:p-3">
+                        <AnalyticsChartElement
+                            title="Przychód"
+                            produkty={overallRevenueFromProducts}
+                            kursy={overallRevenueFromCourses}
+                            showTitle={false}
+                        />
+                    </div>
                 </div>
                 <div className="rounded-lg border p-3 sm:p-4">
                     <h2 className="mb-2 text-base font-medium">
                         Najlepsze produkty
                     </h2>
                     <ul className="space-y-3 text-sm">
+                        <li className="flex items-center justify-between">
+                            <span className="truncate font-medium">
+                                Produkt
+                            </span>
+                            <span className="font-medium">
+                                Sprzedaż
+                            </span>
+                        </li>
                         {bestProducts.length > 0 ? bestProducts.map((product, i) => (
                             <li
                                 key={i}
@@ -143,7 +149,34 @@ export default function AdminPage() {
                                     {product.name}
                                 </span>
                                 <span className="text-muted-foreground">
-                                    {product.income.toLocaleString()} zł
+                                    {product.value.toLocaleString()} sztuk
+                                </span>
+                            </li>
+                        )) : <li className="flex items-center justify-between">
+                            <span className="truncate">
+                                Brak danych
+                            </span>
+                        </li>}
+                    </ul>
+
+                    <ul className="space-y-3 text-sm border-t pt-3">
+                        <li className="flex items-center justify-between">
+                            <span className="truncate font-medium">
+                                Kurs
+                            </span>
+                            <span className="font-medium">
+                                Sprzedaż
+                            </span>
+                        </li>
+                        {bestCourses.length > 0 ? bestCourses.map((course, i) => (
+                            <li
+                                key={i}
+                                className="flex items-center justify-between">
+                                <span className="truncate">
+                                    {course.name}
+                                </span>
+                                <span className="text-muted-foreground">
+                                    {course.value.toLocaleString()} sztuk
                                 </span>
                             </li>
                         )) : <li className="flex items-center justify-between">
@@ -166,7 +199,26 @@ export default function AdminPage() {
                             Zobacz wszystkie
                         </a>
                     </div>
-                    <div className="h-48 w-full rounded-md bg-muted sm:h-64" />
+                    <div className="h-48 w-full rounded-md bg-muted sm:h-64" >
+                        <table className="w-full">
+                            <thead>
+                                <tr>
+                                    <th className="border-1 p-2 m-2 text-md text-gray-800 w-1/9">Data</th>
+                                    <th className="border-1 p-2 m-2 text-md text-gray-800 w-1/8">Numer zamówienia</th>
+                                    <th className="border-1 p-2 m-2 text-md text-gray-800 w-1/8">Klient</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {orders.slice(0,5).map((order) => (
+                                    <tr key={order._id} className="border-t">
+                                        <td className="text-md p-2 m-2">{new Date(order.createdAt!).toLocaleDateString()}</td>
+                                        <td className="text-md p-2 m-2">{order.numer_zamowienia}</td>
+                                        <td className="text-md p-2 m-2">{order.email}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
                 <div className="rounded-lg border p-3 sm:p-4">
                     <h2 className="mb-2 text-sm font-medium sm:text-base">

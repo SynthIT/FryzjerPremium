@@ -5,6 +5,7 @@ import { Courses } from "@/lib/types/coursesTypes";
 import AdminCourseCard from "@/components/admin/AdminCourseCard";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { BookOpen, Plus } from "lucide-react";
 
 export default function CoursesPage() {
     const router = useRouter();
@@ -141,30 +142,18 @@ export default function CoursesPage() {
         <div className="space-y-4 sm:space-y-6">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
+                    <h1 className="text-gray-900 flex items-center gap-2 text-2xl font-semibold tracking-tight text-[var(--text-dark)] sm:text-3xl">
+                        <BookOpen className="h-8 w-8 text-[var(--primary-dark)]" />
                         Szkolenia
                     </h1>
                     <p className="text-sm text-muted-foreground sm:text-base">
                         Dodawaj, edytuj i organizuj szkolenia.
                     </p>
                 </div>
-                <button
-                    onClick={() => {
-                        fetch("/admin/api/v1/courses/cache", {
-                            credentials: "include",
-                        }).then(res => res.json()).then(data => {
-                            if (data.status === 0) {
-                                alert("Plik cache naprawiony");
-                            } else {
-                                alert("Błąd podczas naprawiania pliku cache: " + data.error);
-                            }
-                        });
-                    }}
-                    className="w-full rounded-md border px-3 py-2 text-sm transition-colors hover:bg-accent sm:w-auto"
-                >Napraw plik cache</button>
                 <Link
                     href="/admin/courses/new"
-                    className="w-full rounded-md border px-3 py-2 text-sm transition-colors hover:bg-accent sm:w-auto">
+                    className="text-gray-900 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--primary)] px-4 py-3 text-sm font-medium text-[var(--text-dark)] shadow-sm transition-all hover:bg-[var(--primary-dark)] hover:text-white sm:w-auto">
+                    <Plus className="h-4 w-4" />
                     Dodaj szkolenie
                 </Link>
             </div>
@@ -249,11 +238,10 @@ export default function CoursesPage() {
                                                 onClick={() =>
                                                     setCurrentPage(page)
                                                 }
-                                                className={`px-3 py-2 border rounded-md min-w-[40px] ${
-                                                    currentPage === page
-                                                        ? "bg-primary text-primary-foreground"
-                                                        : "hover:bg-accent"
-                                                } transition-colors`}>
+                                                className={`px-3 py-2 border rounded-md min-w-[40px] ${currentPage === page
+                                                    ? "bg-primary text-primary-foreground"
+                                                    : "hover:bg-accent"
+                                                    } transition-colors`}>
                                                 {page}
                                             </button>
                                         );

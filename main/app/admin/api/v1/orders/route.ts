@@ -14,7 +14,9 @@ export async function GET(request: NextRequest) {
         }
         return NextResponse.json({ status: 0, order: order });
     }
-    return NextResponse.json({ status: 0, orders: orders });
+    const ordersSorted = JSON.parse(orders).sort((a: OrderList, b: OrderList) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime());
+
+    return NextResponse.json({ status: 0, orders: ordersSorted });
 }
 
 export async function PUT(request: NextRequest) {

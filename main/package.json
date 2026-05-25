@@ -11,7 +11,8 @@
     "check-courses": "tsx scripts/check-courses.ts",
     "migrate-courses": "npx tsx scripts/migrate-courses-add-defaults.ts",
     "seed-courses-instructors": "node scripts/seed-courses-instructors.mjs",
-    "seed-courses-varied": "node scripts/seed-courses-varied.mjs"
+    "seed-courses-varied": "node scripts/seed-courses-varied.mjs",
+    "seed-orders": "node scripts/seed-orders.mjs"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.10",
@@ -32,13 +33,13 @@
     "jsonwebtoken": "^9.0.3",
     "lucide-react": "^0.548.0",
     "mongoose": "^9.0.0",
-    "next": "^16.0.10",
+    "next": "^16.2.6",
     "next-themes": "^0.4.6",
     "pdfkit": "^0.17.2",
     "qrcode": "^1.5.4",
     "react": "19.2.0",
     "react-dom": "19.2.0",
-    "recharts": "^3.3.0",
+    "recharts": "^3.8.1",
     "stripe": "^20.3.0",
     "tailwind-merge": "^3.3.1",
     "zod": "^4.1.12"

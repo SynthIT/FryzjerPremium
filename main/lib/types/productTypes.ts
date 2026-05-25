@@ -5,7 +5,7 @@ import { zodCategories, zodMedia, zodOpinie, zodPromocje } from "./shared";
 export const zodWariantyProps = z.object({
     name: z.string(),
     val: z.string(),
-    hex: z.string().nullable(),
+    hex: z.string().nullable().optional(),
 });
 export type props = z.infer<typeof zodWariantyProps>;
 
@@ -58,18 +58,18 @@ export const zodProducts = z.object({
     ]),
     media: z.array(zodMedia),
     promocje: z
-        .union([z.string(), zodPromocje, z.null()]).optional(),
-    specyfikacja: z.array(zodSpecyfikacja).optional(),
+        .union([z.string(), zodPromocje, z.null()]).nullable().optional(),
+    specyfikacja: z.array(zodSpecyfikacja).nullable().optional(),
     opis: z.string(),
     ilosc: z.number(),
     czas_wysylki: z.number(),
-    kod_produkcyjny: z.string(),
     ocena: z.number(),
     opinie: z.array(zodOpinie).nullable(),
     vat: z.number().default(23),
     sku: z.string(),
-    wariant: z.array(zodWarianty).optional(),
+    kod_produkcyjny: z.string(),
     kod_ean: z.string().nullable(),
+    wariant: z.array(zodWarianty).nullable().optional(),
     aktywne: z.boolean().nullable(),
     __v: z.number().optional(),
     createdAt: z.union([z.date(), z.string()]).optional(),

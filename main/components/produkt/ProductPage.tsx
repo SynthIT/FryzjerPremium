@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
+import { maxAvailableForSelection } from "@/lib/cart/stock";
 import Image from "next/image";
 import Link from "next/link";
 import { finalPrice, getProducts, renderStars } from "@/lib/utils";
@@ -105,9 +106,24 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
             .slice(0, 4)
         : [];
 
-    const handleQuantityChange = useCallback((delta: number) => {
-        setQuantity((prev) => Math.max(1, prev + delta));
-    }, []);
+    const maxQuantity = useMemo(() => {
+        if (!product) return 0;
+        return maxAvailableForSelection(
+            product.ilosc,
+            product.wariant,
+            selectedWariant,
+        );
+    }, [product, selectedWariant]);
+
+    const handleQuantityChange = useCallback(
+        (delta: number) => {
+            setQuantity((prev) => {
+                if (maxQuantity <= 0) return 1;
+                return Math.min(Math.max(1, prev + delta), maxQuantity);
+            });
+        },
+        [maxQuantity],
+    );
 
     // Memoized handlers
     const handleImageSelect = useCallback((index: number) => {
@@ -119,11 +135,11 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
     const handleAddToCart = useCallback(() => {
         if (process.env.NODE_ENV !== "development") return;
         console.log("adasdad");
-        if (product?.aktywne && product.ilosc > 0) {
+        if (product?.aktywne && maxQuantity > 0) {
             addToCart("produkt", product, quantity, selectedPrice, selectedWariant);
             // Można dodać powiadomienie o dodaniu do koszyka
         }
-    }, [product, quantity, selectedPrice, selectedWariant, addToCart]);
+    }, [product, quantity, selectedPrice, selectedWariant, addToCart, maxQuantity]);
 
     const handleWariantChange = (w: Warianty) => {
         if (!product) return;
@@ -163,7 +179,7 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                         Strona główna
                     </Link>
                     <span className="text-gray-400">&gt;</span>
-                    <Link href="/products" className="hover:text-[#D2B79B] transition-colors">
+                    <Link href="/produkty" className="hover:text-[#D2B79B] transition-colors">
                         Sklep
                     </Link>
                     <span className="text-gray-400">&gt;</span>
@@ -190,7 +206,7 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                 </nav>
 
                 {/* Main Product Content */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10 bg-gray-100 rounded-xl p-8 shadow-md">
                     {/* Left Column - Images */}
                     <div className="flex gap-4">
                         {/* Image Thumbnails - Left Side */}
@@ -225,7 +241,7 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                         )}
 
                         {/* Main Image - Right Side */}
-                        <div className="relative flex-1 aspect-square bg-gray-100 rounded-xl overflow-hidden">
+                        <div className="relative flex-1 aspect-square bg-gray-100 rounded-xl overflow-hidden border-[#D2B79B] ring-2 ring-[#D2B79B]/30">
                             <div className="relative w-full h-full">
                                 {product.promocje && (
                                     <div className="absolute top-3 right-3 z-10 px-2 py-1 rounded-lg bg-[#D2B79B] text-black text-sm font-bold">
@@ -256,11 +272,11 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                     {/* Right Column - Product Details */}
                     <div className="space-y-4">
                         <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{product.nazwa}</h1>
-                        <p>Kod produkcyjny: {product.kod_produkcyjny}</p>
+                        <p className="text-gray-500">Kod produkcyjny: {product.kod_produkcyjny}</p>
                         {product.kod_ean ? (
-                            <p>Kod EAN: {product.kod_ean}</p>
+                            <p className="text-gray-500">Kod EAN: {product.kod_ean}</p>
                         ) : product.sku ? (
-                            <p>Kod SKU: {product.sku}</p>
+                            <p className="text-gray-500">Kod SKU: {product.sku}</p>
                         ) : (
                             <></>
                         )}
@@ -287,6 +303,24 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                                             handleWariantSelect={(w) => {
                                                 handleWariantChange(w);
                                                 setSelectedWariant(w);
+                                                if (!product) return;
+                                                const max =
+                                                    maxAvailableForSelection(
+                                                        product.ilosc,
+                                                        product.wariant,
+                                                        w,
+                                                    );
+                                                setQuantity((prev) =>
+                                                    max <= 0
+                                                        ? 1
+                                                        : Math.min(
+                                                            Math.max(
+                                                                1,
+                                                                prev,
+                                                            ),
+                                                            max,
+                                                        ),
+                                                );
                                             }}></WariantySelector>
                                     ))}
                                 </div>
@@ -298,11 +332,11 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                             <label className="text-sm font-medium text-gray-700">
                                 Ilość
                             </label>
-                            <div className="flex items-center gap-2 border border-gray-300 rounded-lg w-fit p-2">
+                            <div className="flex items-center gap-2 border-2 border-gray-700 rounded-lg w-fit p-2">
                                 <button
                                     type="button"
                                     onClick={() => handleQuantityChange(-1)}
-                                    className="p-2 border-r border-gray-200 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-l-md transition-colors h-8 w-8"
+                                    className="p-2 border-r border-gray-500 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-l-md transition-colors h-8 w-8"
                                     aria-label="Zmniejsz ilość">
                                     <svg
                                         viewBox="0 0 24 24"
@@ -312,13 +346,22 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                                         <path d="M5 12h14" />
                                     </svg>
                                 </button>
-                                <span className="min-w-[2rem] text-center font-medium">
-                                    {quantity}
-                                </span>
+                                <input
+                                    onWheel={(e) => (e.target as HTMLInputElement).blur()}
+                                    value={quantity}
+                                    className="min-w-[3rem] min-h-[2rem] text-black font-semibold text-xl md:text-md sm:text-sm text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                    onChange={(e) => setQuantity(Math.min(Math.max(1, parseInt(e.target.value) || 1), maxQuantity))}
+                                    type="number"
+                                    min="1"
+                                    max={maxQuantity}
+                                    title={`Maksymalna ilość: ${maxQuantity}`}
+                                    aria-label={`Maksymalna ilość: ${maxQuantity}`}
+                                    />
                                 <button
                                     type="button"
-                                    className="p-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-r-md transition-colors h-8 w-8"
+                                    className="p-2 border-l border-gray-500 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-r-md transition-colors h-8 w-8 disabled:opacity-40 disabled:cursor-not-allowed"
                                     onClick={() => handleQuantityChange(1)}
+                                    disabled={quantity >= maxQuantity || maxQuantity <= 0}
                                     aria-label="Zwiększ ilość">
                                     <svg
                                         viewBox="0 0 24 24"
@@ -329,21 +372,20 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                                     </svg>
                                 </button>
                             </div>
+                            <p className="text-gray-500 text-sm">Dostępna ilość: {maxQuantity}</p>
                         </div>
 
                         {/* Add to Cart Button */}
                         <button
                             type="button"
                             className="w-full py-3 rounded-xl bg-[#D2B79B] text-black font-semibold hover:bg-[#b89a7f] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            disabled={product.ilosc == 0}
+                            disabled={maxQuantity <= 0}
                             onClick={handleAddToCart}
                             title="Funkcja aktualnie niedostępna"
                         >
-                            {product.ilosc != 0
+                            {maxQuantity > 0
                                 ? "Dodaj do koszyka"
-                                : product.aktywne
-                                    ? "Produkt niedostępny"
-                                    : "Produkt niedostępny"}
+                                : "Produkt niedostępny"}
                         </button>
                     </div>
                 </div>

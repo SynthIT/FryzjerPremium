@@ -2,18 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { Firmy } from "@/lib/types/coursesTypes";
-import { Media } from "@/lib/types/shared";
 import { X, Save, Trash2 } from "lucide-react";
-
-// Helper do generowania slug
-function generateSlug(text: string): string {
-    return text
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/(^-|-$)/g, "");
-}
+import { generateSlug } from "@/lib/utils_admin";
+import { CompanyBasicFields } from "@/components/admin/CompanyFormFields";
 
 interface CompanyEditModalProps {
     company: Firmy;
@@ -112,17 +103,6 @@ export default function CompanyEditModal({
         setEditedCompany((prev) => ({ ...prev, [field]: value }));
     };
 
-    const updateLogo = (field: keyof Media, value: string) => {
-        const logo = editedCompany.logo || {
-            nazwa: "",
-            slug: "",
-            typ: "image",
-            alt: "",
-            path: "",
-        };
-        updateField("logo", { ...logo, [field]: value });
-    };
-
     if (!isOpen) return null;
 
     return (
@@ -145,106 +125,11 @@ export default function CompanyEditModal({
                         <h3 className="text-lg font-semibold">
                             Podstawowe informacje
                         </h3>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="col-span-2">
-                                <label className="block text-sm font-medium mb-1">
-                                    Nazwa firmy *
-                                </label>
-                                <input
-                                    type="text"
-                                    value={editedCompany.nazwa || ""}
-                                    onChange={(e) =>
-                                        updateField("nazwa", e.target.value)
-                                    }
-                                    className="w-full px-3 py-2 border rounded-md"
-                                />
-                            </div>
-                            <div className="col-span-2">
-                                <label className="block text-sm font-medium mb-1">
-                                    Slug
-                                </label>
-                                <input
-                                    type="text"
-                                    value={editedCompany.slug || ""}
-                                    onChange={(e) =>
-                                        updateField("slug", e.target.value)
-                                    }
-                                    className="w-full px-3 py-2 border rounded-md"
-                                    readOnly
-                                />
-                                <span className="text-xs text-muted-foreground">
-                                    Slug jest automatycznie generowany z nazwy
-                                </span>
-                            </div>
-                            <div className="col-span-2">
-                                <label className="block text-sm font-medium mb-1">
-                                    Strona internetowa
-                                </label>
-                                <input
-                                    type="url"
-                                    value={
-                                        editedCompany.strona_internetowa || ""
-                                    }
-                                    onChange={(e) =>
-                                        updateField(
-                                            "strona_internetowa",
-                                            e.target.value,
-                                        )
-                                    }
-                                    className="w-full px-3 py-2 border rounded-md"
-                                    placeholder="https://example.com"
-                                />
-                            </div>
-                            <div className="col-span-2">
-                                <label className="block text-sm font-medium mb-1">
-                                    Opis
-                                </label>
-                                <textarea
-                                    rows={4}
-                                    value={editedCompany.opis || ""}
-                                    onChange={(e) =>
-                                        updateField("opis", e.target.value)
-                                    }
-                                    className="w-full px-3 py-2 border rounded-md"
-                                    placeholder="Opis firmy..."
-                                />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Logo */}
-                    <div className="space-y-4">
-                        <h3 className="text-lg font-semibold">Logo</h3>
-                        <div className="space-y-2">
-                            <div>
-                                <label className="block text-sm font-medium mb-1">
-                                    Ścieżka do logo
-                                </label>
-                                <input
-                                    type="text"
-                                    value={editedCompany.logo?.path || ""}
-                                    onChange={(e) =>
-                                        updateLogo("path", e.target.value)
-                                    }
-                                    className="w-full px-3 py-2 border rounded-md"
-                                    placeholder="/path/to/logo.png"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium mb-1">
-                                    Alt text
-                                </label>
-                                <input
-                                    type="text"
-                                    value={editedCompany.logo?.alt || ""}
-                                    onChange={(e) =>
-                                        updateLogo("alt", e.target.value)
-                                    }
-                                    className="w-full px-3 py-2 border rounded-md"
-                                    placeholder="Opis logo"
-                                />
-                            </div>
-                        </div>
+                        <CompanyBasicFields
+                            firm={editedCompany}
+                            onChange={setEditedCompany}
+                            slugHint={editedCompany.slug}
+                        />
                     </div>
                 </div>
 

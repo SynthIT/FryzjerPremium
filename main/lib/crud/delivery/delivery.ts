@@ -18,7 +18,7 @@ export async function updateDeliveryMethod(
         .findOneAndUpdate(
             { _id: new mongoose.Types.ObjectId(id) },
             { $set: data },
-            { new: true },
+            { returnDocument: "after" },
         )
         .orFail();
     return res;

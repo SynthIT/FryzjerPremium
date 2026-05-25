@@ -4,15 +4,14 @@ import { useState, useEffect } from "react";
 import { Roles } from "@/lib/types/userTypes";
 import { X, Save, Trash2 } from "lucide-react";
 import {
-    discountsKeys,
     DiscountsTable,
-    permissionKeys,
     PermissionTable,
     permissionToAdminNumber,
     permissionToUserNumber,
     numberToAdminPermissions,
     numberToUserPermissions,
 } from "@/lib/auth/permissions";
+import RolePermissionsForm from "@/components/admin/RolePermissionsForm";
 
 interface RoleEditModalProps {
     role: Roles;
@@ -32,8 +31,6 @@ export default function RoleEditModal({
     const [editedRole, setEditedRole] = useState<Roles>(role);
     const [adminPermissions, setAdminPermissions] = useState<string[]>([]);
     const [userPermissions, setUserPermissions] = useState<string[]>([]);
-    const [pointerAdmin, setPointerAdmin] = useState<string>("none");
-    const [pointerUser, setPointerUser] = useState<string>("none");
     const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
@@ -69,6 +66,10 @@ export default function RoleEditModal({
     const handleSave = async () => {
         setIsSaving(true);
         try {
+            if (editedRole.nazwa === "admin") {
+                onClose();
+                return alert("Nie można edytować roli admin")
+            };
             const payload = {
                 ...editedRole,
                 admin: permissionToAdminNumber(adminPermissions as Array<keyof typeof PermissionTable>),
@@ -133,6 +134,7 @@ export default function RoleEditModal({
                         <div>
                             <label className="block text-sm font-medium mb-1">Nazwa roli *</label>
                             <input
+                                disabled={editedRole.nazwa === "admin"}
                                 type="text"
                                 value={editedRole.nazwa || ""}
                                 onChange={(e) =>
@@ -143,56 +145,26 @@ export default function RoleEditModal({
                         </div>
                     </div>
 
-                    <div className="space-y-4">
-                        <h3 className="text-lg font-semibold">Uprawnienia administracyjne</h3>
-                        <select
-                            value={pointerAdmin}
-                            onChange={(e) => {
-                                handleAdminPermissions(e.target.value);
-                                setPointerAdmin("none");
-                            }}
-                            className="w-full rounded-md border bg-background px-3 py-2 text-sm">
-                            <option value="none">Wybierz uprawnienie</option>
-                            {permissionKeys.map((key) => (
-                                <option key={key} value={key}>
-                                    {key}
-                                </option>
-                            ))}
-                        </select>
-                        <p className="text-sm text-muted-foreground">
-                            Wybrane: {adminPermissions.length ? adminPermissions.join(", ") : "Brak"}
-                        </p>
-                    </div>
-
-                    <div className="space-y-4">
-                        <h3 className="text-lg font-semibold">Uprawnienia użytkownika (zniżki)</h3>
-                        <select
-                            value={pointerUser}
-                            onChange={(e) => {
-                                handleUserPermissions(e.target.value);
-                                setPointerUser("none");
-                            }}
-                            className="w-full rounded-md border bg-background px-3 py-2 text-sm">
-                            <option value="none">Wybierz uprawnienie</option>
-                            {discountsKeys.map((key) => (
-                                <option key={key} value={key}>
-                                    {key}
-                                </option>
-                            ))}
-                        </select>
-                        <p className="text-sm text-muted-foreground">
-                            Wybrane: {userPermissions.length ? userPermissions.join(", ") : "Brak"}
-                        </p>
+                    <div className={editedRole.nazwa === "admin" ? "opacity-50 pointer-events-none" : ""}>
+                        <RolePermissionsForm
+                            adminPermissions={adminPermissions}
+                            userPermissions={userPermissions}
+                            onAdminToggle={handleAdminPermissions}
+                            onUserToggle={handleUserPermissions}
+                            variant="modal"
+                        />
                     </div>
                 </div>
 
                 <div className="flex items-center justify-between p-6 border-t">
-                    <button
-                        onClick={handleDelete}
-                        className="px-4 py-2 text-sm text-red-600 border border-red-300 rounded-md hover:bg-red-50 transition-colors flex items-center gap-2">
-                        <Trash2 className="h-4 w-4" />
-                        Usuń
-                    </button>
+                    {editedRole.nazwa !== "admin" && (
+                        <button
+                            onClick={handleDelete}
+                            className="px-4 py-2 text-sm text-red-600 border border-red-300 rounded-md hover:bg-red-50 transition-colors flex items-center gap-2">
+                            <Trash2 className="h-4 w-4" />
+                            Usuń
+                        </button>
+                    )}
                     <div className="flex gap-2">
                         <button
                             onClick={onClose}

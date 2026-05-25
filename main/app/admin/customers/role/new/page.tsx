@@ -4,7 +4,8 @@ import { useState } from "react";
 import "@/app/globals2.css";
 import { useRouter } from "next/navigation";
 import { Roles } from "@/lib/types/userTypes";
-import { discountsKeys, DiscountsTable, permissionKeys, PermissionTable, permissionToAdminNumber, permissionToUserNumber } from "@/lib/auth/permissions";
+import { DiscountsTable, PermissionTable, permissionToAdminNumber, permissionToUserNumber } from "@/lib/auth/permissions";
+import RolePermissionsForm from "@/components/admin/RolePermissionsForm";
 
 export default function NewProductPage() {
     const router = useRouter();
@@ -15,9 +16,6 @@ export default function NewProductPage() {
     });
     const [adminPermissions, setAdminPermissions] = useState<string[]>([]);
     const [userPermissions, setUserPermissions] = useState<string[]>([]);
-    const [pointerAdmin, setPointerAdmin] = useState<string>("none");
-    const [pointerUser, setPointerUser] = useState<string>("none");
-
     const handleAdminPermissions = (permissions: string) => {
         if (permissions === "none") return;
         setAdminPermissions((prev) => {
@@ -83,51 +81,12 @@ export default function NewProductPage() {
                         placeholder="Np. Admin"
                     />
                 </div>
-                <div className="grid gap-2 sm:col-span-2">
-                    <label className="text-sm font-medium">
-                        Uprawnienia administracyjne
-                    </label>
-                    <select
-                        value={pointerAdmin}
-                        onChange={(e) => {
-                            handleAdminPermissions(e.target.value)
-                            setPointerAdmin("none");
-                        }}
-                        className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring">
-                        <option value="none">Wybierz uprawnienia administracyjne</option>
-                        {permissionKeys.map((permission) => (
-                            <option key={permission} value={permission}>
-                                {permission}
-                            </option>
-                        ))}
-                    </select>
-                    <p className="text-sm text-muted-foreground">
-                        Wybrane uprawnienia: {adminPermissions.length > 0 ? adminPermissions.join(", ") : "Nie wybrano uprawnień"}
-                    </p>
-                </div>
-
-                <div className="grid gap-2 sm:col-span-2">
-                    <label className="text-sm font-medium">
-                        Uprawnienia użytkownika
-                    </label>
-                    <select
-                        value={pointerUser}
-                        onChange={(e) => {
-                            handleUserPermissions(e.target.value)
-                            setPointerUser("none");
-                        }}
-                        className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none ring-offset-background transition focus:ring-2 focus:ring-ring">
-                        <option value="none">Wybierz uprawnienia użytkownika</option>
-                        {discountsKeys.map((discount) => (
-                            <option key={discount} value={discount}>
-                                {discount}
-                            </option>
-                        ))}
-                    </select>
-                    <p className="text-sm text-muted-foreground">
-                        Wybrane uprawnienia: {userPermissions.length > 0 ? userPermissions.join(", ") : "Nie wybrano uprawnień"}
-                    </p>
-                </div>
+                <RolePermissionsForm
+                    adminPermissions={adminPermissions}
+                    userPermissions={userPermissions}
+                    onAdminToggle={handleAdminPermissions}
+                    onUserToggle={handleUserPermissions}
+                />
 
                 <div className="sm:col-span-2">
                     <button

@@ -7,10 +7,19 @@ import {
 import { NextRequest, NextResponse } from "next/server";
 import { checkRequestAuth } from "@/lib/admin_utils";
 import { LogService } from "@/lib/log_service";
+import { Products } from "@/lib/types/productTypes";
 
 
 export async function GET(req: NextRequest) {
     try {
+        const { searchParams } = new URL(req.url);
+        const slug = searchParams.get("slug");
+        if (slug) {
+            const products = await collectProducts();
+            const parsedProducts = JSON.parse(products);
+            const product = parsedProducts.find((p: Products) => p.slug === slug);
+            return NextResponse.json({ status: 0, product: product });
+        }
         const products = await collectProducts();
         const parsedProducts = JSON.parse(products);
         return NextResponse.json(Array.isArray(parsedProducts) ? parsedProducts : []);

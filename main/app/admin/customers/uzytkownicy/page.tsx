@@ -5,7 +5,7 @@ import { Users } from "@/lib/types/userTypes";
 import UserCard from "@/components/admin/UserCard";
 import UserEditModal from "@/components/admin/UserEditModal";
 import Link from "next/link";
-import { UserPlus } from "lucide-react";
+import { User, UserPlus } from "lucide-react";
 
 export default function UzytkownicyPage() {
     const [users, setUsers] = useState<Users[]>([]);
@@ -86,7 +86,8 @@ export default function UzytkownicyPage() {
         <div className="space-y-4 sm:space-y-6">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
+                    <h1 className="text-gray-900 flex items-center gap-2 text-2xl font-semibold tracking-tight text-[var(--text-dark)] sm:text-3xl">
+                        <User className="h-8 w-8 text-[var(--primary-dark)]" />
                         Użytkownicy
                     </h1>
                     <p className="text-sm text-muted-foreground sm:text-base">
@@ -95,7 +96,7 @@ export default function UzytkownicyPage() {
                 </div>
                 <Link
                     href="/admin/customers/uzytkownicy/new"
-                    className="w-full rounded-md border px-3 py-2 text-sm transition-colors hover:bg-accent sm:w-auto inline-flex items-center justify-center gap-2">
+                    className="text-gray-900 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--primary)] px-4 py-3 text-sm font-medium text-[var(--text-dark)] shadow-sm transition-all hover:bg-[var(--primary-dark)] hover:text-white sm:w-auto">
                     <UserPlus className="h-4 w-4" />
                     Dodaj użytkownika
                 </Link>

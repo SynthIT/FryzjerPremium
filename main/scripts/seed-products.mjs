@@ -75,6 +75,7 @@ const wariantySchema = new Schema(
       type: String,
       enum: ["kolor", "rozmiar", "objetosc", "specjalna", "hurt"],
     },
+    ilosc: { type: Number, min: 0, required: true, default: 0 },
     kolory: { type: wariantPropsSchema },
     rozmiary: { type: wariantPropsSchema },
     objetosc: { type: Number },
@@ -185,6 +186,31 @@ function buildMediaForProduct(nazwa, count) {
   return list;
 }
 
+/**
+ * Warianty do zapisu w Mongo — zgodnie z panelem admin:
+ * - pierwszy wariant = domyślny (cena z produktu, bez nadpisuje_cene);
+ * - jego `ilosc` = `ilosc` produktu (stan magazynowy; w UI nie edytuje się osobno);
+ * - kolejne warianty mają własny stan (`ilosc` w seedzie lub 0).
+ */
+function buildWarianty(stanMagazynowy, raw = []) {
+  if (!raw.length) return [];
+
+  return raw.map((w, index) => {
+    const base = { ...w };
+    if (index === 0) {
+      base.ilosc = stanMagazynowy;
+      delete base.nadpisuje_cene;
+      delete base.nowa_cena;
+      delete base.inna_cena_skupu;
+      delete base.cena_skupu;
+      return base;
+    }
+    base.ilosc =
+      typeof w.ilosc === "number" && w.ilosc >= 0 ? w.ilosc : 0;
+    return base;
+  });
+}
+
 const CATEGORY_SEEDS = [
   { nazwa: "Kosmetyki do włosów", slug: "kosmetyki-do-wlosow", kategoria: "Pielęgnacja" },
   { nazwa: "Narzędzia fryzjerskie", slug: "narzedzia-fryzjerskie", kategoria: "Salon" },
@@ -194,15 +220,16 @@ const CATEGORY_SEEDS = [
 const PRODUCENT_SEEDS = ["SalonPro", "HairLux"];
 
 /**
- * Zasady seeda (zgodnie z modelem katalogu):
+ * Zasady seeda (zgodnie z modelem katalogu i panelem admin):
  * - Nazwa produktu: bez objętości, koloru, rozmiaru, hurtu — to idzie do wariantów.
  * - Pierwszy wariant = domyślny (cena z produktu); bez nadpisuje_cene / nowa_cena.
+ * - Stan: pole `ilosc` na produkcie = stan magazynowy; pierwszy wariant dostaje tę samą
+ *   wartość (w edycji nie zmienia się osobno — tylko „Stan magazynowy” u góry).
+ * - Kolejne warianty: własne `ilosc` w seedzie (osobny stan per wariant).
  * - Kolejne warianty mogą nadpisywać cenę (inny rozmiar, kolor premium, itd.).
- * - Typ „hurt”: zawsze nadpisuje cenę (nowa_cena, zwykle ~10–30% poniżej detalu); brak
- *   liczby sztuk w nazwie — tylko dopisek „hurt” (np. ten sam odcień co detal + hurt).
- * - Produkty jednolite (meble, akcesoria bez wariantów) — tablica wariantów pusta.
- * - `cena` / `nowa_cena` (i sensownie `cena_skupu`) — netto; wartości poniżej przez
- *   netFromTargetGross(docelowe_brutto) przy VAT 23%.
+ * - Typ „hurt”: zawsze nadpisuje cenę (nowa_cena); osobny stan opcjonalnie.
+ * - Produkty bez wariantów — `wariant: []`, tylko `ilosc` produktu.
+ * - `cena` / `nowa_cena` / `cena_skupu` — netto (netFromTargetGross przy VAT 23%).
  */
 const PRODUCT_SEEDS = [
   {
@@ -228,6 +255,7 @@ const PRODUCT_SEEDS = [
         slug: "obj-250",
         typ: "objetosc",
         objetosc: 250,
+        ilosc: 48,
         nadpisuje_cene: true,
         nowa_cena: netFromTargetGross(54.99),
       },
@@ -236,6 +264,7 @@ const PRODUCT_SEEDS = [
         slug: "obj-500",
         typ: "objetosc",
         objetosc: 500,
+        ilosc: 22,
         nadpisuje_cene: true,
         nowa_cena: netFromTargetGross(98.99),
         inna_cena_skupu: true,
@@ -266,6 +295,7 @@ const PRODUCT_SEEDS = [
         slug: "kolor-srebrna",
         typ: "kolor",
         kolory: { name: "Kolor obudowy", val: "Srebrny", hex: "#c0c0c0" },
+        ilosc: 7,
         nadpisuje_cene: true,
         nowa_cena: netFromTargetGross(367.99),
       },
@@ -294,6 +324,7 @@ const PRODUCT_SEEDS = [
         slug: "rozmiar-7cali",
         typ: "rozmiar",
         rozmiary: { name: "Długość", val: "7 cali" },
+        ilosc: 18,
         nadpisuje_cene: true,
         nowa_cena: netFromTargetGross(257.99),
       },
@@ -321,6 +352,7 @@ const PRODUCT_SEEDS = [
         nazwa: "Naturalny blond — hurt",
         slug: "hurt-naturalny-blond",
         typ: "hurt",
+        ilosc: 200,
         permisje: 0,
         nadpisuje_cene: true,
         nowa_cena: netFromTargetGross(33.89),
@@ -397,6 +429,7 @@ async function main() {
     }
 
     const media = buildMediaForProduct(p.nazwa, p.imageCount ?? 1);
+    const wariant = buildWarianty(p.ilosc, p.wariant ?? []);
 
     await Product.create({
       slug,
@@ -414,11 +447,15 @@ async function main() {
       ocena: 0,
       vat: 23,
       sku,
-      wariant: p.wariant ?? [],
+      wariant,
       aktywne: true,
     });
 
-    console.log("Dodano produkt:", p.nazwa, "| slug:", slug, "| sku:", sku);
+    const wariantInfo =
+      wariant.length > 0
+        ? ` | warianty: ${wariant.length} (pierwszy stan=${wariant[0].ilosc})`
+        : "";
+    console.log("Dodano produkt:", p.nazwa, "| slug:", slug, "| sku:", sku, wariantInfo);
   }
 
   await mongoose.connection.close();

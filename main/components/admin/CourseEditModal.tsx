@@ -5,10 +5,19 @@ import { Courses, Firmy, Lekcja } from "@/lib/types/coursesTypes";
 import { Categories, Media, Promos } from "@/lib/types/shared";
 import Link from "next/link";
 import { Save, Trash2, Plus, Minus, Copy, BookOpen, Clock, Award, Info, Users } from "lucide-react";
-import { parseSlugName, generateSlug } from "@/lib/utils_admin";
+import { generateSlug } from "@/lib/utils_admin";
 import { randomBytes } from "crypto";
 import { useRouter } from "next/navigation";
-import { finalPrice } from "@/lib/utils";
+import { CenaTyp } from "@/lib/admin/pricing";
+import AdminPriceVatFields from "@/components/admin/AdminPriceVatFields";
+import { useCategoryTree } from "@/components/admin/hooks/useCategoryTree";
+import AdminCategoryPicker from "@/components/admin/AdminCategoryPicker";
+import CourseLessonsEditor from "@/components/admin/CourseLessonsEditor";
+import {
+    AdminFormSection,
+    adminFormPageGrid,
+    adminFormSpanFull,
+} from "@/components/admin/AdminFormLayout";
 import { Users as User } from "@/lib/types/userTypes";
 
 interface CourseEditModalProps {
@@ -30,20 +39,9 @@ export default function CourseEditModal({
     const [editedCourse, setEditedCourse] = useState<Courses>(course);
     const [isSaving, setIsSaving] = useState(false);
     const [prowizjaCheckbox, setProwizjaCheckbox] = useState(false);
-
-    // Kategorie i firma z API
-    const [categories, setCategories] = useState<Record<string, Categories[]>>(
-        {},
-    );
-    const [categoriesSlug, setCategoriesSlug] = useState<string[]>([]);
+    const [cenaTyp, setCenaTyp] = useState<CenaTyp>("netto");
+    const categoryTree = useCategoryTree();
     const [firmy, setFirmy] = useState<Firmy[]>([]);
-
-    // Wybrane kategorie (główna + podrzędne)
-    const [selectedMainCategory, setSelectedMainCategory] =
-        useState<string>("");
-    const [selectedSubCategories, setSelectedSubCategories] = useState<
-        string[]
-    >([]);
     const [selectedFirma, setSelectedFirma] = useState<string>("");
     const [promos, setPromos] = useState<Promos[]>([]);
     const [selectedPromoId, setSelectedPromoId] = useState<string>("");
@@ -89,45 +87,23 @@ export default function CourseEditModal({
         });
     }, [editedCourse.liczbaLekcji]);
 
-    // Pobierz kategorie
     useEffect(() => {
-        async function fetchCategories() {
-            try {
-                const response = await fetch("/admin/api/v1/category", {
-                    method: "GET",
-                    credentials: "include",
-                });
-                const data = await response.json();
-                if (data.status === 0 && data.categories) {
-                    const raw = data.categories;
-                    const catList: Categories[] = typeof raw === "string" ? JSON.parse(raw) : Array.isArray(raw) ? raw : [];
-                    const byKategoria = catList.reduce<Record<string, Categories[]>>((acc, c) => {
-                        const k = (c as Categories & { kategoria?: string }).kategoria ?? "";
-                        (acc[k] ??= []).push(c);
-                        return acc;
-                    }, {});
-                    setCategories(byKategoria);
-                    setCategoriesSlug(Object.keys(byKategoria));
-
-                    // Ustaw wybrane kategorie na podstawie kursu
-                    const courseCategories = getCategories();
-                    if (courseCategories.length > 0) {
-                        const firstCat = courseCategories[0];
-                        const mainKey = (firstCat as Categories & { kategoria?: string }).kategoria ?? firstCat.nazwa ?? "";
-                        setSelectedMainCategory(mainKey);
-                        setSelectedSubCategories(
-                            courseCategories
-                                .map((cat) => cat._id || "")
-                                .filter((id) => id),
-                        );
-                    }
-                }
-            } catch (error) {
-                console.error("Błąd podczas pobierania kategorii:", error);
-            }
-        }
-        fetchCategories();
-    }, []);
+        if (!categoryTree.categoriesSlug.length) return;
+        const courseCategories = getCategories();
+        if (courseCategories.length === 0) return;
+        const catList = Object.values(categoryTree.categories).flat();
+        const ids = courseCategories
+            .map((c) => c._id || "")
+            .filter(Boolean);
+        let main = "";
+        const first = courseCategories[0];
+        main =
+            (first as Categories & { kategoria?: string }).kategoria ??
+            catList.find((c) => (c._id ?? "") === ids[0])?.kategoria ??
+            "";
+        categoryTree.setInitialSelection(main, ids);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [course.kategoria, categoryTree.categoriesSlug.length]);
 
     // Pobierz firmy
     useEffect(() => {
@@ -206,15 +182,14 @@ export default function CourseEditModal({
     const handleSave = async () => {
         setIsSaving(true);
         try {
-            // Przygotuj kategorie
-            const selectedCategories: (string | Categories)[] = [];
-            if (selectedMainCategory && categories[selectedMainCategory]) {
-                categories[selectedMainCategory].forEach((cat) => {
-                    if (selectedSubCategories.includes(cat._id || "")) {
-                        selectedCategories.push(cat);
-                    }
-                });
-            }
+            const ids = categoryTree.getSelectedCategoryIds();
+            const selectedCategories = ids
+                .map((id) =>
+                    Object.values(categoryTree.categories)
+                        .flat()
+                        .find((c) => c._id === id),
+                )
+                .filter(Boolean) as Categories[];
             editedCourse.kategoria = selectedCategories;
 
             // Przygotuj firmę
@@ -291,14 +266,6 @@ export default function CourseEditModal({
         setEditedCourse((prev) => ({ ...prev, [field]: value }));
     };
 
-    const handleMainCategoryChange = (mainSlug: string) => {
-        setSelectedMainCategory(mainSlug);
-        setSelectedSubCategories([]);
-        if (categories[mainSlug]) {
-            updateField("kategoria", categories[mainSlug]);
-        }
-    };
-
     const handleDuplicate = async () => {
         const duplicateCourse = {
             ...editedCourse,
@@ -321,23 +288,6 @@ export default function CourseEditModal({
                 (result.error || "Nieznany błąd"),
             );
         }
-    };
-
-    const handleSubCategoryToggle = (subCategoryId: string) => {
-        setSelectedSubCategories((prev) => {
-            const newSelected = prev.includes(subCategoryId)
-                ? prev.filter((id) => id !== subCategoryId)
-                : [...prev, subCategoryId];
-
-            if (selectedMainCategory && categories[selectedMainCategory]) {
-                const selectedCats = categories[selectedMainCategory].filter(
-                    (cat) => newSelected.includes(cat._id || ""),
-                );
-                updateField("kategoria", selectedCats);
-            }
-
-            return newSelected;
-        });
     };
 
     const handleFirmaChange = (firmaId: string) => {
@@ -373,15 +323,6 @@ export default function CourseEditModal({
         }
     };
 
-    const handleLessonChange = (index: number, key: keyof Lekcja, value: string) => {
-        setEditedCourse((prev) => ({
-            ...prev,
-            lekcje: (prev.lekcje ?? []).map((lesson, i) =>
-                i === index ? { ...lesson, [key]: value } : lesson
-            ),
-        }));
-    };
-
     const removeMedia = (index: number) => {
         const media = editedCourse.media || [];
         updateField(
@@ -401,13 +342,8 @@ export default function CourseEditModal({
                 </p>
             </div>
 
-            <div className="space-y-6 sm:space-y-8">
-                    {/* Sekcja 1: Podstawowe informacje */}
-                    <div className="rounded-lg border p-6 space-y-6">
-                        <h3 className="text-xl font-semibold flex items-center gap-2">
-                            <BookOpen className="h-5 w-5" />
-                            Podstawowe informacje
-                        </h3>
+            <div className={adminFormPageGrid}>
+                    <AdminFormSection title="Podstawowe informacje" icon={BookOpen}>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="sm:col-span-2">
                                 <label className="block text-sm font-medium mb-1">Nazwa szkolenia *</label>
@@ -431,21 +367,16 @@ export default function CourseEditModal({
                                 />
                                 <p className="text-xs text-gray-600 mt-1">{editedCourse.krotkiOpis?.length ?? 0}/120</p>
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium mb-1">Cena (bez VAT) *</label>
-                                <input
-                                    type="number"
-                                    step="0.01"
-                                    value={editedCourse.cena !== 0 ? editedCourse.cena : ""}
-                                    onChange={(e) => {
-                                        const val = e.target.value;
-                                        updateField("cena", val === "" ? 0 : parseFloat(val) || 0);
-                                    }}
-                                    className="w-full px-3 py-2 border rounded-md"
-                                    placeholder="0.00"
-                                />
-                                <p className="text-xs text-gray-600 mt-1">Cena z VAT: {finalPrice(editedCourse.cena || 0, editedCourse.vat ?? 23, undefined, undefined)} zł</p>
-                            </div>
+                            <AdminPriceVatFields
+                                label="Cena *"
+                                required
+                                storedNetValue={editedCourse.cena || 0}
+                                vatPercent={editedCourse.vat ?? 23}
+                                cenaTyp={cenaTyp}
+                                onStoredNetChange={(v) => updateField("cena", v)}
+                                onCenaTypChange={setCenaTyp}
+                                variant="modal"
+                            />
                             <div>
                                 <label className="block text-sm font-medium mb-1">VAT (%)</label>
                                 <input
@@ -515,14 +446,9 @@ export default function CourseEditModal({
                                 />
                             </div>
                         </div>
-                    </div>
+                    </AdminFormSection>
 
-                    {/* Sekcja 2: Szkolenia */}
-                    <div className="rounded-lg border p-6 space-y-6">
-                        <h3 className="text-xl font-semibold flex items-center gap-2">
-                            <Clock className="h-5 w-5" />
-                            Szkolenia
-                        </h3>
+                    <AdminFormSection title="Parametry szkolenia" icon={Clock}>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-sm font-medium mb-1">Czas trwania</label>
@@ -590,59 +516,29 @@ export default function CourseEditModal({
                                 <label htmlFor="certyfikat-edit" className="text-sm font-medium">Certyfikat ukończenia</label>
                             </div>
                         </div>
-                    </div>
+                    </AdminFormSection>
 
-                    {/* Szczegóły lekcji */}
                     {(editedCourse.lekcje?.length ?? 0) > 0 && (
-                        <div className="rounded-lg border p-6 space-y-6">
-                            <h3 className="text-xl font-semibold flex items-center gap-2">
-                                <Clock className="h-5 w-5" />
-                                Szczegóły lekcji
-                            </h3>
-                            {(editedCourse.lekcje ?? []).map((lekcja, index) => (
-                                <div key={index} className="rounded-lg border p-4 space-y-4">
-                                    <h4 className="font-medium">Lekcja #{index + 1}</h4>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div className="sm:col-span-2">
-                                            <label className="block text-sm font-medium mb-1">Tytuł lekcji</label>
-                                            <input
-                                                type="text"
-                                                value={lekcja.tytul}
-                                                onChange={(e) => handleLessonChange(index, "tytul", e.target.value)}
-                                                className="w-full px-3 py-2 border rounded-md"
-                                            />
-                                        </div>
-                                        <div className="sm:col-span-2">
-                                            <label className="block text-sm font-medium mb-1">Opis lekcji</label>
-                                            <textarea
-                                                rows={2}
-                                                value={lekcja.opis}
-                                                onChange={(e) => handleLessonChange(index, "opis", e.target.value)}
-                                                className="w-full px-3 py-2 border rounded-md"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium mb-1">Długość</label>
-                                            <input
-                                                type="text"
-                                                value={lekcja.dlugosc}
-                                                onChange={(e) => handleLessonChange(index, "dlugosc", e.target.value)}
-                                                className="w-full px-3 py-2 border rounded-md"
-                                                placeholder="np. 15:30"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
+                        <AdminFormSection
+                            title="Szczegóły lekcji"
+                            icon={Clock}
+                            className={adminFormSpanFull}>
+                            <CourseLessonsEditor
+                                liczbaLekcji={editedCourse.liczbaLekcji ?? undefined}
+                                lekcje={editedCourse.lekcje ?? []}
+                                onLiczbaLekcjiChange={(n) =>
+                                    updateField("liczbaLekcji", n)
+                                }
+                                onLekcjeChange={(lekcje) =>
+                                    updateField("lekcje", lekcje)
+                                }
+                                variant="modal"
+                                showLiczbaInput={false}
+                            />
+                        </AdminFormSection>
                     )}
 
-                    {/* Czego się nauczysz */}
-                    <div className="rounded-lg border p-6 space-y-6">
-                        <h3 className="text-xl font-semibold flex items-center gap-2">
-                            <Award className="h-5 w-5" />
-                            Czego się nauczysz
-                        </h3>
+                    <AdminFormSection title="Czego się nauczysz" icon={Award}>
                         {(editedCourse.czegoSieNauczysz ?? []).map((punkt, index) => (
                             <div key={index} className="flex gap-2">
                                 <input
@@ -672,14 +568,9 @@ export default function CourseEditModal({
                         >
                             + Dodaj punkt
                         </button>
-                    </div>
+                    </AdminFormSection>
 
-                    {/* Wymagania */}
-                    <div className="rounded-lg border p-6 space-y-6">
-                        <h3 className="text-xl font-semibold flex items-center gap-2">
-                            <Info className="h-5 w-5" />
-                            Wymagania
-                        </h3>
+                    <AdminFormSection title="Wymagania" icon={Info}>
                         {(editedCourse.wymagania ?? []).map((w, index) => (
                             <div key={index} className="flex gap-2">
                                 <input
@@ -709,11 +600,9 @@ export default function CourseEditModal({
                         >
                             + Dodaj wymaganie
                         </button>
-                    </div>
+                    </AdminFormSection>
 
-                    {/* Gwarancja i zawartość */}
-                    <div className="rounded-lg border p-6 space-y-6">
-                        <h3 className="text-xl font-semibold">Gwarancja i zawartość kursu</h3>
+                    <AdminFormSection title="Gwarancja i zawartość">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-sm font-medium mb-1">Gwarancja (dni, 0 = brak)</label>
@@ -778,11 +667,12 @@ export default function CourseEditModal({
                                 + Dodaj pozycję
                             </button>
                         </div>
-                    </div>
+                    </AdminFormSection>
 
-                    {/* Opis */}
-                    <div className="rounded-lg border p-6 space-y-6">
-                        <h3 className="text-xl font-semibold">Opis szkolenia</h3>
+                    <AdminFormSection
+                        title="Opis szkolenia"
+                        icon={BookOpen}
+                        className={adminFormSpanFull}>
                         <div>
                             <label className="block text-sm font-medium mb-1">Pełny opis *</label>
                             <button type="button" className="px-3 py-1 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90 mb-2" onClick={() => updateField("opis", (editedCourse.opis || "") + "\n")}>Wstaw nowy wiersz</button>
@@ -793,42 +683,32 @@ export default function CourseEditModal({
                                 className="w-full px-3 py-2 border rounded-md"
                             />
                         </div>
-                    </div>
+                    </AdminFormSection>
 
-                    {/* Kategorie i organizator */}
-                    <div className="rounded-lg border p-6 space-y-6">
-                        <h3 className="text-xl font-semibold flex items-center gap-2">
-                            <Users className="h-5 w-5" />
-                            Kategorie i organizator
-                        </h3>
+                    <AdminFormSection title="Kategorie i organizator" icon={Users}>
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium mb-1">Główna kategoria</label>
-                                <select
-                                    value={selectedMainCategory}
-                                    onChange={(e) => handleMainCategoryChange(e.target.value)}
-                                    className="w-full px-3 py-2 border rounded-md">
-                                    <option value="">Wybierz główną kategorię</option>
-                                    {categoriesSlug.map((slug) => (
-                                        <option key={slug} value={slug}>{parseSlugName(slug)}</option>
-                                    ))}
-                                </select>
-                                {selectedMainCategory && categories[selectedMainCategory] && (
-                                    <div className="space-y-1 mt-2">
-                                        <label className="text-xs text-gray-600">Podkategorie:</label>
-                                        {categories[selectedMainCategory].map((cat) => (
-                                            <label key={cat._id || cat.nazwa} className="flex items-center gap-2 p-2 border rounded-md cursor-pointer hover:bg-accent">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={selectedSubCategories.includes(cat._id || "")}
-                                                    onChange={() => handleSubCategoryToggle(cat._id || "")}
-                                                    className="w-4 h-4"
-                                                />
-                                                <span className="text-sm">{cat.nazwa}</span>
-                                            </label>
-                                        ))}
-                                    </div>
-                                )}
+                                <label className="block text-sm font-medium mb-1">
+                                    Kategorie *
+                                </label>
+                                <AdminCategoryPicker
+                                    categories={categoryTree.categories}
+                                    categoriesSlug={categoryTree.categoriesSlug}
+                                    selectedMainCategory={
+                                        categoryTree.selectedMainCategory
+                                    }
+                                    selectedSubCategories={
+                                        categoryTree.selectedSubCategories
+                                    }
+                                    onMainCategoryChange={
+                                        categoryTree.handleMainCategoryChange
+                                    }
+                                    onSubCategoryToggle={
+                                        categoryTree.handleSubCategoryToggle
+                                    }
+                                    variant="modal"
+                                    parseMainLabels
+                                />
                             </div>
                             <div>
                                 <label className="block text-sm font-medium mb-1">Firma</label>
@@ -919,12 +799,11 @@ export default function CourseEditModal({
                                 </div>
                             )}
                         </div>
-                    </div>
+                    </AdminFormSection>
 
-                    {/* Zdjęcia */}
-                    <div className="rounded-lg border p-6 space-y-6">
+                    <AdminFormSection title="Zdjęcia" className={adminFormSpanFull}>
                         <div className="flex items-center justify-between">
-                            <h3 className="text-xl font-semibold">Zdjęcia</h3>
+                            <span className="text-sm text-muted-foreground">Media kursu</span>
                             <button
                                 onClick={addMedia}
                                 className="px-3 py-1 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90 flex items-center gap-1">
@@ -954,11 +833,9 @@ export default function CourseEditModal({
                                 </div>
                             ))}
                         </div>
-                    </div>
+                    </AdminFormSection>
 
-                    {/* Daty i miejsce (godzina_rozpoczecia, godzina_zakonczenia, data_rozpoczecia, adres) */}
-                    <div className="rounded-lg border p-6 space-y-6">
-                        <h3 className="text-xl font-semibold">Daty i miejsce</h3>
+                    <AdminFormSection title="Daty i miejsce" icon={Clock}>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-sm font-medium mb-1">Godzina rozpoczęcia</label>
@@ -1000,10 +877,9 @@ export default function CourseEditModal({
                                 />
                             </div>
                         </div>
-                    </div>
+                    </AdminFormSection>
 
-                    {/* Status */}
-                    <div className="rounded-lg border p-6">
+                    <AdminFormSection title="Publikacja" className={adminFormSpanFull}>
                         <div className="flex items-center gap-2">
                             <input
                                 type="checkbox"
@@ -1014,11 +890,10 @@ export default function CourseEditModal({
                             />
                             <label htmlFor="aktywne-edit" className="text-sm font-medium">Szkolenie aktywne (widoczne w sklepie)</label>
                         </div>
-                    </div>
+                    </AdminFormSection>
                 </div>
 
-                {/* Przyciski akcji */}
-                <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className={`flex flex-wrap items-center justify-between gap-4 ${adminFormSpanFull}`}>
                     <button
                         type="button"
                         onClick={handleDelete}
