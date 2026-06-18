@@ -860,7 +860,7 @@ export default function CourseEditModal({
                             <div>
                                 <label className="block text-sm font-medium mb-1">Data rozpoczęcia</label>
                                 <input
-                                    type="datetime-local"
+                                    type="date"
                                     value={editedCourse.data_rozpoczecia ? new Date(editedCourse.data_rozpoczecia).toISOString().slice(0, 16) : ""}
                                     onChange={(e) => updateField("data_rozpoczecia", e.target.value ? new Date(e.target.value) : undefined)}
                                     className="w-full px-3 py-2 border rounded-md"

@@ -284,51 +284,6 @@ export default function CourseDetailPage({ courseSlug }: CourseDetailPageProps) 
                                 </div>
                             </div>
                         )}
-
-
-                        {/* Data i miejsce – godziny, data, adres */}
-                        {hasDateOrPlace && (
-                            <div className="rounded-xl border border-[rgba(212,196,176,0.3)] bg-white/60 p-4">
-                                <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                                    <CalendarClock className="h-4 w-4 text-[#D2B79B]" />
-                                    Data i miejsce
-                                </h3>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    {course.data_rozpoczecia && formatDataRozpoczecia() && (
-                                        <div className="flex gap-3 p-3 rounded-lg bg-white/80 border border-[rgba(212,196,176,0.2)]">
-                                            <Calendar className="h-5 w-5 shrink-0 text-[#D2B79B]" />
-                                            <div>
-                                                <div className="text-xs text-gray-500">Data rozpoczęcia</div>
-                                                <div className="font-medium text-gray-900">{formatDataRozpoczecia()}</div>
-                                            </div>
-                                        </div>
-                                    )}
-                                    {(course.godzina_rozpoczecia || course.godzina_zakonczenia) && (
-                                        <div className="flex gap-3 p-3 rounded-lg bg-white/80 border border-[rgba(212,196,176,0.2)]">
-                                            <Clock className="h-5 w-5 shrink-0 text-[#D2B79B]" />
-                                            <div>
-                                                <div className="text-xs text-gray-500">Godziny</div>
-                                                <div className="font-medium text-gray-900">
-                                                    {course.godzina_rozpoczecia && course.godzina_zakonczenia
-                                                        ? `${course.godzina_rozpoczecia} – ${course.godzina_zakonczenia}`
-                                                        : course.godzina_rozpoczecia || course.godzina_zakonczenia || "—"}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-                                    {course.adres && course.adres.trim() !== "" && (
-                                        <div className="flex gap-3 p-3 rounded-lg bg-white/80 border border-[rgba(212,196,176,0.2)] sm:col-span-2">
-                                            <MapPin className="h-5 w-5 shrink-0 text-[#D2B79B]" />
-                                            <div>
-                                                <div className="text-xs text-gray-500">Miejsce / adres</div>
-                                                <div className="font-medium text-gray-900">{course.adres}</div>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        )}
-
                         {/* What You'll Learn */}
                         {(course.czegoSieNauczysz?.length ?? 0) > 0 && (
                             <div className="rounded-xl border border-[rgba(212,196,176,0.3)] bg-white/60 p-6">
@@ -399,6 +354,7 @@ export default function CourseDetailPage({ courseSlug }: CourseDetailPageProps) 
                         <div className="rounded-xl border border-[rgba(212,196,176,0.3)] bg-white/60 p-6">
                             <h3 className="text-lg font-bold text-gray-900 mb-3">Opis szkolenia</h3>
                             <div className="text-gray-700 leading-relaxed">
+                                
                                 <p>{course.opis.split("\\n").map((text) => (
                                     <span key={text}>{text}<br /></span>
                                 ))}</p>

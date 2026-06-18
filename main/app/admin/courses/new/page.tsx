@@ -702,8 +702,8 @@ export default function NewCoursePage() {
                         <div>
                             <label className="block text-sm font-medium mb-2">Data rozpoczęcia</label>
                             <input
-                                type="datetime-local"
-                                value={coursePayload.data_rozpoczecia ? new Date(coursePayload.data_rozpoczecia).toISOString().slice(0, 16) : ""}
+                                type="date"
+                                value={coursePayload.data_rozpoczecia ? new Date(coursePayload.data_rozpoczecia).toISOString().slice(0, 10) : ""}
                                 onChange={(e) =>
                                     handleCoursePayloadChange("data_rozpoczecia", e.target.value ? new Date(e.target.value) : undefined)
                                 }
