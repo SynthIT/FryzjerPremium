@@ -1,7 +1,6 @@
 import { db } from "@/lib/db/init";
 import { Delivery } from "@/lib/models/Delivery";
 import { DeliveryMethods, zodDeliveryMethods } from "@/lib/types/deliveryTypes";
-import mongoose from "mongoose";
 
 export async function getDeliveryMethods() {
     await db();
@@ -11,16 +10,15 @@ export async function getDeliveryMethods() {
 
 export async function updateDeliveryMethod(
     id: string,
-    data: Partial<typeof Delivery>,
+    data: Partial<DeliveryMethods>,
 ) {
     await db();
-    const res = await Delivery.find()
-        .findOneAndUpdate(
-            { _id: new mongoose.Types.ObjectId(id) },
-            { $set: data },
-            { returnDocument: "after" },
-        )
-        .orFail();
+    const { _id: _omit, ...rest } = data;
+    const res = await Delivery.findByIdAndUpdate(
+        id,
+        { $set: rest },
+        { returnDocument: "after" },
+    ).orFail();
     return res;
 }
 
