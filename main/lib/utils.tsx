@@ -1,6 +1,7 @@
 import React from "react";
 import { Products, Warianty } from "./types/productTypes";
 import { Promos } from "./types/shared";
+import { isPromoApplicable } from "./cart/pricing";
 
 export const getProducts = async (domain: string, slug?: string) => {
     const url = new URL(`${domain}/api/v1/products`);
@@ -127,15 +128,16 @@ export const finalPrice = (
     if (selectedWariant?.nadpisuje_cene && selectedWariant.nowa_cena) {
         basePrice = selectedWariant.nowa_cena;
     }
-    if (promocje && promocje.procent !== null && promocje.procent !== undefined) {
-        if (promocje.procent !== 0) {
-            basePrice = basePrice * ((100 - promocje.procent) / 100);
+    const promo = isPromoApplicable(promocje) ? promocje : undefined;
+    if (promo && promo.procent !== null && promo.procent !== undefined) {
+        if (promo.procent !== 0) {
+            basePrice = basePrice * ((100 - promo.procent) / 100);
         }
-        if (promocje.special?.obniza_cene && promocje.special?.obnizka) {
-            basePrice = basePrice - (basePrice * promocje.special.obnizka!) / 100;
+        if (promo.special?.obniza_cene && promo.special?.obnizka) {
+            basePrice = basePrice - (basePrice * promo.special.obnizka!) / 100;
         }
-        if (promocje.special?.zmienia_cene && promocje.special?.nowa_cena) {
-            basePrice = promocje.special.nowa_cena;
+        if (promo.special?.zmienia_cene && promo.special?.nowa_cena) {
+            basePrice = promo.special.nowa_cena;
         }
     }
     basePrice = basePrice + (basePrice * vat) / 100;

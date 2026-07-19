@@ -18,6 +18,7 @@ import {
     adminFormPageGrid,
     adminFormSpanFull,
 } from "@/components/admin/AdminFormLayout";
+import { uploadAdminFile } from "@/lib/admin/uploadFile";
 
 
 function calculateProwizja(cena: number, prowizja: number, prowizja_typ: string, vat: number): number {
@@ -210,32 +211,14 @@ export default function NewCoursePage() {
                 return;
             }
 
-            // Upload zdjęć do blob i zbierz ścieżki (downloadUrl)
-            const uploadFile = async (file: File, parent: string): Promise<string> => {
-                const res = await fetch("/admin/api/v1/upload", {
-                    method: "POST",
-                    credentials: "include",
-                    headers: {
-                        "X-File-Name": encodeURIComponent(file.name),
-                        "X-File-Parent": encodeURIComponent(parent),
-                    },
-                    body: file,
-                });
-                if (!res.ok) {
-                    const err = await res.json().catch(() => ({}));
-                    throw new Error(err.error || "Błąd uploadu");
-                }
-                const data = await res.json();
-                const url = data?.image?.url ?? null;
-                if (!url) throw new Error("Brak URL w odpowiedzi uploadu");
-                return url;
-            };
-
             const mediaData: Media[] = [];
             const parentFolder = `courses/${coursePayload.slug}`;
 
             if (mainImageFile) {
-                const path = await uploadFile(mainImageFile, parentFolder);
+                const path = await uploadAdminFile({
+                    file: mainImageFile,
+                    parent: parentFolder,
+                });
                 mediaData.push({
                     nazwa: coursePayload.nazwa || mainImageFile.name,
                     slug: generateSlug(coursePayload.nazwa || mainImageFile.name),
@@ -245,7 +228,7 @@ export default function NewCoursePage() {
                 });
             }
             for (const file of galleryFiles) {
-                const path = await uploadFile(file, parentFolder);
+                const path = await uploadAdminFile({ file, parent: parentFolder });
                 mediaData.push({
                     nazwa: file.name,
                     slug: generateSlug(file.name),

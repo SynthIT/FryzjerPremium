@@ -3,6 +3,7 @@
 import { Plus, HelpCircle } from "lucide-react";
 import { Warianty } from "@/lib/types/productTypes";
 import { generateSlug } from "@/lib/utils_admin";
+import AdminSpecListEditor from "@/components/admin/AdminSpecListEditor";
 import {
     CenaTyp,
     pricePreviewLabel,
@@ -20,6 +21,7 @@ const EMPTY_WARIANT: Warianty = {
     ilosc: 0,
     nadpisuje_cene: false,
     inna_cena_skupu: false,
+    specyfikacja: [],
 };
 
 interface ProductVariantsEditorProps {
@@ -387,6 +389,18 @@ export default function ProductVariantsEditor({
                             />
                         </div>
                     )}
+
+                    <div className="space-y-2">
+                        <label className="text-xs font-medium">
+                            Specyfikacja wariantu (bez opisu)
+                        </label>
+                        <AdminSpecListEditor
+                            items={wariant.specyfikacja || []}
+                            onChange={(spec) =>
+                                updateWariant(index, "specyfikacja", spec)
+                            }
+                        />
+                    </div>
 
                     <button
                         type="button"

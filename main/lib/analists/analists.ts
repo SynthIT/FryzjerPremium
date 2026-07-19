@@ -3,6 +3,7 @@ import { OrderList } from "../types/userTypes";
 import { Products } from "../types/productTypes";
 import { Courses } from "../types/coursesTypes";
 import { Analist } from "../types/analistTypes";
+import { OrderStatus } from "../types/orderTypes";
 
 export const months = [
     "Styczeń",
@@ -19,8 +20,6 @@ export const months = [
     "Grudzień",
 ] as const;
 
-type MonthName = (typeof months)[number];
-
 export type ChartRow = { name: string; value: number; ym: number };
 
 export type MonthlyAmount = {
@@ -29,8 +28,22 @@ export type MonthlyAmount = {
     ym: number;
 };
 
-function orderMonthMeta(order: OrderList): { name: string; ym: number } {
-    const d = new Date(order.data_zamowienia!);
+const PAID_STATUSES = new Set<OrderStatus>([
+    "opłacone",
+    "w_realizacji",
+    "wyslane",
+    "zrealizowane",
+]);
+
+function orderDate(order: OrderList): Date | null {
+    if (order.data_zamowienia) return new Date(order.data_zamowienia);
+    if (order.createdAt) return new Date(order.createdAt);
+    return null;
+}
+
+function orderMonthMeta(order: OrderList): { name: string; ym: number } | null {
+    const d = orderDate(order);
+    if (!d || Number.isNaN(d.getTime())) return null;
     const month = months[d.getMonth()];
     const year = d.getFullYear();
     return {
@@ -56,13 +69,27 @@ function roundMoney(value: number): number {
     return Math.round(value * 100) / 100;
 }
 
-function paidOrders(orders: OrderList[]): OrderList[] {
-    const last12MonthsOrders = orders.filter((order) => order.data_zamowienia && new Date(order.data_zamowienia).getMonth() >= new Date().getMonth() - 12);
-    return last12MonthsOrders;
+function mergeByYm(a: ChartRow[], b: ChartRow[]): ChartRow[] {
+    const byYm = new Map<number, ChartRow>();
+    for (const row of [...a, ...b]) {
+        const existing = byYm.get(row.ym);
+        if (existing) {
+            existing.value = roundMoney(existing.value + row.value);
+        } else {
+            byYm.set(row.ym, { ...row });
+        }
+    }
+    return sortChartRows(Array.from(byYm.values()));
 }
 
-function monthFromOrder(order: OrderList): MonthName {
-    return months[new Date(order.data_zamowienia!).getMonth()];
+function paidOrders(orders: OrderList[]): OrderList[] {
+    const cutoff = new Date();
+    cutoff.setMonth(cutoff.getMonth() - 12);
+    return orders.filter((order) => {
+        if (!PAID_STATUSES.has(order.status as OrderStatus)) return false;
+        const d = orderDate(order);
+        return d != null && !Number.isNaN(d.getTime()) && d >= cutoff;
+    });
 }
 
 function addMonthlyValue(
@@ -144,9 +171,11 @@ export function useAnalists(orders: OrderList[], analists: Analist[]) {
     const overallRevenueFromProducts = useMemo(() => {
         const overallRevenue: ChartRow[] = [];
         paidOrders(orders).forEach((order) => {
+            const meta = orderMonthMeta(order);
+            if (!meta) return;
             addMonthlyValue(
                 overallRevenue,
-                orderMonthMeta(order),
+                meta,
                 productLineRevenue(order),
             );
         });
@@ -156,9 +185,11 @@ export function useAnalists(orders: OrderList[], analists: Analist[]) {
     const overallRevenueFromCourses = useMemo(() => {
         const overallRevenue: ChartRow[] = [];
         paidOrders(orders).forEach((order) => {
+            const meta = orderMonthMeta(order);
+            if (!meta) return;
             addMonthlyValue(
                 overallRevenue,
-                orderMonthMeta(order),
+                meta,
                 courseLineRevenue(order),
             );
         });
@@ -169,9 +200,11 @@ export function useAnalists(orders: OrderList[], analists: Analist[]) {
     const overallProfitFromProducts = useMemo(() => {
         const overallProfit: ChartRow[] = [];
         paidOrders(orders).forEach((order) => {
+            const meta = orderMonthMeta(order);
+            if (!meta) return;
             addMonthlyValue(
                 overallProfit,
-                orderMonthMeta(order),
+                meta,
                 productLineProfit(order),
             );
         });
@@ -182,9 +215,11 @@ export function useAnalists(orders: OrderList[], analists: Analist[]) {
     const overallProfitFromCourses = useMemo(() => {
         const overallProfitFromCourses: ChartRow[] = [];
         paidOrders(orders).forEach((order) => {
+            const meta = orderMonthMeta(order);
+            if (!meta) return;
             addMonthlyValue(
                 overallProfitFromCourses,
-                orderMonthMeta(order),
+                meta,
                 courseLineProfit(order),
             );
         });
@@ -244,14 +279,21 @@ export function useAnalists(orders: OrderList[], analists: Analist[]) {
             ym: number;
         }[] = [];
 
+        const today = new Date();
+        const minYm = today.getFullYear() * 12 + today.getMonth() - range + 1;
+
         paidOrders(orders).forEach((order) => {
+            const d = orderDate(order);
+            if (!d) return;
             order.produkty.forEach((product) => {
                 const item = as<"produkty">(product.pozycja);
                 const wariant = product.wariant;
                 if (!item?.nazwa) return;
-                const meta = orderProductName(order.data_zamowienia!, item.nazwa + (wariant ? ` (${wariant})` : ""));
-                const today = new Date();
-                if (meta.ym <= (today.getFullYear() * 12 + today.getMonth() - range)) return;
+                const meta = orderProductName(
+                    d,
+                    item.nazwa + (wariant ? ` (${wariant})` : ""),
+                );
+                if (meta.ym < minYm) return;
                 addMonthlyAmount(soldProductNameInMonth, meta, product.ilosc);
             });
         });
@@ -304,13 +346,15 @@ export function useAnalists(orders: OrderList[], analists: Analist[]) {
             .slice(0, 5);
     }, [soldCoursesByName]);
 
-    const overallRevenue = useMemo(() => {
-        return [...overallRevenueFromProducts, ...overallRevenueFromCourses];
-    }, [overallRevenueFromProducts, overallRevenueFromCourses]);
+    const overallRevenue = useMemo(
+        () => mergeByYm(overallRevenueFromProducts, overallRevenueFromCourses),
+        [overallRevenueFromProducts, overallRevenueFromCourses],
+    );
 
-    const overallProfit = useMemo(() => {
-        return [...overallProfitFromProducts, ...overallProfitFromCourses];
-    }, [overallProfitFromProducts, overallProfitFromCourses]);
+    const overallProfit = useMemo(
+        () => mergeByYm(overallProfitFromProducts, overallProfitFromCourses),
+        [overallProfitFromProducts, overallProfitFromCourses],
+    );
 
     return {
         overallRevenueFromProducts,
@@ -324,5 +368,7 @@ export function useAnalists(orders: OrderList[], analists: Analist[]) {
         bestCourses,
         overallRevenue,
         overallProfit,
+        restockProducts,
+        priceChanges,
     };
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import {
     Area,
     AreaChart,
@@ -56,10 +56,13 @@ function useChartSize() {
             }
         };
 
-        update();
+        const raf = requestAnimationFrame(update);
         const ro = new ResizeObserver(update);
         ro.observe(el);
-        return () => ro.disconnect();
+        return () => {
+            cancelAnimationFrame(raf);
+            ro.disconnect();
+        };
     }, []);
 
     return { ref, size };
@@ -79,6 +82,9 @@ export default function AnalyticsChartElement({
     showTitle?: boolean;
 }) {
     const { ref, size } = useChartSize();
+    const uid = useId().replace(/:/g, "");
+    const gradProdukty = `colorProdukty-${uid}`;
+    const gradKursy = `colorKursy-${uid}`;
     const data = useMemo(
         () => mergeChartSeries(produkty, kursy),
         [produkty, kursy],
@@ -100,7 +106,7 @@ export default function AnalyticsChartElement({
                         margin={{ top: 8, right: 12, left: 0, bottom: 4 }}>
                         <defs>
                             <linearGradient
-                                id="colorProdukty"
+                                id={gradProdukty}
                                 x1="0"
                                 y1="0"
                                 x2="0"
@@ -113,11 +119,11 @@ export default function AnalyticsChartElement({
                                 <stop
                                     offset="95%"
                                     stopColor="#8884d8"
-                                    stopOpacity={0.4}
+                                    stopOpacity={0.05}
                                 />
                             </linearGradient>
                             <linearGradient
-                                id="colorKursy"
+                                id={gradKursy}
                                 x1="0"
                                 y1="0"
                                 x2="0"
@@ -130,7 +136,7 @@ export default function AnalyticsChartElement({
                                 <stop
                                     offset="95%"
                                     stopColor="#82ca9d"
-                                    stopOpacity={0.5}
+                                    stopOpacity={0.05}
                                 />
                             </linearGradient>
                         </defs>
@@ -152,16 +158,18 @@ export default function AnalyticsChartElement({
                         <Area
                             type="monotone"
                             dataKey="produkty"
+                            name="Produkty"
                             stroke="#8884d8"
-                            dot={{fill: "#8884d8"}}
-                            fill="url(#colorProdukty)"
+                            dot={{ fill: "#8884d8" }}
+                            fill={`url(#${gradProdukty})`}
                         />
                         <Area
                             type="monotone"
                             dataKey="kursy"
+                            name="Kursy"
                             stroke="#82ca9d"
-                            dot={{fill: "#82ca9d"}}
-                            fill="url(#colorKursy)"
+                            dot={{ fill: "#82ca9d" }}
+                            fill={`url(#${gradKursy})`}
                         />
                         <Tooltip />
                         <Legend />

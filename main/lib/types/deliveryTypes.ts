@@ -9,6 +9,7 @@ export const zodDeliveryMethodsSizes = z.object({
 });
 
 export const zodDeliveryMethods = z.object({
+    _id: z.string().optional(),
     nazwa: z.string(),
     slug: z.string(),
     rozmiary: z.array(zodDeliveryMethodsSizes),

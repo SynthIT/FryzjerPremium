@@ -55,7 +55,7 @@ export default function CourseLessonsEditor({
                 </div>
             )}
             {(lekcje?.length ?? 0) > 0 && (
-                <div className="space-y-4 sm:col-span-2">
+                <div className="space-y-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
                     {(lekcje ?? []).map((lekcja, index) => (
                         <div
                             key={index}

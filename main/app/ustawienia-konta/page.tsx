@@ -1,14 +1,39 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import StorefrontShell from "@/components/layout/StorefrontShell";
 import { Info, LockKeyhole, MapPin, Settings, User } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
-import { Users } from "@/lib/types/userTypes";
+import { OrderList, Users } from "@/lib/types/userTypes";
+import {
+    AccountVerify,
+    RODZAJE_FIRMY,
+} from "@/lib/types/accountVerifyTypes";
+import { getOrderStatusLabel } from "@/lib/types/orderTypes";
+
+function csvEscape(value: unknown): string {
+    const s = String(value ?? "");
+    if (/[",\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+    return s;
+}
+
+function downloadCsv(filename: string, lines: string[]) {
+    const bom = "\uFEFF";
+    const blob = new Blob([bom + lines.join("\n") + "\n"], {
+        type: "text/csv;charset=utf-8",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+}
 
 export default function AccountSettingsPage() {
     const [activeSection, setActiveSection] = useState("personal");
-    const { userData, changePassword, changeUserData } = useUser();
+    const { userData, orders, changePassword, changeUserData, deleteAccount } =
+        useUser();
     const [user, setUserData] = useState<Partial<Users>>({
         imie: "",
         nazwisko: "",
@@ -26,6 +51,49 @@ export default function AccountSettingsPage() {
     const [newPass, setNewPass] = useState<string>("");
     const [reNewPass, setReNewPass] = useState<string>("");
     const [passNot, setPassNot] = useState<boolean>(true);
+
+    const [verifyRequest, setVerifyRequest] = useState<AccountVerify | null>(
+        null,
+    );
+    const [verifyLoading, setVerifyLoading] = useState(false);
+    const [showVerifyForm, setShowVerifyForm] = useState(false);
+    const [verifySubmitting, setVerifySubmitting] = useState(false);
+    const [verifyForm, setVerifyForm] = useState({
+        nazwa: "",
+        rodzaj_firmy: "JDG" as (typeof RODZAJE_FIRMY)[number],
+        nip: "",
+        regon: "",
+        krs: "",
+        adres: "",
+        miasto: "",
+        kod_pocztowy: "",
+        kraj: "Polska",
+        telefon: "",
+        strona_internetowa: "",
+    });
+
+    const loadVerifyStatus = useCallback(async () => {
+        if (!userData) return;
+        setVerifyLoading(true);
+        try {
+            const res = await fetch("/api/v1/users/account-verify", {
+                credentials: "include",
+            });
+            if (!res.ok) return;
+            const data = await res.json();
+            setVerifyRequest(data.request ?? null);
+        } catch {
+            /* ignore */
+        } finally {
+            setVerifyLoading(false);
+        }
+    }, [userData]);
+
+    useEffect(() => {
+        if (activeSection === "actions") {
+            loadVerifyStatus();
+        }
+    }, [activeSection, loadVerifyStatus]);
 
     useEffect(() => {
         function s() {
@@ -55,6 +123,91 @@ export default function AccountSettingsPage() {
     const handlePasswordChange = async (old: string, n: string) => {
         const ok = await changePassword(n, old);
         alert(ok);
+    };
+
+    const handleVerifySubmit = async () => {
+        setVerifySubmitting(true);
+        try {
+            const res = await fetch("/api/v1/users/account-verify", {
+                method: "POST",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(verifyForm),
+            });
+            const data = await res.json();
+            if (!res.ok || data.status !== 0) {
+                const err =
+                    typeof data.error === "string"
+                        ? data.error
+                        : "Nie udało się złożyć wniosku.";
+                alert(err);
+                return;
+            }
+            setVerifyRequest(data.request ?? null);
+            setShowVerifyForm(false);
+            alert("Wniosek o weryfikację został złożony.");
+        } catch {
+            alert("Wystąpił błąd podczas składania wniosku.");
+        } finally {
+            setVerifySubmitting(false);
+        }
+    };
+
+    const handleExportCsv = () => {
+        if (!userData) {
+            alert("Zaloguj się, aby wyeksportować dane.");
+            return;
+        }
+
+        const profileLines = [
+            "sekcja,pole,wartosc",
+            ["profil", "imie", userData.imie],
+            ["profil", "nazwisko", userData.nazwisko],
+            ["profil", "email", userData.email],
+            ["profil", "telefon", userData.telefon],
+            ["profil", "ulica", userData.ulica],
+            ["profil", "nr_domu", userData.nr_domu],
+            ["profil", "nr_lokalu", userData.nr_lokalu ?? ""],
+            ["profil", "kod_pocztowy", userData.kod_pocztowy],
+            ["profil", "miasto", userData.miasto],
+            ["profil", "kraj", userData.kraj],
+            ["profil", "nip", userData.nip ?? ""],
+            [
+                "profil",
+                "osoba_prywatna",
+                userData.osoba_prywatna === false ? "nie" : "tak",
+            ],
+            ["profil", "faktura", userData.faktura ? "tak" : "nie"],
+        ].map((row) =>
+            Array.isArray(row) ? row.map(csvEscape).join(",") : row,
+        );
+
+        const orderHeader =
+            "sekcja,numer_zamowienia,status,suma,data,liczba_produktow,liczba_kursow";
+        const orderRows = ((orders ?? []) as OrderList[]).map((o) =>
+            [
+                "zamowienie",
+                o.numer_zamowienia,
+                getOrderStatusLabel(o.status),
+                o.suma,
+                o.data_zamowienia
+                    ? new Date(o.data_zamowienia).toISOString()
+                    : o.createdAt
+                      ? new Date(o.createdAt).toISOString()
+                      : "",
+                o.produkty?.length ?? 0,
+                o.kursy?.length ?? 0,
+            ]
+                .map(csvEscape)
+                .join(","),
+        );
+
+        downloadCsv("moje-dane-fryzjerpremium.csv", [
+            ...profileLines,
+            "",
+            orderHeader,
+            ...orderRows,
+        ]);
     };
 
     useEffect(() => {
@@ -543,17 +696,381 @@ export default function AccountSettingsPage() {
                                         <div className="rounded-xl border border-[rgba(212,196,176,0.3)] bg-white/60 p-6">
                                             <div className="flex-1">
                                                 <h3 className="text-lg font-bold text-gray-900 mb-1">
-                                                    Weryfikacja
+                                                    Weryfikacja konta firmowego
                                                 </h3>
                                                 <p className="text-sm text-gray-600 mb-4">
-                                                    Prowadzisz firmę? Zweryfikuj swoje konto i otrzymaj dodatkowe zniżki i promocje.
-                                                    Między innymi dostęp do wariantów hurtowych, czy też odddzielne promocje.
-                                                    Aby zweryfikować swoje konto, wciśnij przycisk poniżej.
+                                                    Prowadzisz firmę? Złóż wniosek
+                                                    o weryfikację, aby odblokować
+                                                    lepsze promocje i warianty
+                                                    hurtowe. Rozpatrzenie zajmuje
+                                                    zwykle kilka dni roboczych.
                                                 </p>
                                             </div>
-                                            <button className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-100 transition-colors">
-                                                Weryfikuj konto
-                                            </button>
+                                            {verifyLoading ? (
+                                                <p className="text-sm text-gray-500">
+                                                    Sprawdzanie statusu...
+                                                </p>
+                                            ) : userData?.osoba_prywatna ===
+                                                  false ||
+                                              verifyRequest?.status ===
+                                                  "zaakceptowane" ? (
+                                                <p className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
+                                                    Twoje konto firmowe jest
+                                                    zweryfikowane. Masz dostęp do
+                                                    lepszych promocji.
+                                                </p>
+                                            ) : verifyRequest?.status ===
+                                              "oczekujace" ? (
+                                                <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900">
+                                                    Wniosek oczekuje na
+                                                    rozpatrzenie
+                                                    {verifyRequest.nazwa
+                                                        ? ` (${verifyRequest.nazwa})`
+                                                        : ""}
+                                                    .
+                                                </p>
+                                            ) : (
+                                                <>
+                                                    {verifyRequest?.status ===
+                                                        "odrzucone" && (
+                                                        <p className="mb-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+                                                            Poprzedni wniosek
+                                                            został odrzucony
+                                                            {verifyRequest.powod_odrzucenia
+                                                                ? `: ${verifyRequest.powod_odrzucenia}`
+                                                                : "."}{" "}
+                                                            Możesz złożyć nowy
+                                                            wniosek.
+                                                        </p>
+                                                    )}
+                                                    {!showVerifyForm ? (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                setVerifyForm(
+                                                                    (f) => ({
+                                                                        ...f,
+                                                                        telefon:
+                                                                            userData?.telefon ??
+                                                                            "",
+                                                                        adres: [
+                                                                            userData?.ulica,
+                                                                            userData?.nr_domu,
+                                                                        ]
+                                                                            .filter(
+                                                                                Boolean,
+                                                                            )
+                                                                            .join(
+                                                                                " ",
+                                                                            ),
+                                                                        miasto:
+                                                                            userData?.miasto ??
+                                                                            "",
+                                                                        kod_pocztowy:
+                                                                            userData?.kod_pocztowy ??
+                                                                            "",
+                                                                        kraj:
+                                                                            userData?.kraj ??
+                                                                            "Polska",
+                                                                        nip:
+                                                                            userData?.nip ??
+                                                                            "",
+                                                                    }),
+                                                                );
+                                                                setShowVerifyForm(
+                                                                    true,
+                                                                );
+                                                            }}
+                                                            className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-100 transition-colors">
+                                                            Złóż wniosek o
+                                                            weryfikację
+                                                        </button>
+                                                    ) : (
+                                                        <div className="space-y-3">
+                                                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                                                <div className="flex flex-col gap-1 sm:col-span-2">
+                                                                    <label className="text-sm font-medium text-gray-700">
+                                                                        Nazwa firmy
+                                                                    </label>
+                                                                    <input
+                                                                        value={
+                                                                            verifyForm.nazwa
+                                                                        }
+                                                                        onChange={(
+                                                                            e,
+                                                                        ) =>
+                                                                            setVerifyForm(
+                                                                                {
+                                                                                    ...verifyForm,
+                                                                                    nazwa: e
+                                                                                        .target
+                                                                                        .value,
+                                                                                },
+                                                                            )
+                                                                        }
+                                                                        className="rounded-lg border border-gray-300 px-3 py-2"
+                                                                    />
+                                                                </div>
+                                                                <div className="flex flex-col gap-1">
+                                                                    <label className="text-sm font-medium text-gray-700">
+                                                                        Forma prawna
+                                                                    </label>
+                                                                    <select
+                                                                        value={
+                                                                            verifyForm.rodzaj_firmy
+                                                                        }
+                                                                        onChange={(
+                                                                            e,
+                                                                        ) =>
+                                                                            setVerifyForm(
+                                                                                {
+                                                                                    ...verifyForm,
+                                                                                    rodzaj_firmy:
+                                                                                        e
+                                                                                            .target
+                                                                                            .value as (typeof RODZAJE_FIRMY)[number],
+                                                                                },
+                                                                            )
+                                                                        }
+                                                                        className="rounded-lg border border-gray-300 px-3 py-2">
+                                                                        {RODZAJE_FIRMY.map(
+                                                                            (
+                                                                                r,
+                                                                            ) => (
+                                                                                <option
+                                                                                    key={
+                                                                                        r
+                                                                                    }
+                                                                                    value={
+                                                                                        r
+                                                                                    }>
+                                                                                    {
+                                                                                        r
+                                                                                    }
+                                                                                </option>
+                                                                            ),
+                                                                        )}
+                                                                    </select>
+                                                                </div>
+                                                                <div className="flex flex-col gap-1">
+                                                                    <label className="text-sm font-medium text-gray-700">
+                                                                        NIP *
+                                                                    </label>
+                                                                    <input
+                                                                        value={
+                                                                            verifyForm.nip
+                                                                        }
+                                                                        onChange={(
+                                                                            e,
+                                                                        ) =>
+                                                                            setVerifyForm(
+                                                                                {
+                                                                                    ...verifyForm,
+                                                                                    nip: e
+                                                                                        .target
+                                                                                        .value,
+                                                                                },
+                                                                            )
+                                                                        }
+                                                                        className="rounded-lg border border-gray-300 px-3 py-2"
+                                                                    />
+                                                                </div>
+                                                                <div className="flex flex-col gap-1">
+                                                                    <label className="text-sm font-medium text-gray-700">
+                                                                        REGON
+                                                                    </label>
+                                                                    <input
+                                                                        value={
+                                                                            verifyForm.regon
+                                                                        }
+                                                                        onChange={(
+                                                                            e,
+                                                                        ) =>
+                                                                            setVerifyForm(
+                                                                                {
+                                                                                    ...verifyForm,
+                                                                                    regon: e
+                                                                                        .target
+                                                                                        .value,
+                                                                                },
+                                                                            )
+                                                                        }
+                                                                        className="rounded-lg border border-gray-300 px-3 py-2"
+                                                                    />
+                                                                </div>
+                                                                <div className="flex flex-col gap-1">
+                                                                    <label className="text-sm font-medium text-gray-700">
+                                                                        KRS
+                                                                    </label>
+                                                                    <input
+                                                                        value={
+                                                                            verifyForm.krs
+                                                                        }
+                                                                        onChange={(
+                                                                            e,
+                                                                        ) =>
+                                                                            setVerifyForm(
+                                                                                {
+                                                                                    ...verifyForm,
+                                                                                    krs: e
+                                                                                        .target
+                                                                                        .value,
+                                                                                },
+                                                                            )
+                                                                        }
+                                                                        className="rounded-lg border border-gray-300 px-3 py-2"
+                                                                    />
+                                                                </div>
+                                                                <div className="flex flex-col gap-1 sm:col-span-2">
+                                                                    <label className="text-sm font-medium text-gray-700">
+                                                                        Adres
+                                                                    </label>
+                                                                    <input
+                                                                        value={
+                                                                            verifyForm.adres
+                                                                        }
+                                                                        onChange={(
+                                                                            e,
+                                                                        ) =>
+                                                                            setVerifyForm(
+                                                                                {
+                                                                                    ...verifyForm,
+                                                                                    adres: e
+                                                                                        .target
+                                                                                        .value,
+                                                                                },
+                                                                            )
+                                                                        }
+                                                                        className="rounded-lg border border-gray-300 px-3 py-2"
+                                                                    />
+                                                                </div>
+                                                                <div className="flex flex-col gap-1">
+                                                                    <label className="text-sm font-medium text-gray-700">
+                                                                        Kod pocztowy
+                                                                    </label>
+                                                                    <input
+                                                                        value={
+                                                                            verifyForm.kod_pocztowy
+                                                                        }
+                                                                        onChange={(
+                                                                            e,
+                                                                        ) =>
+                                                                            setVerifyForm(
+                                                                                {
+                                                                                    ...verifyForm,
+                                                                                    kod_pocztowy:
+                                                                                        e
+                                                                                            .target
+                                                                                            .value,
+                                                                                },
+                                                                            )
+                                                                        }
+                                                                        className="rounded-lg border border-gray-300 px-3 py-2"
+                                                                    />
+                                                                </div>
+                                                                <div className="flex flex-col gap-1">
+                                                                    <label className="text-sm font-medium text-gray-700">
+                                                                        Miasto
+                                                                    </label>
+                                                                    <input
+                                                                        value={
+                                                                            verifyForm.miasto
+                                                                        }
+                                                                        onChange={(
+                                                                            e,
+                                                                        ) =>
+                                                                            setVerifyForm(
+                                                                                {
+                                                                                    ...verifyForm,
+                                                                                    miasto: e
+                                                                                        .target
+                                                                                        .value,
+                                                                                },
+                                                                            )
+                                                                        }
+                                                                        className="rounded-lg border border-gray-300 px-3 py-2"
+                                                                    />
+                                                                </div>
+                                                                <div className="flex flex-col gap-1">
+                                                                    <label className="text-sm font-medium text-gray-700">
+                                                                        Telefon
+                                                                    </label>
+                                                                    <input
+                                                                        value={
+                                                                            verifyForm.telefon
+                                                                        }
+                                                                        onChange={(
+                                                                            e,
+                                                                        ) =>
+                                                                            setVerifyForm(
+                                                                                {
+                                                                                    ...verifyForm,
+                                                                                    telefon:
+                                                                                        e
+                                                                                            .target
+                                                                                            .value,
+                                                                                },
+                                                                            )
+                                                                        }
+                                                                        className="rounded-lg border border-gray-300 px-3 py-2"
+                                                                    />
+                                                                </div>
+                                                                <div className="flex flex-col gap-1">
+                                                                    <label className="text-sm font-medium text-gray-700">
+                                                                        Strona WWW
+                                                                    </label>
+                                                                    <input
+                                                                        value={
+                                                                            verifyForm.strona_internetowa
+                                                                        }
+                                                                        onChange={(
+                                                                            e,
+                                                                        ) =>
+                                                                            setVerifyForm(
+                                                                                {
+                                                                                    ...verifyForm,
+                                                                                    strona_internetowa:
+                                                                                        e
+                                                                                            .target
+                                                                                            .value,
+                                                                                },
+                                                                            )
+                                                                        }
+                                                                        className="rounded-lg border border-gray-300 px-3 py-2"
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex flex-wrap gap-2 pt-1">
+                                                                <button
+                                                                    type="button"
+                                                                    disabled={
+                                                                        verifySubmitting ||
+                                                                        !verifyForm.nazwa.trim() ||
+                                                                        !verifyForm.nip.trim()
+                                                                    }
+                                                                    onClick={
+                                                                        handleVerifySubmit
+                                                                    }
+                                                                    className="px-4 py-2 rounded-lg bg-[#D2B79B] text-black font-semibold hover:bg-[#b89a7f] transition-colors disabled:opacity-50">
+                                                                    {verifySubmitting
+                                                                        ? "Wysyłanie..."
+                                                                        : "Wyślij wniosek"}
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() =>
+                                                                        setShowVerifyForm(
+                                                                            false,
+                                                                        )
+                                                                    }
+                                                                    className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-100 transition-colors">
+                                                                    Anuluj
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </>
+                                            )}
                                         </div>
                                         <div className="rounded-xl border border-[rgba(212,196,176,0.3)] bg-white/60 p-6">
                                             <div className="flex-1">
@@ -561,13 +1078,16 @@ export default function AccountSettingsPage() {
                                                     Eksportuj dane
                                                 </h3>
                                                 <p className="text-sm text-gray-600 mb-4">
-                                                    Pobierz kopię wszystkich
-                                                    swoich danych osobowych w
-                                                    formacie JSON.
+                                                    Pobierz kopię danych profilu
+                                                    oraz podsumowanie zamówień w
+                                                    formacie CSV.
                                                 </p>
                                             </div>
-                                            <button className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-100 transition-colors">
-                                                Eksportuj dane
+                                            <button
+                                                type="button"
+                                                onClick={handleExportCsv}
+                                                className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-100 transition-colors">
+                                                Eksportuj dane (CSV)
                                             </button>
                                         </div>
                                         <div className="rounded-xl border border-red-200 bg-red-50/50 p-6">
@@ -581,7 +1101,18 @@ export default function AccountSettingsPage() {
                                                     akcja jest nieodwracalna.
                                                 </p>
                                             </div>
-                                            <button className="px-4 py-2 rounded-lg border border-red-300 text-red-600 font-medium hover:bg-red-50 transition-colors">
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    if (
+                                                        confirm(
+                                                            "Czy na pewno chcesz trwale usunąć konto?",
+                                                        )
+                                                    ) {
+                                                        deleteAccount();
+                                                    }
+                                                }}
+                                                className="px-4 py-2 rounded-lg border border-red-300 text-red-600 font-medium hover:bg-red-50 transition-colors">
                                                 Usuń konto
                                             </button>
                                         </div>

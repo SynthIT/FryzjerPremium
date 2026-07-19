@@ -1,6 +1,13 @@
 import Stripe from "stripe";
 import { Users } from "../types/userTypes";
+
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+
+const UPDATABLE_STATUSES: Stripe.PaymentIntent.Status[] = [
+    "requires_payment_method",
+    "requires_confirmation",
+    "requires_action",
+];
 
 const createStripeCustomer = async (user: Users) => {
     try {
@@ -19,6 +26,7 @@ const createStripeCustomer = async (user: Users) => {
 const getStripeCustomer = async (customerId: string) => {
     try {
         const customer = await stripe.customers.retrieve(customerId);
+        if (customer.deleted) return false;
         return customer;
     } catch (error) {
         console.error("Error retrieving Stripe customer:", error);
@@ -32,31 +40,24 @@ const createPaymentIntent = async (
     koszyk: string,
     customerId?: string,
 ) => {
-    const customer = await getStripeCustomer(customerId ?? "");
-    let params;
-    if (!customer) {
-        params = {
-            amount: amount,
-            currency: currency,
-            payment_method_types: ["card", "blik", "klarna", "link"],
-            metadata: {
-                "koszyk_id": `${koszyk}`,
-            },
-        };
-    } else {
-        params = {
-            amount: amount,
-            currency: currency,
-            customer: customer.id,
-            payment_method_types: ["card", "blik", "klarna", "link"],
-            metadata: {
-                "koszyk_id": `${koszyk}`,
-            },
-        };
+    const params: Stripe.PaymentIntentCreateParams = {
+        amount,
+        currency,
+        payment_method_types: ["card", "blik", "klarna", "link"],
+        metadata: {
+            koszyk_id: `${koszyk}`,
+        },
+    };
+
+    if (customerId) {
+        const customer = await getStripeCustomer(customerId);
+        if (customer) {
+            params.customer = customer.id;
+        }
     }
+
     try {
-        const paymentIntent = await stripe.paymentIntents.create(params);
-        return paymentIntent;
+        return await stripe.paymentIntents.create(params);
     } catch (error) {
         console.error("Error creating Payment Intent:", error);
         throw new Error("Could not create Payment Intent");
@@ -69,7 +70,11 @@ const getPaymentIntent = async (koszyk_id: string) => {
             query: `metadata['koszyk_id']:'${koszyk_id}'`,
         });
         if (paymentIntent.data.length === 0) return null;
-        return paymentIntent.data[0];
+
+        const updatable = paymentIntent.data.find((pi) =>
+            UPDATABLE_STATUSES.includes(pi.status),
+        );
+        return updatable ?? null;
     } catch (error) {
         console.error("Error retrieving Payment Intent:", error);
         throw new Error("Could not retrieve Payment Intent");
@@ -78,8 +83,7 @@ const getPaymentIntent = async (koszyk_id: string) => {
 
 const getPaymentIntentByPaymentIntentId = async (payment_intent_id: string) => {
     try {
-        const paymentIntent = await stripe.paymentIntents.retrieve(payment_intent_id);
-        return paymentIntent;
+        return await stripe.paymentIntents.retrieve(payment_intent_id);
     } catch (error) {
         console.error("Error retrieving Payment Intent:", error);
         throw new Error("Could not retrieve Payment Intent");
@@ -92,26 +96,16 @@ const updatePaymentIntent = async (
     user?: string,
 ) => {
     try {
+        const updateParams: Stripe.PaymentIntentUpdateParams = {
+            amount: new_amount,
+        };
         if (user) {
-            const updatedPaymentIntent = await stripe.paymentIntents.update(
-                payment.id,
-                {
-                    amount: new_amount,
-                    customer: user,
-                },
-            );
-            return updatedPaymentIntent;
+            updateParams.customer = user;
         }
-        const updatedPaymentIntent = await stripe.paymentIntents.update(
-            payment.id,
-            {
-                amount: new_amount,
-            },
-        );
-        return updatedPaymentIntent;
+        return await stripe.paymentIntents.update(payment.id, updateParams);
     } catch (error) {
-        console.error("Error retrieving Payment Intent:", error);
-        throw new Error("Could not retrieve Payment Intent");
+        console.error("Error updating Payment Intent:", error);
+        throw new Error("Could not update Payment Intent");
     }
 };
 

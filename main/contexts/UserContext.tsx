@@ -37,14 +37,24 @@ export function UserProvider({ children }: { children: ReactNode }) {
     const [orders, setOrders] = useState<OrderList[]>([]);
 
     useEffect(() => {
+        try {
+            const saved = localStorage.getItem("user");
+            if (saved && saved.includes("@")) {
+                setUser(saved);
+            }
+        } catch {
+            /* ignore */
+        }
+    }, []);
+
+    useEffect(() => {
         if (user !== undefined) {
             localStorage.setItem("user", user);
         }
-        if (localStorage.getItem("user")) return;
-    }, [user, orders]);
+    }, [user]);
 
     useEffect(() => {
-        async function u(c?: string) {
+        async function u() {
             fetch("/api/v1/auth/check", {
                 method: "POST",
                 credentials: "include",
@@ -66,7 +76,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
         }
         try {
             if (userData) return;
-            u(user ?? undefined);
+            u();
         } catch (err) {
             console.error("Błąd podczas ładowania użytkownika: ", err);
         }
@@ -160,6 +170,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
             const res = await fetch("/api/v1/products/orders", {
                 method: "POST",
                 credentials: "include",
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ order: order }),
             })
                 .then((res) => res.json())
@@ -184,14 +195,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
     );
 
     const isAdmin = useCallback(() => {
-        if (!userData) {
-            if (!userData!.role) return false;
-            return hasAnyAdminPermission(userData!.role as Roles[]);
-
-        } else {
-            if (!userData.role) return false;
-            return hasAnyAdminPermission(userData.role as Roles[]);
-        }
+        if (!userData?.role) return false;
+        return hasAnyAdminPermission(userData.role as Roles[]);
     }, [userData]);
 
     return (

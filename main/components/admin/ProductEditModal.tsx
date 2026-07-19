@@ -19,7 +19,9 @@ import { useCategoryTree } from "@/components/admin/hooks/useCategoryTree";
 import AdminCategoryPicker from "@/components/admin/AdminCategoryPicker";
 import AdminPriceVatFields from "@/components/admin/AdminPriceVatFields";
 import AdminSpecListEditor from "@/components/admin/AdminSpecListEditor";
+import AdminProductShippingDims from "@/components/admin/AdminProductShippingDims";
 import ProductVariantsEditor from "@/components/admin/ProductVariantsEditor";
+import { uploadAdminFile } from "@/lib/admin/uploadFile";
 
 interface ProductEditModalProps {
     product: Products;
@@ -38,6 +40,7 @@ export default function ProductEditModal({
 }: ProductEditModalProps) {
     const [editedProduct, setEditedProduct] = useState<Products>(product);
     const [isSaving, setIsSaving] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
 
     const categoryTree = useCategoryTree();
     const [cenaTyp, setCenaTyp] = useState<CenaTyp>("netto");
@@ -84,7 +87,7 @@ export default function ProductEditModal({
         else if (ids[0])
             main = catList.find((c) => (c._id ?? "") === ids[0])?.kategoria ?? "";
         categoryTree.setInitialSelection(main, ids);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- init selection once categories load
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- init selection once categories load
     }, [product.kategoria, categoryTree.categoriesSlug.length]);
     useEffect(() => {
         async function fetchProducents() {
@@ -160,6 +163,16 @@ export default function ProductEditModal({
                 producent: producentId as unknown as Products["producent"],
                 promocje: promocjeId as unknown as Products["promocje"],
             };
+            if (
+                !(productToSave.szerokosc > 0) ||
+                !(productToSave.wysokosc > 0) ||
+                !(productToSave.dlugosc > 0) ||
+                !(productToSave.waga > 0)
+            ) {
+                alert("Uzupełnij wymiary paczki i wagę w Specyfikacji (X, Y, Z, waga).");
+                setIsSaving(false);
+                return;
+            }
             const { updateProduct } = await import("@/lib/utils");
             const result = await updateProduct(window.location.origin, productToSave);
             if (result.status === 0) {
@@ -220,6 +233,34 @@ export default function ProductEditModal({
         ]);
     };
 
+    const uploadMediaFiles = async (files: FileList | null) => {
+        if (!files || files.length === 0) return;
+        if (!editedProduct.slug) {
+            alert("Najpierw ustaw slug produktu (z nazwy).");
+            return;
+        }
+        setIsUploading(true);
+        try {
+            const parentFolder = `products/${editedProduct.slug}`;
+            const next = [...(editedProduct.media || [])];
+            for (const file of Array.from(files)) {
+                const path = await uploadAdminFile({ file, parent: parentFolder });
+                next.unshift({
+                    nazwa: file.name,
+                    slug: generateSlug(file.name),
+                    typ: "image",
+                    alt: file.name,
+                    path,
+                });
+            }
+            updateField("media", next);
+        } catch (e) {
+            alert(`Błąd uploadu: ${e}`);
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
     const updateMedia = (index: number, field: keyof Media, value: string) => {
         const media = [...(editedProduct.media || [])];
         if (media[index]) {
@@ -250,367 +291,399 @@ export default function ProductEditModal({
 
                 <div className="flex-1 overflow-y-auto p-4 sm:p-5">
                     <div className={adminModalBodyGrid}>
-                    <AdminFormSection title="Podstawowe informacje" icon={BookOpen} dense>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div>
-                                <label className="block text-sm font-medium mb-1">
-                                    Nazwa produktu *
-                                </label>
-                                <input
-                                    type="text"
-                                    value={editedProduct.nazwa || ""}
-                                    onChange={(e) =>
-                                        updateField("nazwa", e.target.value)
-                                    }
-                                    className="w-full px-3 py-2 border rounded-md"
+                        <AdminFormSection title="Podstawowe informacje" icon={BookOpen} dense>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label className="block text-sm font-medium mb-1">
+                                        Nazwa produktu *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={editedProduct.nazwa || ""}
+                                        onChange={(e) =>
+                                            updateField("nazwa", e.target.value)
+                                        }
+                                        className="w-full px-3 py-2 border rounded-md"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-1">
+                                        Slug (auto-generowany)
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={editedProduct.slug || ""}
+                                        onChange={(e) =>
+                                            updateField("slug", e.target.value)
+                                        }
+                                        className="w-full px-3 py-2 border rounded-md"
+                                        readOnly
+                                    />
+                                    <span className="text-xs text-muted-foreground">
+                                        Slug jest automatycznie generowany z nazwy
+                                    </span>
+                                </div>
+                                <AdminPriceVatFields
+                                    label="Cena *"
+                                    required
+                                    storedNetValue={editedProduct.cena || 0}
+                                    vatPercent={editedProduct.vat ?? 23}
+                                    cenaTyp={cenaTyp}
+                                    onStoredNetChange={(v) => updateField("cena", v)}
+                                    onCenaTypChange={setCenaTyp}
+                                    variant="modal"
                                 />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium mb-1">
-                                    Slug (auto-generowany)
-                                </label>
-                                <input
-                                    type="text"
-                                    value={editedProduct.slug || ""}
-                                    onChange={(e) =>
-                                        updateField("slug", e.target.value)
-                                    }
-                                    className="w-full px-3 py-2 border rounded-md"
-                                    readOnly
+                                <AdminPriceVatFields
+                                    label="Cena skupu (analityka) *"
+                                    required
+                                    storedNetValue={editedProduct.cena_skupu || 0}
+                                    vatPercent={editedProduct.vat ?? 23}
+                                    cenaTyp={cenaTyp}
+                                    onStoredNetChange={(v) => updateField("cena_skupu", v)}
+                                    onCenaTypChange={setCenaTyp}
+                                    variant="modal"
+                                    previewPrefix="Cena skupu z VAT"
                                 />
-                                <span className="text-xs text-muted-foreground">
-                                    Slug jest automatycznie generowany z nazwy
-                                </span>
-                            </div>
-                            <AdminPriceVatFields
-                                label="Cena *"
-                                required
-                                storedNetValue={editedProduct.cena || 0}
-                                vatPercent={editedProduct.vat ?? 23}
-                                cenaTyp={cenaTyp}
-                                onStoredNetChange={(v) => updateField("cena", v)}
-                                onCenaTypChange={setCenaTyp}
-                                variant="modal"
-                            />
-                            <AdminPriceVatFields
-                                label="Cena skupu (analityka) *"
-                                required
-                                storedNetValue={editedProduct.cena_skupu || 0}
-                                vatPercent={editedProduct.vat ?? 23}
-                                cenaTyp={cenaTyp}
-                                onStoredNetChange={(v) => updateField("cena_skupu", v)}
-                                onCenaTypChange={setCenaTyp}
-                                variant="modal"
-                                previewPrefix="Cena skupu z VAT"
-                            />
-                            <div>
-                                <label className="block text-sm font-medium mb-1">
-                                    Ilość *
-                                </label>
-                                <input
-                                    type="number"
-                                    value={editedProduct.ilosc === 0 || editedProduct.ilosc === undefined || editedProduct.ilosc === null ? "" : editedProduct.ilosc}
-                                    onChange={(e) => {
-                                        const val = e.target.value;
-                                        updateField(
-                                            "ilosc",
-                                            val === "" ? 0 : parseInt(val) || 0,
-                                        );
-                                    }}
-                                    className="w-full px-3 py-2 border rounded-md"
-                                    placeholder="0"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium mb-1">
-                                    Dostępność *
-                                </label>
-                                <select
-                                    value={editedProduct.dostepnosc || "duza"}
-                                    onChange={(e) =>
-                                        updateField(
-                                            "dostepnosc",
-                                            e.target.value,
-                                        )
-                                    }
-                                    className="w-full px-3 py-2 border rounded-md">
-                                    <option value="duza">Duża</option>
-                                    <option value="ograniczona">
-                                        Ograniczona
-                                    </option>
-                                    <option value="mała">Mała</option>
-                                    <option value="niedostępne">
-                                        Niedostępne
-                                    </option>
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium mb-1">
-                                    Czas wysyłki (dni) *
-                                </label>
-                                <input
-                                    type="number"
-                                    value={editedProduct.czas_wysylki === 0 || editedProduct.czas_wysylki === undefined || editedProduct.czas_wysylki === null ? "" : editedProduct.czas_wysylki}
-                                    onChange={(e) => {
-                                        const val = e.target.value;
-                                        updateField(
-                                            "czas_wysylki",
-                                            val === "" ? 0 : parseInt(val) || 0,
-                                        );
-                                    }}
-                                    className="w-full px-3 py-2 border rounded-md"
-                                    placeholder="1"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium mb-1">
-                                    Kod produkcyjny *
-                                </label>
-                                <input
-                                    type="text"
-                                    value={editedProduct.kod_produkcyjny || ""}
-                                    onChange={(e) =>
-                                        updateField(
-                                            "kod_produkcyjny",
-                                            e.target.value,
-                                        )
-                                    }
-                                    className="w-full px-3 py-2 border rounded-md"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium mb-1">
-                                    Ocena
-                                </label>
-                                <input
-                                    type="number"
-                                    step="0.1"
-                                    min="0"
-                                    max="5"
-                                    value={editedProduct.ocena === 0 || editedProduct.ocena === undefined || editedProduct.ocena === null ? "" : editedProduct.ocena}
-                                    onChange={(e) => {
-                                        const val = e.target.value;
-                                        updateField(
-                                            "ocena",
-                                            val === "" ? 0 : parseFloat(val) || 0,
-                                        );
-                                    }}
-                                    className="w-full px-3 py-2 border rounded-md"
-                                    placeholder="0.0"
-                                />
+                                <div>
+                                    <label className="block text-sm font-medium mb-1">
+                                        Ilość *
+                                    </label>
+                                    <input
+                                        type="number"
+                                        value={editedProduct.ilosc === 0 || editedProduct.ilosc === undefined || editedProduct.ilosc === null ? "" : editedProduct.ilosc}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            updateField(
+                                                "ilosc",
+                                                val === "" ? 0 : parseInt(val) || 0,
+                                            );
+                                        }}
+                                        className="w-full px-3 py-2 border rounded-md"
+                                        placeholder="0"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-1">
+                                        Dostępność *
+                                    </label>
+                                    <select
+                                        value={editedProduct.dostepnosc || "duza"}
+                                        onChange={(e) =>
+                                            updateField(
+                                                "dostepnosc",
+                                                e.target.value,
+                                            )
+                                        }
+                                        className="w-full px-3 py-2 border rounded-md">
+                                        <option value="duza">Duża</option>
+                                        <option value="ograniczona">
+                                            Ograniczona
+                                        </option>
+                                        <option value="mała">Mała</option>
+                                        <option value="niedostępne">
+                                            Niedostępne
+                                        </option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-1">
+                                        Czas wysyłki (dni) *
+                                    </label>
+                                    <input
+                                        type="number"
+                                        value={editedProduct.czas_wysylki === 0 || editedProduct.czas_wysylki === undefined || editedProduct.czas_wysylki === null ? "" : editedProduct.czas_wysylki}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            updateField(
+                                                "czas_wysylki",
+                                                val === "" ? 0 : parseInt(val) || 0,
+                                            );
+                                        }}
+                                        className="w-full px-3 py-2 border rounded-md"
+                                        placeholder="1"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-1">
+                                        Kod produkcyjny *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={editedProduct.kod_produkcyjny || ""}
+                                        onChange={(e) =>
+                                            updateField(
+                                                "kod_produkcyjny",
+                                                e.target.value,
+                                            )
+                                        }
+                                        className="w-full px-3 py-2 border rounded-md"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-1">
+                                        Ocena
+                                    </label>
+                                    <input
+                                        type="number"
+                                        step="0.1"
+                                        min="0"
+                                        max="5"
+                                        value={editedProduct.ocena === 0 || editedProduct.ocena === undefined || editedProduct.ocena === null ? "" : editedProduct.ocena}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            updateField(
+                                                "ocena",
+                                                val === "" ? 0 : parseFloat(val) || 0,
+                                            );
+                                        }}
+                                        className="w-full px-3 py-2 border rounded-md"
+                                        placeholder="0.0"
+                                    />
+                                </div>
+                                <div className="sm:col-span-2">
+                                    <label className="block text-sm font-medium mb-1">
+                                        Promocja (globalna)
+                                    </label>
+                                    <select
+                                        value={selectedPromoId}
+                                        onChange={(e) =>
+                                            setSelectedPromoId(e.target.value)
+                                        }
+                                        className="w-full px-3 py-2 border rounded-md">
+                                        <option value="">— Brak promocji —</option>
+                                        {promos.map((pr) => {
+                                            const id = pr._id
+                                                ? String(pr._id)
+                                                : "";
+                                            if (!id) return null;
+                                            return (
+                                                <option key={id} value={id}>
+                                                    {pr.nazwa}
+                                                    {pr.procent != null &&
+                                                        pr.procent > 0
+                                                        ? ` (−${pr.procent}%)`
+                                                        : ""}
+                                                </option>
+                                            );
+                                        })}
+                                    </select>
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                        <Link
+                                            href="/admin/discounts/new"
+                                            className="text-[#D2B79B] hover:underline">
+                                            Dodaj nową promocję
+                                        </Link>
+                                    </p>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-1">
+                                        Kod EAN
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={editedProduct.kod_ean || ""}
+                                        onChange={(e) =>
+                                            updateField("kod_ean", e.target.value)
+                                        }
+                                        className="w-full px-3 py-2 border rounded-md"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-1">
+                                        SKU
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={editedProduct.sku || ""}
+                                        onChange={(e) =>
+                                            updateField("sku", e.target.value)
+                                        }
+                                        className="w-full px-3 py-2 border rounded-md"
+                                    />
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        type="checkbox"
+                                        checked={editedProduct.aktywne !== false}
+                                        onChange={(e) =>
+                                            updateField("aktywne", e.target.checked)
+                                        }
+                                        className="w-4 h-4"
+                                    />
+                                    <label className="text-sm font-medium">
+                                        Produkt aktywny
+                                    </label>
+                                </div>
                             </div>
                             <div className="sm:col-span-2">
-                                <label className="block text-sm font-medium mb-1">
-                                    Promocja (globalna)
-                                </label>
-                                <select
-                                    value={selectedPromoId}
-                                    onChange={(e) =>
-                                        setSelectedPromoId(e.target.value)
-                                    }
-                                    className="w-full px-3 py-2 border rounded-md">
-                                    <option value="">— Brak promocji —</option>
-                                    {promos.map((pr) => {
-                                        const id = pr._id
-                                            ? String(pr._id)
-                                            : "";
-                                        if (!id) return null;
-                                        return (
-                                            <option key={id} value={id}>
-                                                {pr.nazwa}
-                                                {pr.procent != null &&
-                                                    pr.procent > 0
-                                                    ? ` (−${pr.procent}%)`
-                                                    : ""}
-                                            </option>
-                                        );
-                                    })}
-                                </select>
-                                <p className="text-xs text-muted-foreground mt-1">
-                                    <Link
-                                        href="/admin/discounts/new"
-                                        className="text-[#D2B79B] hover:underline">
-                                        Dodaj nową promocję
-                                    </Link>
-                                </p>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium mb-1">
-                                    Kod EAN
-                                </label>
-                                <input
-                                    type="text"
-                                    value={editedProduct.kod_ean || ""}
-                                    onChange={(e) =>
-                                        updateField("kod_ean", e.target.value)
-                                    }
-                                    className="w-full px-3 py-2 border rounded-md"
+                                <label className="block text-sm font-medium mb-1">Opis *</label>
+                                <textarea
+                                    value={editedProduct.opis || ""}
+                                    onChange={(e) => updateField("opis", e.target.value)}
+                                    rows={3}
+                                    className="w-full px-3 py-2 border rounded-md text-sm"
                                 />
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium mb-1">
-                                    SKU
-                                </label>
-                                <input
-                                    type="text"
-                                    value={editedProduct.sku || ""}
-                                    onChange={(e) =>
-                                        updateField("sku", e.target.value)
-                                    }
-                                    className="w-full px-3 py-2 border rounded-md"
-                                />
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <input
-                                    type="checkbox"
-                                    checked={editedProduct.aktywne !== false}
-                                    onChange={(e) =>
-                                        updateField("aktywne", e.target.checked)
-                                    }
-                                    className="w-4 h-4"
-                                />
-                                <label className="text-sm font-medium">
-                                    Produkt aktywny
-                                </label>
-                            </div>
-                        </div>
-                        <div className="sm:col-span-2">
-                            <label className="block text-sm font-medium mb-1">Opis *</label>
-                            <textarea
-                                value={editedProduct.opis || ""}
-                                onChange={(e) => updateField("opis", e.target.value)}
-                                rows={3}
-                                className="w-full px-3 py-2 border rounded-md text-sm"
-                            />
-                        </div>
-                    </AdminFormSection>
-
-                    <AdminFormSection title="Kategorie i producent" icon={BookOpen} dense>
-                        <AdminCategoryPicker
-                            categories={categoryTree.categories}
-                            categoriesSlug={categoryTree.categoriesSlug}
-                            selectedMainCategory={categoryTree.selectedMainCategory}
-                            selectedSubCategories={categoryTree.selectedSubCategories}
-                            onMainCategoryChange={categoryTree.handleMainCategoryChange}
-                            onSubCategoryToggle={categoryTree.handleSubCategoryToggle}
-                            variant="modal"
-                            parseMainLabels
-                        />
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Producent *</label>
-                        <select
-                            value={selectedProducent}
-                            onChange={(e) =>
-                                handleProducentChange(e.target.value)
-                            }
-                            className="w-full px-3 py-2 border rounded-md">
-                            <option value="">Wybierz producenta</option>
-                            {producents.map((prod) => (
-                                <option key={prod.nazwa} value={prod._id}>
-                                    {prod.nazwa}
-                                </option>
-                            ))}
-                        </select>
-                        </div>
-                    </AdminFormSection>
-
-                    <AdminFormSection title="Specyfikacja" icon={ListChecks} dense>
-                        <AdminSpecListEditor
-                            items={editedProduct.specyfikacja || []}
-                            onChange={(spec) => updateField("specyfikacja", spec)}
-                            variant="modal"
-                            showHeader={false}
-                        />
-                    </AdminFormSection>
-
-                    <AdminFormSection title="Media" icon={Camera} dense>
-                        <div className="flex items-center justify-between">
-                            <span className="text-sm text-muted-foreground">Zdjęcia i pliki</span>
-                            <button
-                                type="button"
-                                onClick={addMedia}
-                                className="px-3 py-1 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90 flex items-center gap-1">
-                                <Plus className="h-4 w-4" />
-                                Dodaj
-                            </button>
-                        </div>
-                        <div className="space-y-2 max-h-48 overflow-y-auto">
-                            {(editedProduct.media || []).map((media, index) => (
-                                <div
-                                    key={index}
-                                    className="flex gap-2 items-start p-2 border rounded-md">
-                                    <div className="flex-1 grid grid-cols-2 gap-2">
+                        </AdminFormSection>
+                        <AdminFormSection title="Media" icon={Camera} dense>
+                            <div className="flex items-center justify-between">
+                                <span className="text-sm text-muted-foreground">Zdjęcia i pliki</span>
+                                <div className="flex items-center gap-2">
+                                    <label className="px-3 py-1 text-sm border rounded-md hover:bg-accent cursor-pointer">
+                                        {isUploading ? "Wysyłanie..." : "Wyślij pliki"}
                                         <input
-                                            type="text"
-                                            placeholder="Ścieżka"
-                                            value={media.path || ""}
-                                            onChange={(e) =>
-                                                updateMedia(index, "path", e.target.value)
-                                            }
-                                            className="px-2 py-1.5 border rounded-md text-sm"
+                                            type="file"
+                                            accept="image/*"
+                                            multiple
+                                            disabled={isUploading}
+                                            onChange={(e) => {
+                                                void uploadMediaFiles(e.target.files);
+                                                e.currentTarget.value = "";
+                                            }}
+                                            className="hidden"
                                         />
-                                        <input
-                                            type="text"
-                                            placeholder="Alt"
-                                            value={media.alt || ""}
-                                            onChange={(e) =>
-                                                updateMedia(index, "alt", e.target.value)
-                                            }
-                                            className="px-2 py-1.5 border rounded-md text-sm"
-                                        />
-                                        <select
-                                            value={media.typ || "image"}
-                                            onChange={(e) =>
-                                                updateMedia(index, "typ", e.target.value)
-                                            }
-                                            className="px-2 py-1.5 border rounded-md text-sm col-span-2">
-                                            <option value="image">Obraz</option>
-                                            <option value="video">Video</option>
-                                            <option value="pdf">PDF</option>
-                                            <option value="other">Inne</option>
-                                        </select>
-                                        {media.path && media.typ === "image" && (
-                                            <div className="relative w-full h-20 border rounded-md overflow-hidden col-span-2">
-                                                <Image
-                                                    src={media.path}
-                                                    alt={media.alt || ""}
-                                                    fill
-                                                    className="object-cover"
-                                                />
-                                            </div>
-                                        )}
-                                    </div>
+                                    </label>
                                     <button
                                         type="button"
-                                        onClick={() => removeMedia(index)}
-                                        className="p-2 text-red-600 hover:bg-red-50 rounded-md">
-                                        <Minus className="h-4 w-4" />
+                                        onClick={addMedia}
+                                        className="px-3 py-1 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90 flex items-center gap-1">
+                                        <Plus className="h-4 w-4" />
+                                        Dodaj ręcznie
                                     </button>
                                 </div>
-                            ))}
-                            {(editedProduct.media || []).length === 0 && (
-                                <p className="text-sm text-muted-foreground text-center py-3">
-                                    Brak mediów
-                                </p>
-                            )}
-                        </div>
-                    </AdminFormSection>
+                            </div>
+                            <div className="space-y-2 max-h-256 overflow-y-auto">
+                                {(editedProduct.media || []).map((media, index) => (
+                                    <div
+                                        key={index}
+                                        className="flex gap-2 items-start p-2 border rounded-md">
+                                        <div className="flex-1 grid grid-cols-2 gap-2">
+                                            <input
+                                                type="text"
+                                                placeholder="Ścieżka"
+                                                value={media.path || ""}
+                                                onChange={(e) =>
+                                                    updateMedia(index, "path", e.target.value)
+                                                }
+                                                className="px-2 py-1.5 border rounded-md text-sm"
+                                            />
+                                            <input
+                                                type="text"
+                                                placeholder="Alt"
+                                                value={media.alt || ""}
+                                                onChange={(e) =>
+                                                    updateMedia(index, "alt", e.target.value)
+                                                }
+                                                className="px-2 py-1.5 border rounded-md text-sm"
+                                            />
+                                            <select
+                                                value={media.typ || "image"}
+                                                onChange={(e) =>
+                                                    updateMedia(index, "typ", e.target.value)
+                                                }
+                                                className="px-2 py-1.5 border rounded-md text-sm col-span-2">
+                                                <option value="image">Obraz</option>
+                                                <option value="video">Video</option>
+                                                <option value="pdf">PDF</option>
+                                                <option value="other">Inne</option>
+                                            </select>
+                                            {media.path && media.typ === "image" && (
+                                                <div className="relative w-full h-20 border rounded-md overflow-hidden col-span-2">
+                                                    <Image
+                                                        src={media.path}
+                                                        alt={media.alt || ""}
+                                                        fill
+                                                        className="object-cover"
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => removeMedia(index)}
+                                            className="p-2 text-red-600 hover:bg-red-50 rounded-md">
+                                            <Minus className="h-4 w-4" />
+                                        </button>
+                                    </div>
+                                ))}
+                                {(editedProduct.media || []).length === 0 && (
+                                    <p className="text-sm text-muted-foreground text-center py-3">
+                                        Brak mediów
+                                    </p>
+                                )}
+                            </div>
+                        </AdminFormSection>
 
-                    <AdminFormSection
-                        title="Warianty"
-                        icon={Box}
-                        dense
-                        className={adminFormSpanFull}>
-                        <ProductVariantsEditor
-                            warianty={editedProduct.wariant || []}
-                            onChange={(w) => updateField("wariant", w)}
-                            vatPercent={editedProduct.vat ?? 23}
-                            cenaTyp={cenaTyp}
-                            variant="modal"
-                            lockFirstVariantQty
-                            showSectionHeader={false}
-                        />
-                    </AdminFormSection>
+                        <AdminFormSection title="Kategorie i producent" icon={BookOpen} dense>
+                            <AdminCategoryPicker
+                                categories={categoryTree.categories}
+                                categoriesSlug={categoryTree.categoriesSlug}
+                                selectedMainCategory={categoryTree.selectedMainCategory}
+                                selectedSubCategories={categoryTree.selectedSubCategories}
+                                onMainCategoryChange={categoryTree.handleMainCategoryChange}
+                                onSubCategoryToggle={categoryTree.handleSubCategoryToggle}
+                                variant="modal"
+                                parseMainLabels
+                            />
+                            <div>
+                                <label className="block text-sm font-medium mb-1">Producent *</label>
+                                <select
+                                    value={selectedProducent}
+                                    onChange={(e) =>
+                                        handleProducentChange(e.target.value)
+                                    }
+                                    className="w-full px-3 py-2 border rounded-md">
+                                    <option value="">Wybierz producenta</option>
+                                    {producents.map((prod) => (
+                                        <option key={prod.nazwa} value={prod._id}>
+                                            {prod.nazwa}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </AdminFormSection>
+
+                        <AdminFormSection title="Specyfikacja" icon={ListChecks} dense>
+                            <div className="space-y-4">
+                                <AdminProductShippingDims
+                                    variant="modal"
+                                    value={{
+                                        szerokosc: editedProduct.szerokosc,
+                                        wysokosc: editedProduct.wysokosc,
+                                        dlugosc: editedProduct.dlugosc,
+                                        waga: editedProduct.waga,
+                                    }}
+                                    onChange={(dims) =>
+                                        setEditedProduct((prev) => ({ ...prev, ...dims }))
+                                    }
+                                />
+                                <AdminSpecListEditor
+                                    items={editedProduct.specyfikacja || []}
+                                    onChange={(spec) => updateField("specyfikacja", spec)}
+                                    variant="modal"
+                                    showHeader={true}
+                                    title="Dodatkowe atrybuty"
+                                />
+                            </div>
+                        </AdminFormSection>
+
+
+
+                        <AdminFormSection
+                            title="Warianty"
+                            icon={Box}
+                            dense
+                            className={adminFormSpanFull}>
+                            <ProductVariantsEditor
+                                warianty={editedProduct.wariant || []}
+                                onChange={(w) => updateField("wariant", w)}
+                                vatPercent={editedProduct.vat ?? 23}
+                                cenaTyp={cenaTyp}
+                                variant="modal"
+                                lockFirstVariantQty
+                                showSectionHeader={false}
+                            />
+                        </AdminFormSection>
                     </div>
                 </div>
 

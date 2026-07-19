@@ -7,10 +7,11 @@ import Link from "next/link";
 import { useCart } from "@/contexts/CartContext";
 import { finalPrice, loginUser } from "@/lib/utils";
 import LoggedBadge from "./LoggedBadge";
-import { Search, User } from "lucide-react";
+import { User } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
 import { useNotification } from "@/contexts/NotificationContext";
 import { useRouter } from "next/navigation";
+import HeaderSearch from "./HeaderSearch";
 
 interface HeaderProps {
     openLoginModal?: boolean;
@@ -18,7 +19,6 @@ interface HeaderProps {
 }
 
 export default function Header({ openLoginModal, redirectTo }: HeaderProps) {
-    const [searchQuery, setSearchQuery] = useState("");
     const [showDropdown, setShowDropdown] = useState(false);
     const [showCartDropdown, setShowCartDropdown] = useState(false);
     const [showLoginModal, setShowLoginModal] = useState(false);
@@ -111,13 +111,6 @@ export default function Header({ openLoginModal, redirectTo }: HeaderProps) {
                 document.removeEventListener("mousedown", handleClickOutside);
         }
     }, [showModalMenu]);
-
-    const handleSearch = useCallback(
-        (e: React.FormEvent) => {
-            e.preventDefault();
-        },
-        [searchQuery],
-    );
 
     const closeMobileMenu = useCallback(() => {
         setIsMobileMenuOpen(false);
@@ -286,20 +279,13 @@ export default function Header({ openLoginModal, redirectTo }: HeaderProps) {
                     <Link href="/kontakt" className="text-sm font-medium text-gray-800 hover:text-[#D2B79B] relative py-2 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-[#D2B79B] after:transition-all hover:after:w-full" onClick={closeMobileMenu}>Kontakt</Link>
                 </nav>
 
-                <div className={`${isMobileSearchOpen ? "flex absolute left-4 right-4 top-full mt-2 z-50 lg:!static lg:!mt-0 lg:!z-auto" : "hidden"} lg:!flex flex-1 max-w-md`} ref={searchContainerRef}>
-                    <form onSubmit={handleSearch} className="w-full pl-5 flex flex-row items-center gap-2 rounded-lg  border border-[rgba(212,196,176,0.4)] bg-white/80 text-gray-800 " onClick={(e) => e.stopPropagation()}>
-                        <Search className="w-5 h-5 text-gray-500" />
-                        <input
-                            id="searchbox"
-                            ref={searchInputRef}
-                            type="text"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder="Wyszukaj..."
-                            className="w-full pl-5 pr-4 py-2 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#D2B79B]"
-                        />
-                    </form>
-                </div>
+                <HeaderSearch
+                    isOpen={isMobileSearchOpen}
+                    onClose={closeMobileMenu}
+                    containerRef={searchContainerRef}
+                    inputRef={searchInputRef}
+                    containerClassName={`${isMobileSearchOpen ? "flex absolute left-4 right-4 top-full mt-2 z-50 lg:!static lg:!mt-0 lg:!z-auto" : "hidden"} lg:!flex flex-1 max-w-md`}
+                />
 
                 <div className="flex items-center gap-4">
                     <button

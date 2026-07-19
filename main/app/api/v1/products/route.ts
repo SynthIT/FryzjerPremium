@@ -8,22 +8,17 @@ import { collectProducts } from "@/lib/crud/products/product";
 export const runtime = "nodejs";
 
 export async function GET(req: NextRequest) {
-    const url = req.url.split("/");
-    const querystring =
-        url[url.length - 1] != "get"
-            ? url[url.length - 1].split("?")[1]
-            : false;
-
-    // const file = readFileSync(
-    //     path.join(process.cwd(), "data", "produkty.json"),
-    //     "utf8",
-    // );
-    if (querystring) {
+    const slug = req.nextUrl.searchParams.get("slug");
+    if (slug) {
         const products: Products[] = JSON.parse(await collectProducts());
-        const productf: Products | undefined = products.find((p) => {
-            return p.slug == querystring.split("=")[1];
-        });
-        const { product } = await returnAvailableWariant(req, productf!);
+        const productf: Products | undefined = products.find((p) => p.slug === slug);
+        if (!productf) {
+            return NextResponse.json(
+                { status: 1, error: "Produkt nie znaleziony" },
+                { status: 404 },
+            );
+        }
+        const { product } = await returnAvailableWariant(req, productf);
         const response = {
             status: 0,
             product: product,

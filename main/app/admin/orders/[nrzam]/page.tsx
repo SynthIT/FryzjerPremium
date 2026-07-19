@@ -189,6 +189,49 @@ export default function OrderPage() {
                             </div>
                         </div>
                     </div>
+                    {/* Dostawa Apaczka */}
+                    {order?.apaczka && (
+                        <div className="rounded-lg border p-4">
+                            <h2 className="mb-3 text-base font-medium">Dostawa (Apaczka)</h2>
+                            <div className="grid gap-2 text-sm">
+                                <p>Usługa: {order.apaczka.service_name}</p>
+                                <p>
+                                    Tryb:{" "}
+                                    {order.apaczka.mode === "point" ? "Punkt odbioru" : "Kurier"}
+                                </p>
+                                {order.apaczka.point_name && (
+                                    <p>Punkt: {order.apaczka.point_name}</p>
+                                )}
+                                {order.apaczka.waybill_number && (
+                                    <p>Numer listu: {order.apaczka.waybill_number}</p>
+                                )}
+                                {order.apaczka.tracking_url && (
+                                    <a
+                                        href={order.apaczka.tracking_url}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="underline break-all"
+                                        title={order.apaczka.tracking_url}
+                                    >
+                                        {order.apaczka.tracking_url.length > 48
+                                            ? `${order.apaczka.tracking_url.slice(0, 28)}••••${order.apaczka.tracking_url.slice(-8)}`
+                                            : order.apaczka.tracking_url}
+                                    </a>
+                                )}
+                                <a
+                                    href={`/admin/api/v1/orders/waybill?nrzam=${encodeURIComponent(String(nrzam))}`}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="mt-2 inline-block underline border-1 p-2 rounded-md hover:bg-gray-100 transition-colors text-center w-fit"
+                                >
+                                    Pobierz list przewozowy (PDF)
+                                </a>
+                                <p className="text-xs text-muted-foreground">
+                                    PDF generowany na żądanie z base64 Apaczka — bez zapisu w Blob.
+                                </p>
+                            </div>
+                        </div>
+                    )}
                     {/* Zawartość zamówienia */}
                     <div className="rounded-lg border p-4">
                         <h2 className="mb-3 text-base font-medium">Zawartość zamówienia</h2>

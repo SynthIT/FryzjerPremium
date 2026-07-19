@@ -48,6 +48,8 @@ export default function AdminProductCard({
 
     // Obsługa zdjęcia
     const getImageSrc = (): string | null => {
+        console.log(product.nazwa);
+        console.log(product.media);
         if (
             product.media &&
             Array.isArray(product.media) &&

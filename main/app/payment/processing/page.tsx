@@ -25,6 +25,9 @@ function ProcessingPageContent() {
             if (data.done) {
                 routerRef.current.push(`/zamowienie/${data.nrzam}?redirected=true`);
                 clearInterval(interval);
+            } else if (data.failed) {
+                routerRef.current.push(`/kasa?payment=failed`);
+                clearInterval(interval);
             }
         }
         const interval = setInterval(() => {

@@ -9,6 +9,11 @@ export const zodWariantyProps = z.object({
 });
 export type props = z.infer<typeof zodWariantyProps>;
 
+export const zodSpecyfikacja = z.object({
+    key: z.string(),
+    value: z.string(),
+});
+
 export const zodWarianty = z.object({
     _id: z.string().optional(),
     nazwa: z.string(),
@@ -22,6 +27,7 @@ export const zodWarianty = z.object({
     inna_cena_skupu: z.boolean().default(false),
     cena_skupu: z.number().optional(),
     nowa_cena: z.number().optional(),
+    specyfikacja: z.array(zodSpecyfikacja).nullable().optional(),
     permisje: userPermission.optional(),
 });
 export type Warianty = z.infer<typeof zodWarianty>;
@@ -36,11 +42,6 @@ export const zodProducents = z.object({
 });
 
 export type Producents = z.infer<typeof zodProducents>;
-
-export const zodSpecyfikacja = z.object({
-    key: z.string(),
-    value: z.string(),
-});
 
 export const zodProducts = z.object({
     _id: z.string().optional(),
@@ -60,6 +61,11 @@ export const zodProducts = z.object({
     promocje: z
         .union([z.string(), zodPromocje, z.null()]).nullable().optional(),
     specyfikacja: z.array(zodSpecyfikacja).nullable().optional(),
+    /** Paczka Apaczka — obligatoryjne (cm / kg) */
+    szerokosc: z.number().positive({ message: "Szerokość (X) musi być > 0" }),
+    wysokosc: z.number().positive({ message: "Wysokość (Y) musi być > 0" }),
+    dlugosc: z.number().positive({ message: "Długość (Z) musi być > 0" }),
+    waga: z.number().positive({ message: "Waga musi być > 0" }),
     opis: z.string(),
     ilosc: z.number(),
     czas_wysylki: z.number(),

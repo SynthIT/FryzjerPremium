@@ -16,9 +16,7 @@ export async function POST(request: NextRequest) {
         if (type === "error") {
             logService.error(message);
         } else if (type === "warn") {
-            // LogService nie ma warn, ale ma warn w config
-            // Załóżmy, że używa log dla warn
-            logService.log(message);
+            logService.warn(message);
         } else {
             logService.log(message);
         }

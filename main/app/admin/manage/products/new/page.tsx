@@ -12,12 +12,14 @@ import { useCategoryTree } from "@/components/admin/hooks/useCategoryTree";
 import AdminCategoryPicker from "@/components/admin/AdminCategoryPicker";
 import AdminPriceVatFields from "@/components/admin/AdminPriceVatFields";
 import AdminSpecListEditor from "@/components/admin/AdminSpecListEditor";
+import AdminProductShippingDims from "@/components/admin/AdminProductShippingDims";
 import ProductVariantsEditor from "@/components/admin/ProductVariantsEditor";
 import {
     AdminFormSection,
     adminFormPageGrid,
     adminFormSpanFull,
 } from "@/components/admin/AdminFormLayout";
+import { uploadAdminFile } from "@/lib/admin/uploadFile";
 
 
 export default function NewProductPage() {
@@ -42,6 +44,10 @@ export default function NewProductPage() {
         sku: "",
         aktywne: true,
         specyfikacja: [],
+        szerokosc: 0,
+        wysokosc: 0,
+        dlugosc: 0,
+        waga: 0,
         wariant: [],
         kategoria: [],
         producent: "",
@@ -139,31 +145,11 @@ export default function NewProductPage() {
         try {
             const selectedCategories = categoryTree.getSelectedCategoryIds();
             handleUpdatePayload("kategoria", selectedCategories);
-            // Upload zdjęć do blob i zbierz ścieżki (downloadUrl)
-            const uploadFile = async (file: File, parent: string): Promise<string> => {
-                const res = await fetch("/admin/api/v1/upload", {
-                    method: "POST",
-                    credentials: "include",
-                    headers: {
-                        "X-File-Name": encodeURIComponent(file.name),
-                        "X-File-Parent": encodeURIComponent(parent),
-                    },
-                    body: file,
-                });
-                if (!res.ok) {
-                    const err = await res.json().catch(() => ({}));
-                    throw new Error(err.error || "Błąd uploadu");
-                }
-                const data = await res.json();
-                const url = data?.image?.downloadUrl ?? data?.image?.url;
-                if (!url) throw new Error("Brak URL w odpowiedzi uploadu");
-                return url;
-            };
 
             const mediaData: Array<{ nazwa: string; slug: string; typ: "image"; alt: string; path: string }> = [];
             const parentFolder = "products";
             for (const file of mediaFiles) {
-                const path = await uploadFile(file, parentFolder);
+                const path = await uploadAdminFile({ file, parent: parentFolder });
                 mediaData.push({
                     nazwa: file.name,
                     slug: generateSlug(file.name),
@@ -183,13 +169,29 @@ export default function NewProductPage() {
                 return;
             }
 
+            if (
+                !(payload.szerokosc > 0) ||
+                !(payload.wysokosc > 0) ||
+                !(payload.dlugosc > 0) ||
+                !(payload.waga > 0)
+            ) {
+                setError("Uzupełnij wymiary paczki i wagę w Specyfikacji (X, Y, Z, waga).");
+                setIsSubmitting(false);
+                return;
+            }
+
+            const rawPayload = {
+                ...payload,
+                media: mediaData,
+            };
+
             const response = await fetch("/admin/api/v1/products", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
                 credentials: "include",
-                body: JSON.stringify(payload),
+                body: JSON.stringify(rawPayload),
             });
 
             const result = await response.json();
@@ -373,10 +375,24 @@ export default function NewProductPage() {
                 </AdminFormSection>
 
                 <AdminFormSection title="Specyfikacja" icon={ListChecks}>
-                    <AdminSpecListEditor
-                        items={payload.specyfikacja || []}
-                        onChange={(spec) => handleUpdatePayload("specyfikacja", spec)}
-                    />
+                    <div className="space-y-6">
+                        <AdminProductShippingDims
+                            value={{
+                                szerokosc: payload.szerokosc,
+                                wysokosc: payload.wysokosc,
+                                dlugosc: payload.dlugosc,
+                                waga: payload.waga,
+                            }}
+                            onChange={(dims) => {
+                                setPayload((prev) => ({ ...prev, ...dims }));
+                            }}
+                        />
+                        <AdminSpecListEditor
+                            items={payload.specyfikacja || []}
+                            onChange={(spec) => handleUpdatePayload("specyfikacja", spec)}
+                            title="Dodatkowe atrybuty"
+                        />
+                    </div>
                 </AdminFormSection>
 
                 <AdminFormSection title="Dodatkowe pola" icon={Box}>

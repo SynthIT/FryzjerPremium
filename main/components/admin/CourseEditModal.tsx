@@ -4,7 +4,8 @@ import { useState, useEffect, useMemo } from "react";
 import { Courses, Firmy, Lekcja } from "@/lib/types/coursesTypes";
 import { Categories, Media, Promos } from "@/lib/types/shared";
 import Link from "next/link";
-import { Save, Trash2, Plus, Minus, Copy, BookOpen, Clock, Award, Info, Users } from "lucide-react";
+import Image from "next/image";
+import { Save, Trash2, Plus, Copy, BookOpen, Clock, Award, Info, Users, X } from "lucide-react";
 import { generateSlug } from "@/lib/utils_admin";
 import { randomBytes } from "crypto";
 import { useRouter } from "next/navigation";
@@ -19,6 +20,7 @@ import {
     adminFormSpanFull,
 } from "@/components/admin/AdminFormLayout";
 import { Users as User } from "@/lib/types/userTypes";
+import { uploadAdminFile } from "@/lib/admin/uploadFile";
 
 interface CourseEditModalProps {
     course: Courses;
@@ -38,6 +40,7 @@ export default function CourseEditModal({
     const router = useRouter();
     const [editedCourse, setEditedCourse] = useState<Courses>(course);
     const [isSaving, setIsSaving] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
     const [prowizjaCheckbox, setProwizjaCheckbox] = useState(false);
     const [cenaTyp, setCenaTyp] = useState<CenaTyp>("netto");
     const categoryTree = useCategoryTree();
@@ -315,6 +318,34 @@ export default function CourseEditModal({
         ]);
     };
 
+    const uploadMediaFiles = async (files: FileList | null) => {
+        if (!files || files.length === 0) return;
+        if (!editedCourse.slug) {
+            alert("Najpierw ustaw slug kursu (z nazwy).");
+            return;
+        }
+        setIsUploading(true);
+        try {
+            const parentFolder = `courses/${editedCourse.slug}`;
+            const next = [...(editedCourse.media || [])];
+            for (const file of Array.from(files)) {
+                const path = await uploadAdminFile({ file, parent: parentFolder });
+                next.unshift({
+                    nazwa: file.name,
+                    slug: generateSlug(file.name),
+                    typ: "image",
+                    alt: file.name,
+                    path,
+                });
+            }
+            updateField("media", next);
+        } catch (e) {
+            alert(`Błąd uploadu: ${e}`);
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
     const updateMedia = (index: number, field: keyof Media, value: string) => {
         const media = [...(editedCourse.media || [])];
         if (media[index]) {
@@ -517,6 +548,102 @@ export default function CourseEditModal({
                             </div>
                         </div>
                     </AdminFormSection>
+                    <AdminFormSection title="Zdjęcia" className={adminFormSpanFull}>
+                        <div className="flex items-center justify-between mb-3">
+                            <span className="text-sm text-muted-foreground">Media kursu</span>
+                            <div className="flex items-center gap-2">
+                                <label className="px-3 py-1 text-sm border rounded-md hover:bg-accent cursor-pointer">
+                                    {isUploading ? "Wysyłanie..." : "Wyślij pliki"}
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        multiple
+                                        disabled={isUploading}
+                                        onChange={(e) => {
+                                            void uploadMediaFiles(e.target.files);
+                                            e.currentTarget.value = "";
+                                        }}
+                                        className="hidden"
+                                    />
+                                </label>
+                                <button
+                                    type="button"
+                                    onClick={addMedia}
+                                    className="px-3 py-1 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90 flex items-center gap-1">
+                                    <Plus className="h-4 w-4" /> Dodaj ręcznie
+                                </button>
+                            </div>
+                        </div>
+                        {(editedCourse.media || []).length === 0 ? (
+                            <p className="text-sm text-muted-foreground text-center py-6">
+                                Brak zdjęć — wyślij pliki lub dodaj ręcznie
+                            </p>
+                        ) : (
+                            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+                                {(editedCourse.media || []).map((media, index) => (
+                                    <div
+                                        key={`${media.path || media.nazwa || "m"}-${index}`}
+                                        className="flex flex-col overflow-hidden rounded-lg border bg-background">
+                                        <div className="relative aspect-square w-full bg-muted">
+                                            {media.path && (media.typ === "image" || !media.typ) ? (
+                                                <Image
+                                                    src={media.path}
+                                                    alt={media.alt || media.nazwa || "Podgląd"}
+                                                    fill
+                                                    className="object-cover"
+                                                    unoptimized
+                                                />
+                                            ) : (
+                                                <div className="flex h-full items-center justify-center text-xs text-muted-foreground px-2 text-center">
+                                                    {media.path ? "Brak podglądu" : "Brak ścieżki"}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="flex flex-col gap-2 p-3 border-t">
+                                            <p
+                                                className="truncate text-sm font-medium"
+                                                title={media.nazwa || media.alt || media.path || "Bez nazwy"}>
+                                                {media.nazwa || media.alt || "Bez nazwy"}
+                                            </p>
+                                            {!media.path && (
+                                                <input
+                                                    type="text"
+                                                    placeholder="Ścieżka URL"
+                                                    value={media.path || ""}
+                                                    onChange={(e) =>
+                                                        updateMedia(index, "path", e.target.value)
+                                                    }
+                                                    className="w-full rounded-md border px-2 py-1.5 text-xs"
+                                                />
+                                            )}
+                                            <button
+                                                type="button"
+                                                onClick={() => removeMedia(index)}
+                                                className="inline-flex items-center justify-center gap-1 rounded-md border px-2 py-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-50">
+                                                <X className="h-3.5 w-3.5" />
+                                                Usuń
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </AdminFormSection>
+
+                    <AdminFormSection title="Opis szkolenia"
+                        icon={BookOpen}
+                        className={adminFormSpanFull}>
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Pełny opis *</label>
+                            <button type="button" className="px-3 py-1 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90 mb-2" onClick={() => updateField("opis", (editedCourse.opis || "") + "\n")}>Wstaw nowy wiersz</button>
+                            <textarea
+                                rows={6}
+                                value={editedCourse.opis || ""}
+                                onChange={(e) => updateField("opis", e.target.value)}
+                                className="w-full px-3 py-2 border rounded-md"
+                            />
+                        </div>
+                    </AdminFormSection>
 
                     {(editedCourse.lekcje?.length ?? 0) > 0 && (
                         <AdminFormSection
@@ -669,21 +796,7 @@ export default function CourseEditModal({
                         </div>
                     </AdminFormSection>
 
-                    <AdminFormSection
-                        title="Opis szkolenia"
-                        icon={BookOpen}
-                        className={adminFormSpanFull}>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Pełny opis *</label>
-                            <button type="button" className="px-3 py-1 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90 mb-2" onClick={() => updateField("opis", (editedCourse.opis || "") + "\n")}>Wstaw nowy wiersz</button>
-                            <textarea
-                                rows={6}
-                                value={editedCourse.opis || ""}
-                                onChange={(e) => updateField("opis", e.target.value)}
-                                className="w-full px-3 py-2 border rounded-md"
-                            />
-                        </div>
-                    </AdminFormSection>
+                    
 
                     <AdminFormSection title="Kategorie i organizator" icon={Users}>
                         <div className="space-y-4">
@@ -801,39 +914,7 @@ export default function CourseEditModal({
                         </div>
                     </AdminFormSection>
 
-                    <AdminFormSection title="Zdjęcia" className={adminFormSpanFull}>
-                        <div className="flex items-center justify-between">
-                            <span className="text-sm text-muted-foreground">Media kursu</span>
-                            <button
-                                onClick={addMedia}
-                                className="px-3 py-1 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90 flex items-center gap-1">
-                                <Plus className="h-4 w-4" /> Dodaj zdjęcie
-                            </button>
-                        </div>
-                        <div className="space-y-2">
-                            {(editedCourse.media || []).map((media, index) => (
-                                <div key={index} className="flex gap-2 items-center p-2 border rounded-md">
-                                    <input
-                                        type="text"
-                                        placeholder="Ścieżka"
-                                        value={media.path || ""}
-                                        onChange={(e) => updateMedia(index, "path", e.target.value)}
-                                        className="flex-1 px-3 py-2 border rounded-md"
-                                    />
-                                    <input
-                                        type="text"
-                                        placeholder="Alt"
-                                        value={media.alt || ""}
-                                        onChange={(e) => updateMedia(index, "alt", e.target.value)}
-                                        className="flex-1 px-3 py-2 border rounded-md"
-                                    />
-                                    <button type="button" onClick={() => removeMedia(index)} className="p-2 text-red-600 hover:bg-red-50 rounded-md">
-                                        <Minus className="h-4 w-4" />
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
-                    </AdminFormSection>
+                    
 
                     <AdminFormSection title="Daty i miejsce" icon={Clock}>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

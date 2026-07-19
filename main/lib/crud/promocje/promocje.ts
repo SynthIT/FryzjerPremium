@@ -2,10 +2,19 @@ import { db } from "@/lib/db/init";
 import { Product } from "@/lib/models/Products";
 import { Promo } from "@/lib/models/shared";
 import { Promos, zodPromocje } from "@/lib/types/shared";
-import { Types } from "mongoose";
+
+/** Dezaktywuje promocje po dacie `wygasa` (cron-less, przy odczycie). */
+export async function expireInactivePromos() {
+    await db();
+    const now = new Date();
+    await Promo.updateMany(
+        { wygasa: { $lt: now }, aktywna: { $ne: false } },
+        { $set: { aktywna: false } },
+    );
+}
 
 export async function collectPromo() {
-    await db();
+    await expireInactivePromos();
     const promocje = await Promo.find();
     return JSON.stringify(promocje);
 }

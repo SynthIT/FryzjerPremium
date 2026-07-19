@@ -46,6 +46,7 @@ export interface IFLogService {
     backupContent?: string;
     log(mesage: string): void;
     error(message: string): void;
+    warn(message: string): void;
     backup(content: string): void;
 }
 /**
@@ -78,6 +79,17 @@ export class LogService implements IFLogService {
         return this;
     }
 
+    private isVercel() {
+        return Boolean(process.env.VERCEL);
+    }
+
+    private consoleLine(kind: IFLogServiceConf["kind"], message: string) {
+        const info = `${kind.toUpperCase()} | ${this.http} | ${this.prefix} | ${this.path} | ${new Date(Date.now()).toISOString()} ${message}`;
+        if (kind === "error") console.error(info);
+        else if (kind === "warn") console.warn(info);
+        else console.log(info);
+    }
+
     private changeExistingLog(file = this.file) {
         const DAY = 24 * 60 * 60 * 1000;
         access(file, constants.F_OK, (err) => {
@@ -107,6 +119,10 @@ export class LogService implements IFLogService {
     }
 
     async log(message: string) {
+        if (this.isVercel()) {
+            this.consoleLine("log", message);
+            return;
+        }
         await mkdir(pathing.join(process.cwd(), "logs"), { recursive: true });
         this.changeExistingLog();
 
@@ -132,6 +148,10 @@ export class LogService implements IFLogService {
     }
 
     async error(message: string) {
+        if (this.isVercel()) {
+            this.consoleLine("error", message);
+            return;
+        }
         await mkdir(pathing.join(process.cwd(), "logs"), { recursive: true });
 
         this.changeExistingLog();
@@ -156,12 +176,25 @@ export class LogService implements IFLogService {
         });
     }
 
+    async warn(message: string) {
+        if (this.isVercel()) {
+            this.consoleLine("warn", message);
+            return;
+        }
+        this.file = config.warn;
+        await this.log(message);
+    }
+
     /**
      *
      * @param content zostaw puste, no chyba że masz coś lepszego do zaproponowania
      */
 
     async backup(content = this.backupContent) {
+        if (this.isVercel()) {
+            this.consoleLine("backup", String(content ?? ""));
+            return;
+        }
         await mkdir(pathing.join(process.cwd(), "logs", "backup"), {
             recursive: true,
         });

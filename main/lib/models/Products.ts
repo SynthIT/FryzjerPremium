@@ -63,6 +63,21 @@ export const productSchema = new Schema<Products>(
         producent: { type: Types.ObjectId, required: true, ref: "Producents" },
         media: { type: [mediaProductSchema], default: [] },
         promocje: { type: Types.ObjectId, ref: "Promos" },
+        specyfikacja: {
+            type: [
+                {
+                    key: { type: String },
+                    value: { type: String },
+                    _id: false,
+                },
+            ],
+            default: [],
+        },
+        /** Paczka: X szerokość, Y wysokość, Z długość [cm], waga [kg] */
+        szerokosc: { type: Number, required: true, min: 0.01 },
+        wysokosc: { type: Number, required: true, min: 0.01 },
+        dlugosc: { type: Number, required: true, min: 0.01 },
+        waga: { type: Number, required: true, min: 0.01 },
         opis: { type: String, required: true },
         ilosc: { type: Number, min: 0, required: true, default: 0 },
         czas_wysylki: { type: Number, required: true, min: 1 },

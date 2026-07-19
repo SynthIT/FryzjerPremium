@@ -1,5 +1,5 @@
 import { checkRequestAuth } from "@/lib/admin_utils";
-import { collectOrders, updateOrder } from "@/lib/crud/orders/orders";
+import { collectOrders, deleteOrder, getOrderByNumerZamowienia, updateOrder } from "@/lib/crud/orders/orders";
 import { OrderList } from "@/lib/types/userTypes";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -30,4 +30,40 @@ export async function PUT(request: NextRequest) {
         return NextResponse.json({ status: 1, error: "Błąd podczas aktualizacji zamówienia" }, { status: 500 });
     }
     return NextResponse.json({ status: 0, order: updatedOrder, message: "Zamówienie zaktualizowane" });
+}
+
+export async function DELETE(request: NextRequest) {
+    const { val, mess } = await checkRequestAuth(request, ["admin:orders"]);
+    if (!val) {
+        return NextResponse.json(
+            { status: 1, error: "Brak autoryzacji", details: mess },
+            { status: 401 },
+        );
+    }
+
+    const nrzam = request.nextUrl.searchParams.get("nrzam");
+    if (!nrzam) {
+        return NextResponse.json(
+            { status: 1, error: "Brak numeru zamówienia" },
+            { status: 400 },
+        );
+    }
+
+    const order = await getOrderByNumerZamowienia(nrzam);
+    if (!order?._id) {
+        return NextResponse.json(
+            { status: 1, error: "Zamówienie nie znalezione" },
+            { status: 404 },
+        );
+    }
+
+    const deleted = await deleteOrder(String(order._id));
+    if (!deleted) {
+        return NextResponse.json(
+            { status: 1, error: "Nie udało się usunąć zamówienia" },
+            { status: 500 },
+        );
+    }
+
+    return NextResponse.json({ status: 0, message: "Zamówienie usunięte" });
 }

@@ -2,7 +2,7 @@
 import AdminOrderEntry from "@/components/admin/AdminOrderEntry";
 import { OrderList } from "@/lib/types/userTypes";
 import { useSearchParams } from "next/navigation";
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 
 const TOAST_DURATION = 5000;
 const LIMITS = [
@@ -59,11 +59,39 @@ export default function OrdersPage() {
     }, []);
 
 
-    const filteredOrders = useMemo(() => orders.filter((order) => order.numer_zamowienia.toLowerCase().includes(filters.search.toLowerCase())), [orders, filters.search]);
-    const ordersToShow = useMemo(() => filteredOrders.slice((page - 1) * filters.limit, page * filters.limit), [filteredOrders, filters.limit, page]);
-    const totalPages = useMemo(() => Math.ceil(filteredOrders.length / filters.limit), [filteredOrders, filters.limit]);
-    console.log(ordersToShow.length);
-    console.log(totalPages);
+    const filteredOrders = useMemo(
+        () =>
+            orders.filter((order) =>
+                order.numer_zamowienia
+                    .toLowerCase()
+                    .includes(filters.search.toLowerCase()),
+            ),
+        [orders, filters.search],
+    );
+    const ordersToShow = useMemo(
+        () =>
+            filteredOrders.slice(
+                (page - 1) * filters.limit,
+                page * filters.limit,
+            ),
+        [filteredOrders, filters.limit, page],
+    );
+    const totalPages = useMemo(
+        () => Math.max(1, Math.ceil(filteredOrders.length / filters.limit)),
+        [filteredOrders, filters.limit],
+    );
+
+    const handleOrderDeleted = useCallback((numerZamowienia: string) => {
+        setOrders((prev) =>
+            prev.filter((o) => o.numer_zamowienia !== numerZamowienia),
+        );
+    }, []);
+
+    useEffect(() => {
+        if (page > totalPages) {
+            setPage(totalPages);
+        }
+    }, [page, totalPages]);
 
     if (loading) return <div className="flex flex-col items-center justify-center min-h-[400px]">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto" />
@@ -163,7 +191,11 @@ export default function OrdersPage() {
                             </thead>
                             <tbody className="border-1 gap-2">
                                 {ordersToShow.map((order) => (
-                                    <AdminOrderEntry key={order._id} order={order} />
+                                    <AdminOrderEntry
+                                        key={order._id}
+                                        order={order}
+                                        onDeleted={handleOrderDeleted}
+                                    />
                                 ))}
                             </tbody>
                         </table>

@@ -199,7 +199,49 @@ export default function ProductReviewTabs({
                 <div className="rounded-xl border border-[rgba(212,196,176,0.3)] bg-white/60 p-6">
                     <div className="prose prose-gray max-w-none text-gray-700">
                         <h3>Szczegóły produktu</h3>
-                        <p>Brak dodatkowych szczegółów produktu</p>
+                        {"szerokosc" in product &&
+                        product.szerokosc != null &&
+                        product.wysokosc != null &&
+                        product.dlugosc != null &&
+                        product.waga != null ? (
+                            <dl className="not-prose mt-4 grid gap-3 sm:grid-cols-2 text-sm">
+                                <div className="flex justify-between gap-4 border-b border-[rgba(212,196,176,0.25)] pb-2">
+                                    <dt className="text-gray-500">Szerokość (X)</dt>
+                                    <dd className="font-medium">{product.szerokosc} cm</dd>
+                                </div>
+                                <div className="flex justify-between gap-4 border-b border-[rgba(212,196,176,0.25)] pb-2">
+                                    <dt className="text-gray-500">Wysokość (Y)</dt>
+                                    <dd className="font-medium">{product.wysokosc} cm</dd>
+                                </div>
+                                <div className="flex justify-between gap-4 border-b border-[rgba(212,196,176,0.25)] pb-2">
+                                    <dt className="text-gray-500">Długość (Z)</dt>
+                                    <dd className="font-medium">{product.dlugosc} cm</dd>
+                                </div>
+                                <div className="flex justify-between gap-4 border-b border-[rgba(212,196,176,0.25)] pb-2">
+                                    <dt className="text-gray-500">Waga</dt>
+                                    <dd className="font-medium">{product.waga} kg</dd>
+                                </div>
+                            </dl>
+                        ) : (
+                            <p>Brak wymiarów paczki.</p>
+                        )}
+                        {"specyfikacja" in product &&
+                            Array.isArray(product.specyfikacja) &&
+                            product.specyfikacja.length > 0 && (
+                                <>
+                                    <h4 className="mt-6">Specyfikacja</h4>
+                                    <dl className="not-prose mt-2 grid gap-2 text-sm">
+                                        {product.specyfikacja.map((row, i) => (
+                                            <div
+                                                key={`${row.key}-${i}`}
+                                                className="flex justify-between gap-4 border-b border-[rgba(212,196,176,0.2)] pb-1.5">
+                                                <dt className="text-gray-500">{row.key}</dt>
+                                                <dd className="font-medium text-right">{row.value}</dd>
+                                            </div>
+                                        ))}
+                                    </dl>
+                                </>
+                            )}
                     </div>
                 </div>
             )}

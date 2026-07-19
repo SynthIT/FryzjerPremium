@@ -97,11 +97,27 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
     const relatedProducts = Array.isArray(allProducts)
         ? allProducts
             .filter((p) => {
-                return product
-                    ? (p.kategoria as Categories[])[0].nazwa ==
-                    (product.kategoria as Categories[])[0].nazwa &&
-                    p.slug != product!.slug
-                    : false;
+                if (!product) return false;
+                const productCat = product.kategoria?.[0];
+                const otherCat = p.kategoria?.[0];
+                if (!productCat || !otherCat) return false;
+
+                const productCatKey =
+                    typeof productCat === "string"
+                        ? productCat
+                        : (productCat as Categories)._id ||
+                          (productCat as Categories).nazwa;
+                const otherCatKey =
+                    typeof otherCat === "string"
+                        ? otherCat
+                        : (otherCat as Categories)._id ||
+                          (otherCat as Categories).nazwa;
+
+                return (
+                    !!productCatKey &&
+                    productCatKey === otherCatKey &&
+                    p.slug !== product.slug
+                );
             })
             .slice(0, 4)
         : [];
@@ -182,27 +198,35 @@ export default function ProductPage({ productSlug }: ProductPageProps) {
                     <Link href="/produkty" className="hover:text-[#D2B79B] transition-colors">
                         Sklep
                     </Link>
+                    {(() => {
+                        const cat = product.kategoria?.[0];
+                        if (!cat || typeof cat === "string") return null;
+                        const category = cat as Categories;
+                        const slug = category.slug?.trim();
+                        const name = category.nazwa?.trim();
+                        if (!slug && !name) return null;
+                        return (
+                            <>
+                                <span className="text-gray-400">&gt;</span>
+                                {slug ? (
+                                    <Link
+                                        href={`/produkty/${slug.toLowerCase()}`}
+                                        className="hover:text-[#D2B79B] transition-colors">
+                                        {name ||
+                                            slug[0].toUpperCase() + slug.slice(1)}
+                                    </Link>
+                                ) : (
+                                    <span className="text-gray-900 font-medium">
+                                        {name}
+                                    </span>
+                                )}
+                            </>
+                        );
+                    })()}
                     <span className="text-gray-400">&gt;</span>
-                    <Link
-                        href={`/products/${(
-                            product.kategoria as Categories[]
-                        )[0].slug.toLowerCase()}`}
-                        className="hover:text-[#D2B79B] transition-colors">
-                        {(
-                            product.kategoria as Categories[]
-                        )[0].slug[0].toUpperCase() +
-                            (product.kategoria as Categories[])[0].slug.slice(
-                                1,
-                            )}
-                    </Link>
-                    {(product.kategoria as Categories[])[0].nazwa && (
-                        <>
-                            <span className="text-gray-400">&gt;</span>
-                            <span className="text-gray-900 font-medium">
-                                {(product.kategoria as Categories[])[0].nazwa}
-                            </span>
-                        </>
-                    )}
+                    <span className="text-gray-900 font-medium truncate max-w-[200px] sm:max-w-none">
+                        {product.nazwa}
+                    </span>
                 </nav>
 
                 {/* Main Product Content */}

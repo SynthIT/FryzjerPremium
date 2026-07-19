@@ -1,3 +1,5 @@
+"use client";
+
 import { useAnalists } from "@/lib/analists/analists";
 import { useEffect, useState } from "react";
 import { OrderList } from "@/lib/types/userTypes";
@@ -23,34 +25,62 @@ export default function AdminAnalyticsEntry() {
         }
         fetchData();
     }, []);
-    const { overallRevenueFromProducts, overallProfitFromProducts, overallRevenueFromCourses, overallProfitFromCourses, soldProductNameInMonth } =
-        useAnalists(orders, analists);
+    const {
+        overallRevenueFromProducts,
+        overallProfitFromProducts,
+        overallRevenueFromCourses,
+        overallProfitFromCourses,
+        soldProductNameInMonth,
+    } = useAnalists(orders, analists);
 
-    if (loading) return <div className="flex items-center justify-center h-full" >Ładowanie...</div>;
+    if (loading) {
+        return (
+            <div className="flex h-full items-center justify-center">
+                Ładowanie...
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-6">
-            <div className="mb-5 pb-5">
-                <div className="rounded-lg border p-4 lg:col-span-2">
-                    <div className="rounded-lg border p-4 lg:col-span-2">
-                        <AdminAnalyticsCharts>
-                            <AnalyticsChartElement title="Przychód" produkty={overallRevenueFromProducts} kursy={overallRevenueFromCourses} />
-                            <AnalyticsChartElement title="Zysk" produkty={overallProfitFromProducts} kursy={overallProfitFromCourses} />
-                        </AdminAnalyticsCharts>
-                    </div>
-                </div>
+            <div className="rounded-lg border p-4">
+                <AdminAnalyticsCharts>
+                    <AnalyticsChartElement
+                        title="Przychód"
+                        produkty={overallRevenueFromProducts}
+                        kursy={overallRevenueFromCourses}
+                    />
+                    <AnalyticsChartElement
+                        title="Zysk"
+                        produkty={overallProfitFromProducts}
+                        kursy={overallProfitFromCourses}
+                    />
+                </AdminAnalyticsCharts>
             </div>
             <div className="rounded-lg border p-4">
                 <h2 className="mb-2 text-base font-medium">Sprzedaż w liczbach</h2>
-                <div className="flex flex-row items-center justify-between gap-4 p-2 border-b border-gray-200">
+                <div className="flex flex-row items-center justify-between gap-4 border-b border-gray-200 p-2">
                     <p>Dostosuj widok do swoich potrzeb</p>
-                    <select onChange={(e) => setRange(Number(e.target.value))} className="border rounded-md p-2">
-                        <option value="1">Sprzedaż na przestrzeni ostatniego miesiąca</option>
-                        <option value="3">Sprzedaż na przestrzeni ostatniego 3 miesięcy</option>
-                        <option value="6">Sprzedaż na przestrzeni ostatniego 6 miesięcy</option>
+                    <select
+                        value={range}
+                        onChange={(e) => setRange(Number(e.target.value))}
+                        className="rounded-md border p-2">
+                        <option value="1">
+                            Sprzedaż na przestrzeni ostatniego miesiąca
+                        </option>
+                        <option value="3">
+                            Sprzedaż na przestrzeni ostatnich 3 miesięcy
+                        </option>
+                        <option value="6">
+                            Sprzedaż na przestrzeni ostatnich 6 miesięcy
+                        </option>
                     </select>
                 </div>
-                <AdminAnalyticsTable data={soldProductNameInMonth(range)} config={range} />
+                <AdminAnalyticsTable
+                    data={soldProductNameInMonth(range)}
+                    config={range}
+                />
             </div>
         </div>
-    )
+    );
 }

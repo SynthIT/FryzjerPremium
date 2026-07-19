@@ -26,7 +26,22 @@ export const fileOrderEntry = zod.object({
 });
 
 export const orderStatus = zod.enum(["w_koszyku", "nieudana", "opłacone", "w_realizacji", "wyslane", "zrealizowane", "anulowane"]);
+export type OrderStatus = zod.infer<typeof orderStatus>;
 
+export const orderStatusLabels: Record<OrderStatus, string> = {
+    w_koszyku: "W koszyku",
+    nieudana: "Nieudana",
+    opłacone: "Opłacone",
+    w_realizacji: "W realizacji",
+    wyslane: "Wysłane",
+    zrealizowane: "Zrealizowane",
+    anulowane: "Anulowane",
+};
+
+export function getOrderStatusLabel(status: string | undefined | null): string {
+    if (!status) return "—";
+    return orderStatusLabels[status as OrderStatus] ?? status;
+}
 
 export const orderListSchema = zod.object({
     _id: zod.string().optional(),
@@ -43,6 +58,25 @@ export const orderListSchema = zod.object({
         zod.string(),
         zod.null(),
     ]),
+    /** Wybór Apaczka (kurier / punkt) — dry lub produkcja */
+    apaczka: zod
+        .object({
+            service_id: zod.union([zod.string(), zod.number()]),
+            service_name: zod.string(),
+            supplier: zod.string(),
+            mode: zod.enum(["door", "point"]),
+            foreign_address_id: zod.string().optional(),
+            point_name: zod.string().optional(),
+            point_address: zod.string().optional(),
+            price_gross: zod.number(),
+            dry: zod.boolean().optional(),
+            /** ID zamówienia w Apaczka (po order_send) — do waybill/:order_id/ */
+            order_id: zod.string().optional(),
+            waybill_number: zod.string().optional(),
+            tracking_url: zod.string().optional(),
+        })
+        .optional()
+        .nullable(),
     produkty: zod.array(detailedOrderEntry),
     kursy: zod.array(detailedOrderEntry),
     reason: zod.string().optional(),
@@ -60,7 +94,6 @@ export const orderListSchema = zod.object({
 });
 
 export type OrderList = zod.infer<typeof orderListSchema>;
-export type OrderStatus = zod.infer<typeof orderStatus>;
 export type DetailedOrderEntry = zod.infer<typeof detailedOrderEntry>;
 export type CorrectionEntry = zod.infer<typeof zodCorrectionEntry>;
 export type FileOrderEntry = zod.infer<typeof fileOrderEntry>;

@@ -1,7 +1,9 @@
-export default function AdminAnalyticsCharts({ children }: { children: React.ReactNode }) {
+export default function AdminAnalyticsCharts({
+    children,
+}: {
+    children: React.ReactNode;
+}) {
     return (
-        <div>
-            {children}
-        </div>
-    )
+        <div className="grid min-w-0 gap-4 lg:grid-cols-2">{children}</div>
+    );
 }

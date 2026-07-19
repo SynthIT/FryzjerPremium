@@ -4,9 +4,11 @@ import { zodCourses, Courses } from "@/lib/types/coursesTypes";
 import { Categories, Opinie } from "@/lib/types/shared";
 import { Types } from "mongoose";
 import { LogService } from "@/lib/log_service";
+import { expireInactivePromos } from "../promocje/promocje";
 
 export async function collectCourses() {
     await db();
+    await expireInactivePromos();
     const cours = await Course.find()
         .populate("kategoria")
         .populate("promocje")

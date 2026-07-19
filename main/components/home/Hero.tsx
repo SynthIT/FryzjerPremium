@@ -43,7 +43,7 @@ export default function Hero() {
             Przeglądaj naszą różnorodną ofertę kosmetyków, sprzętu oraz szkoleń aby indywidualnie dopasować się do swoich potrzeb.
           </p>
           <Link
-            href="/products"
+            href="/produkty"
             className="inline-block px-12 py-5 rounded-xl text-base font-semibold text-[#fff] bg-[#D4B499] hover:bg-[#c4a882] transition-all duration-300 shadow-[0_4px_20px_rgba(212,180,153,0.45)] hover:shadow-[0_6px_28px_rgba(212,180,153,0.5)]"
           >
             KUP TERAZ

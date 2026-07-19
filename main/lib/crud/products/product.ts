@@ -10,12 +10,12 @@ import {
     syncPrimaryVariantStock,
 } from "@/lib/cart/stock";
 import { normalizeProductPrices } from "@/lib/admin/pricing";
-import { Analist } from "@/lib/types/analistTypes";
-import { Analistics } from "@/lib/models/Analist";
 import { analizeDataChanges } from "../analists/analists";
+import { expireInactivePromos } from "../promocje/promocje";
 
 export async function collectProducts() {
     await db();
+    await expireInactivePromos();
     const products = await Product.find()
         .populate("kategoria")
         .populate("promocje")
@@ -126,7 +126,8 @@ export async function updateProduct(productData: Products): Promise<Products | {
 
 
 async function notifyLowProductStock(product: Products, productId: string) {
-    if (product.ilosc >= 5 || product.ilosc <= 1) return;
+    // Niski stan: 1–4 szt. (0 = wyprzedane, ≥5 = OK)
+    if (product.ilosc <= 0 || product.ilosc >= 5) return;
     await Product.findOneAndUpdate(
         { _id: productId },
         { $set: { aktywne: true, dostepnosc: "ograniczona" } },
@@ -144,7 +145,7 @@ async function notifyLowProductStock(product: Products, productId: string) {
 }
 
 async function notifyOutOfProductStock(product: Products, productId: string) {
-    if (product.ilosc === 0) return;
+    if (product.ilosc > 0) return;
     await Product.findOneAndUpdate(
         { _id: productId },
         { $set: { aktywne: false, dostepnosc: "niedostępne" } },
@@ -162,7 +163,7 @@ async function notifyOutOfProductStock(product: Products, productId: string) {
 }
 
 async function notifyLowVariantStock(product: Products, wariant: Warianty) {
-    if (wariant.ilosc >= 5 || wariant.ilosc <= 1) return;
+    if (wariant.ilosc <= 0 || wariant.ilosc >= 5) return;
     const payload: notificationsType = {
         nazwa: "Wariant towaru bliski wyprzedaży",
         typ: "Mały stan towary",
@@ -175,7 +176,7 @@ async function notifyLowVariantStock(product: Products, wariant: Warianty) {
 }
 
 async function notifyOutOfVariantStock(product: Products, wariant: Warianty) {
-    if (wariant.ilosc === 0) return;
+    if (wariant.ilosc > 0) return;
     const payload: notificationsType = {
         nazwa: "Wariant towaru wyprzedany",
         typ: "Brak towaru",

@@ -1,17 +1,30 @@
 import { getOrderByNumerZamowienia, updateOrder } from "@/lib/crud/orders/orders";
 import { getUserByEmail } from "@/lib/crud/users/users";
 import { NextRequest, NextResponse } from "next/server";
+import z from "zod";
+
+const editEmailBody = z.object({
+    email: z.string().email().max(320),
+    id: z.string().min(3).max(100),
+});
 
 export async function POST(req: NextRequest) {
     try {
-        const param = req.url.split("?")[1];
-        const params = new URLSearchParams(param);
-        if (!params.get("scope")) {
+        const scope = req.nextUrl.searchParams.get("scope");
+        if (!scope) {
             return NextResponse.json({ error: "Źle skonfigurowany link" }, { status: 401 });
         }
-        switch (params.get("scope")) {
+        switch (scope) {
             case "email": {
-                const { email, id } = await req.json();
+                const parsed = editEmailBody.safeParse(await req.json());
+                if (!parsed.success) {
+                    return NextResponse.json(
+                        { error: "Błędne dane", details: parsed.error.message },
+                        { status: 400 },
+                    );
+                }
+                const { email, id } = parsed.data;
+
                 const order_details = await getOrderByNumerZamowienia(id);
                 const user = await getUserByEmail(email);
                 if (!order_details) {

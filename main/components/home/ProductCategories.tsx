@@ -4,10 +4,10 @@ import Image from 'next/image';
 
 export default function ProductCategories() {
   const categories = [
-    { id: 1, name: 'Kosmetyki', image: '' },
-    { id: 2, name: 'Sprzęty', image: '' },
-    { id: 3, name: 'Meble', image: '' },
-    { id: 4, name: 'Szkolenia', image: '' },
+    { id: 1, name: 'Kosmetyki', href: '/produkty/kosmetyki', image: '' },
+    { id: 2, name: 'Sprzęty', href: '/produkty/sprzet', image: '' },
+    { id: 3, name: 'Meble', href: '/produkty/meble', image: '' },
+    { id: 4, name: 'Szkolenia', href: '/kursy', image: '' },
   ];
 
   return (
@@ -20,7 +20,7 @@ export default function ProductCategories() {
           {categories.map((category) => (
             <Link
               key={category.id}
-              href={`/products/${encodeURIComponent(category.name.toLowerCase())}`}
+              href={category.href}
               className="group block rounded-xl overflow-hidden border border-[rgba(212,196,176,0.3)] bg-white/60 hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] hover:border-[#D2B79B]/40 transition-all duration-300"
             >
               <div className="aspect-[4/3] flex items-center justify-center bg-[#f0e8dd] group-hover:bg-[#e5d4c4] transition-colors">

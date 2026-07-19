@@ -18,13 +18,13 @@ export default function Footer() {
       <div className="w-full border-b border-[rgba(45,45,45,0.1)] py-10 pb-14" >
         <div className="max-w-[1600px]  mx-auto px-6">
           <div id="newsletter" className="max-w-7xl mx-auto rounded-2xl bg-[#E0C7A8] p-12 sm:p-16 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-12">
-            <div className="lg:flex-[2] text-left z-1">
+            <div className="lg:flex-[2] text-left">
               <h2 className="text-white font-bold tracking-wider uppercase text-base sm:text-lg text-left md:text-xl lg:text-3xl leading-snug">
                 <span className="block">BĄDŹ Z NAMI NA BIEŻĄCO</span>
                 <span className="block">I ZAPISZ SIĘ DO NASZEGO NEWSLETTERA</span>
               </h2>
             </div>
-            <form className="lg:flex-1 flex flex-col gap-3 min-w-0 z-1" onSubmit={handleNewsletterSubmit}>
+            <form className="lg:flex-1 flex flex-col gap-3 min-w-0" onSubmit={handleNewsletterSubmit}>
               <div className="relative">
                 <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
@@ -89,9 +89,9 @@ export default function Footer() {
             <h3 className="text-sm font-bold uppercase tracking-wider text-[#1a1a1a] mb-4">SKLEP</h3>
             <ul className="space-y-2.5">
               <li><Link href="/o-nas" className="text-sm text-[#3d3d3d] hover:text-[#1a1a1a] transition-colors">O nas</Link></li>
-              <li><Link href="/products/kosmetyki" className="text-sm text-[#3d3d3d] hover:text-[#1a1a1a] transition-colors">Kosmetyki</Link></li>
-              <li><Link href="/products/sprzet" className="text-sm text-[#3d3d3d] hover:text-[#1a1a1a] transition-colors">Sprzęt</Link></li>
-              <li><Link href="/products/szkolenia" className="text-sm text-[#3d3d3d] hover:text-[#1a1a1a] transition-colors">Szkolenia</Link></li>
+              <li><Link href="/produkty" className="text-sm text-[#3d3d3d] hover:text-[#1a1a1a] transition-colors">Produkty</Link></li>
+              <li><Link href="/kursy" className="text-sm text-[#3d3d3d] hover:text-[#1a1a1a] transition-colors">Kursy</Link></li>
+              <li><Link href="/kontakt" className="text-sm text-[#3d3d3d] hover:text-[#1a1a1a] transition-colors">Kontakt</Link></li>
             </ul>
           </div>
 
